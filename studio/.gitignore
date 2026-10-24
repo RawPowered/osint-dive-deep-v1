@@ -1,0 +1,15 @@
+.venv/
+output/playwright/
+property-secrets.env
+.env
+.streamlit/secrets.toml
+__pycache__/
+*.py[cod]
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+case-artifacts/
+.pytest_cache/
+.mypy_cache/
+.test-data/
+.test-cache/

@@ -1,0 +1,35 @@
+:root {
+  color-scheme: light dark;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: Canvas;
+  color: CanvasText;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 360px; }
+main { display: grid; gap: 12px; padding: 16px; }
+header { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
+h1 { margin: 0; font-size: 20px; font-weight: 650; }
+p { margin: 2px 0 0; color: GrayText; }
+label, .eyebrow { font-size: 12px; color: GrayText; }
+select, input[type="url"], input[type="password"], input[type="text"], button { width: 100%; min-height: 38px; font: inherit; border-radius: 8px; }
+select, input[type="url"], input[type="password"], input[type="text"] { padding: 0 10px; border: 1px solid color-mix(in srgb, CanvasText 22%, transparent); background: Canvas; color: CanvasText; }
+button { border: 0; padding: 8px 12px; cursor: pointer; font-weight: 600; }
+button:disabled { cursor: not-allowed; opacity: .48; }
+button.primary { background: #6d28d9; color: white; }
+button.secondary { background: color-mix(in srgb, CanvasText 10%, Canvas); color: CanvasText; }
+button.quiet { background: transparent; color: LinkText; min-height: 30px; }
+.panel { display: grid; gap: 5px; padding: 12px; border: 1px solid color-mix(in srgb, CanvasText 18%, transparent); border-radius: 10px; }
+.panel strong, .panel span { overflow-wrap: anywhere; }
+.score-row { display: flex; justify-content: space-between; gap: 10px; padding-top: 5px; font-size: 12px; }
+.status { display: inline-flex; width: fit-content; padding: 4px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+.status.good { background: color-mix(in srgb, #16a34a 18%, Canvas); color: color-mix(in srgb, #16a34a 80%, CanvasText); }
+.status.warning { background: color-mix(in srgb, #d97706 18%, Canvas); color: color-mix(in srgb, #d97706 80%, CanvasText); }
+.status.neutral { background: color-mix(in srgb, CanvasText 9%, Canvas); color: CanvasText; }
+.message { display: grid; gap: 6px; padding: 10px; border-left: 3px solid LinkText; background: color-mix(in srgb, LinkText 8%, Canvas); }
+.message.warning { border-color: #d97706; }
+.message.error { border-color: #dc2626; }
+.check { display: flex; align-items: center; gap: 8px; color: CanvasText; }
+.check input { width: auto; min-height: auto; margin: 0; }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+a { color: LinkText; text-align: center; font-size: 12px; }

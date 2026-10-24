@@ -1,0 +1,48 @@
+name: Verify complete stack
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  research-and-web:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        runtime:
+          - {python: '3.12', node: '22'}
+          - {python: '3.13', node: '24'}
+    runs-on: ${{ matrix.os }}
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      OSINT_STUDIO_DATA_DIR: ${{ runner.temp }}/divedeep-test-data
+      OSINT_STUDIO_CACHE_DIR: ${{ runner.temp }}/divedeep-test-cache
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.runtime.python }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.runtime.node }}
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: python scripts/release_check.py
+      - run: python -m pip install -r studio/requirements.txt
+      - run: python -m unittest discover -s tests -v
+        working-directory: studio
+      - run: npm ci --ignore-scripts
+        working-directory: web
+      - run: npm test
+        working-directory: web
+      - run: npm run test:extended
+        working-directory: web
+      - run: python scripts/package_release.py
+  worker-container:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -f Dockerfile.cloudrun -t divedeep-worker:test .
+        working-directory: studio
+      - run: docker run --rm --entrypoint python divedeep-worker:test -m unittest discover -s tests -p 'test_cloud_worker*.py' -v

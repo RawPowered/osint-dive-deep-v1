@@ -1,0 +1,27 @@
+{
+  "manifest_version": 2,
+  "name": "DiveDeep Structured Receiver",
+  "version": "1.0.0",
+  "description": "Manually confirm a selected public record and send structured verification evidence to the local OSINT Studio receiver.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "divedeep-structured-receiver@local.invalid",
+      "strict_min_version": "109.0"
+    }
+  },
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "storage",
+    "http://127.0.0.1/*",
+    "http://localhost/*"
+  ],
+  "browser_action": {
+    "default_title": "DiveDeep receiver",
+    "default_popup": "popup.html"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  }
+}

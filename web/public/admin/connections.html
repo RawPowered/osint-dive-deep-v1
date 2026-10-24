@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>SQL Connections</title>
+  <link rel="stylesheet" href="/css/app.css" />
+  <style>
+    .conn-grid { display: grid; gap: 1rem; }
+    .conn-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.15rem;
+      background: var(--bg-elevated);
+    }
+    .conn-card h3 { margin: 0 0 0.35rem; font-size: 1.05rem; }
+    .conn-meta { font-size: 0.85rem; color: var(--muted); font-family: var(--mono); }
+    .row-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem 1rem;
+    }
+    @media (max-width: 700px) { .form-grid { grid-template-columns: 1fr; } }
+    .form-grid .full { grid-column: 1 / -1; }
+    .table-grant-row {
+      display: grid;
+      grid-template-columns: 1.4fr repeat(4, auto) 0.8fr auto;
+      gap: 0.4rem;
+      align-items: center;
+      margin-bottom: 0.4rem;
+      font-size: 0.85rem;
+    }
+    @media (max-width: 900px) {
+      .table-grant-row { grid-template-columns: 1fr 1fr; }
+    }
+    .table-grant-row input[type="text"] { margin: 0; }
+    .table-grant-row label { display: flex; align-items: center; gap: 0.25rem; white-space: nowrap; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .pill {
+      display: inline-block;
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+    }
+    .pill.on { border-color: var(--success); color: var(--success); }
+    .pill.off { opacity: 0.6; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <span class="brand">Control panel</span>
+    <nav class="topbar-nav">
+      <a id="navDash" href="#">Dashboard</a>
+      <a id="navKeys" href="#">API Keys</a>
+      <a id="navDocs" href="#">Docs</a>
+      <a id="navSentinel" href="#">Sentinel</a>
+      <a href="#" id="logout">Sign out</a>
+    </nav>
+  </header>
+
+  <main class="container container-wide">
+    <div class="admin-header">
+      <div>
+        <h1>SQL connections</h1>
+        <p class="muted">
+          Manage secondary MySQL targets and grant API keys table-level access.
+          Passwords are encrypted; keys have <strong>no</strong> SQL access until granted.
+        </p>
+      </div>
+      <button type="button" class="btn btn-primary" id="btnNew">New connection</button>
+    </div>
+
+    <div id="alert" hidden></div>
+
+    <div id="listPanel" class="panel active">
+      <div class="conn-grid" id="connList">
+        <p class="muted">Loading…</p>
+      </div>
+    </div>
+
+    <div id="editPanel" class="panel">
+      <div class="card">
+        <h2 id="editTitle">Connection</h2>
+        <input type="hidden" id="editId" />
+        <div class="form-grid">
+          <div>
+            <label for="slug">Slug (URL id)</label>
+            <input id="slug" type="text" placeholder="reporting-db" autocomplete="off" />
+            <p class="muted small">Used as <code>/api/sql/{slug}/…</code></p>
+          </div>
+          <div>
+            <label for="name">Display name</label>
+            <input id="name" type="text" placeholder="Reporting replica" />
+          </div>
+          <div>
+            <label for="host">Host</label>
+            <input id="host" type="text" placeholder="127.0.0.1" />
+          </div>
+          <div>
+            <label for="port">Port</label>
+            <input id="port" type="number" value="3306" />
+          </div>
+          <div>
+            <label for="database">Database</label>
+            <input id="database" type="text" placeholder="my_app" />
+          </div>
+          <div>
+            <label for="username">Username</label>
+            <input id="username" type="text" autocomplete="off" />
+          </div>
+          <div class="full">
+            <label for="password">Password</label>
+            <input id="password" type="password" autocomplete="new-password" placeholder="Required on create; leave blank to keep existing" />
+          </div>
+          <div>
+            <label for="maxRows">Max rows / query</label>
+            <input id="maxRows" type="number" value="500" min="1" max="5000" />
+          </div>
+          <div style="display:flex;flex-direction:column;gap:0.5rem;justify-content:flex-end">
+            <label><input type="checkbox" id="sslEnabled" /> Use SSL</label>
+            <label><input type="checkbox" id="isEnabled" checked /> Enabled</label>
+          </div>
+          <div class="full">
+            <label for="notes">Notes</label>
+            <input id="notes" type="text" placeholder="Optional ops note" />
+          </div>
+        </div>
+        <div class="row-actions">
+          <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+          <button type="button" class="btn btn-secondary" id="btnTest">Test connection</button>
+          <button type="button" class="btn btn-secondary" id="btnCancel">Back</button>
+        </div>
+      </div>
+
+      <div class="card" id="grantsCard" hidden>
+        <h2>API key grants</h2>
+        <p class="muted small">Default deny. Only listed keys may hit this connection; only listed tables/ops apply.</p>
+
+        <label for="grantKey">API key</label>
+        <select id="grantKey"></select>
+
+        <label style="margin-top:0.75rem"><input type="checkbox" id="canIntrospect" checked /> Allow list tables / columns</label>
+
+        <h3 style="margin-top:1.25rem;font-size:1rem">Tables</h3>
+        <div id="tableGrants"></div>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnAddTable" style="margin-top:0.5rem">+ Add table</button>
+        <div class="row-actions">
+          <button type="button" class="btn btn-primary" id="btnSaveGrant">Save grant</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnLoadTables">Load table names from DB</button>
+        </div>
+
+        <h3 style="margin-top:1.5rem;font-size:1rem">Current grants</h3>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Key</th>
+                <th>Introspect</th>
+                <th>Tables</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="grantsBody">
+              <tr><td colspan="4" class="muted">None</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const base = location.pathname.replace(/\/connections\/?$/, '') || '';
+
+    document.getElementById('navDash').href = base;
+    document.getElementById('navKeys').href = base + '/keys';
+    document.getElementById('navDocs').href = base + '/docs';
+    document.getElementById('navSentinel').href = base + '/sentinel';
+
+    const alertEl = document.getElementById('alert');
+    function showAlert(type, msg) {
+      alertEl.hidden = false;
+      alertEl.className = 'alert alert-' + type;
+      alertEl.textContent = msg;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function escapeHtml(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    async function ensureAuth() {
+      const me = await fetch(base + '/me', { headers: { Accept: 'application/json' } });
+      if (!me.ok) {
+        window.location.href = base + '/login?next=' + encodeURIComponent(base + '/connections');
+        return false;
+      }
+      return true;
+    }
+
+    function showPanel(id) {
+      document.querySelectorAll('.panel').forEach((p) => p.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    let apiKeys = [];
+    let currentConnectionId = null;
+
+    async function loadKeys() {
+      const res = await fetch(base + '/api/sql/keys-for-grants', { headers: { Accept: 'application/json' } });
+      const data = await res.json();
+      apiKeys = data.keys || [];
+      const sel = document.getElementById('grantKey');
+      sel.innerHTML = apiKeys.length
+        ? apiKeys.map((k) =>
+            `<option value="${escapeHtml(k.id)}">${escapeHtml(k.name)} (${escapeHtml(k.key_prefix)}…)</option>`
+          ).join('')
+        : '<option value="">No active keys</option>';
+    }
+
+    async function loadConnections() {
+      const res = await fetch(base + '/api/sql/connections', { headers: { Accept: 'application/json' } });
+      if (!res.ok) {
+        showAlert('error', 'Could not load connections');
+        return;
+      }
+      const data = await res.json();
+      const el = document.getElementById('connList');
+      const list = data.connections || [];
+      if (!list.length) {
+        el.innerHTML = '<p class="muted">No SQL connections yet. Create one to route another database through the API.</p>';
+        return;
+      }
+      el.innerHTML = list.map((c) => `
+        <div class="conn-card">
+          <h3>${escapeHtml(c.name)}
+            ${c.isEnabled ? '<span class="pill on">enabled</span>' : '<span class="pill off">disabled</span>'}
+          </h3>
+          <div class="conn-meta">slug: ${escapeHtml(c.slug)} · ${escapeHtml(c.username)}@${escapeHtml(c.host)}:${c.port}/${escapeHtml(c.database)}</div>
+          ${c.notes ? `<p class="muted small">${escapeHtml(c.notes)}</p>` : ''}
+          <div class="row-actions">
+            <button type="button" class="btn btn-primary btn-sm" data-edit="${escapeHtml(c.id)}">Edit &amp; grants</button>
+            <button type="button" class="btn btn-secondary btn-sm" data-test="${escapeHtml(c.id)}">Test</button>
+            <button type="button" class="btn btn-danger btn-sm" data-del="${escapeHtml(c.id)}">Delete</button>
+          </div>
+        </div>
+      `).join('');
+
+      el.querySelectorAll('[data-edit]').forEach((btn) => {
+        btn.onclick = () => openEdit(btn.dataset.edit);
+      });
+      el.querySelectorAll('[data-test]').forEach((btn) => {
+        btn.onclick = () => testExisting(btn.dataset.test);
+      });
+      el.querySelectorAll('[data-del]').forEach((btn) => {
+        btn.onclick = () => removeConn(btn.dataset.del);
+      });
+    }
+
+    function clearForm() {
+      document.getElementById('editId').value = '';
+      document.getElementById('slug').value = '';
+      document.getElementById('name').value = '';
+      document.getElementById('host').value = '127.0.0.1';
+      document.getElementById('port').value = '3306';
+      document.getElementById('database').value = '';
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
+      document.getElementById('maxRows').value = '500';
+      document.getElementById('sslEnabled').checked = false;
+      document.getElementById('isEnabled').checked = true;
+      document.getElementById('notes').value = '';
+      document.getElementById('grantsCard').hidden = true;
+      currentConnectionId = null;
+      document.getElementById('tableGrants').innerHTML = '';
+    }
+
+    function openNew() {
+      clearForm();
+      document.getElementById('editTitle').textContent = 'New SQL connection';
+      showPanel('editPanel');
+    }
+
+    async function openEdit(id) {
+      const res = await fetch(base + '/api/sql/connections/' + encodeURIComponent(id), {
+        headers: { Accept: 'application/json' },
+      });
+      if (!res.ok) {
+        showAlert('error', 'Connection not found');
+        return;
+      }
+      const data = await res.json();
+      const c = data.connection;
+      currentConnectionId = c.id;
+      document.getElementById('editId').value = c.id;
+      document.getElementById('slug').value = c.slug;
+      document.getElementById('name').value = c.name;
+      document.getElementById('host').value = c.host;
+      document.getElementById('port').value = c.port;
+      document.getElementById('database').value = c.database;
+      document.getElementById('username').value = c.username;
+      document.getElementById('password').value = '';
+      document.getElementById('maxRows').value = c.maxRows;
+      document.getElementById('sslEnabled').checked = !!c.sslEnabled;
+      document.getElementById('isEnabled').checked = !!c.isEnabled;
+      document.getElementById('notes').value = c.notes || '';
+      document.getElementById('editTitle').textContent = 'Edit: ' + c.name;
+      document.getElementById('grantsCard').hidden = false;
+      showPanel('editPanel');
+      await loadGrants();
+      addTableRow();
+    }
+
+    function formPayload(requirePassword) {
+      const password = document.getElementById('password').value;
+      const body = {
+        slug: document.getElementById('slug').value.trim(),
+        name: document.getElementById('name').value.trim(),
+        host: document.getElementById('host').value.trim(),
+        port: Number(document.getElementById('port').value) || 3306,
+        database: document.getElementById('database').value.trim(),
+        username: document.getElementById('username').value.trim(),
+        maxRows: Number(document.getElementById('maxRows').value) || 500,
+        sslEnabled: document.getElementById('sslEnabled').checked,
+        isEnabled: document.getElementById('isEnabled').checked,
+        notes: document.getElementById('notes').value.trim() || null,
+      };
+      if (password) body.password = password;
+      else if (requirePassword) body.password = '';
+      return body;
+    }
+
+    async function saveConnection() {
+      const id = document.getElementById('editId').value;
+      const body = formPayload(!id);
+      if (!body.slug || !body.name || !body.host || !body.database || !body.username) {
+        showAlert('error', 'slug, name, host, database, and username are required');
+        return;
+      }
+      if (!id && !body.password) {
+        showAlert('error', 'Password is required for new connections');
+        return;
+      }
+      const res = await fetch(
+        id
+          ? base + '/api/sql/connections/' + encodeURIComponent(id)
+          : base + '/api/sql/connections',
+        {
+          method: id ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(body),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        showAlert('error', data.error || 'Save failed');
+        return;
+      }
+      showAlert('success', 'Connection saved');
+      currentConnectionId = data.connection.id;
+      document.getElementById('editId').value = data.connection.id;
+      document.getElementById('grantsCard').hidden = false;
+      document.getElementById('password').value = '';
+      await loadGrants();
+    }
+
+    async function testExisting(id) {
+      const res = await fetch(base + '/api/sql/connections/' + encodeURIComponent(id) + '/test', {
+        method: 'POST',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+        body: '{}',
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        showAlert('error', data.error || 'Test failed');
+        return;
+      }
+      showAlert('success', 'Connection OK · database ' + (data.database || ''));
+    }
+
+    async function testForm() {
+      const id = document.getElementById('editId').value;
+      const body = formPayload(false);
+      if (id && !body.password) {
+        return testExisting(id);
+      }
+      const res = await fetch(base + '/api/sql/connections/test', {
+        method: 'POST',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        showAlert('error', data.error || 'Test failed');
+        return;
+      }
+      showAlert('success', 'Connection OK · database ' + (data.database || ''));
+    }
+
+    async function removeConn(id) {
+      if (!confirm('Delete this SQL connection and all its API grants?')) return;
+      const res = await fetch(base + '/api/sql/connections/' + encodeURIComponent(id), {
+        method: 'DELETE',
+        headers: { Accept: 'application/json' },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showAlert('error', data.error || 'Delete failed');
+        return;
+      }
+      showAlert('success', 'Deleted');
+      showPanel('listPanel');
+      loadConnections();
+    }
+
+    function addTableRow(prefill) {
+      const wrap = document.getElementById('tableGrants');
+      const row = document.createElement('div');
+      row.className = 'table-grant-row';
+      const t = prefill || {};
+      row.innerHTML = `
+        <input type="text" class="tg-name" placeholder="table_name" value="${escapeHtml(t.tableName || '')}" />
+        <label><input type="checkbox" class="tg-sel" ${t.allowSelect !== false ? 'checked' : ''}/> SELECT</label>
+        <label><input type="checkbox" class="tg-ins" ${t.allowInsert ? 'checked' : ''}/> INSERT</label>
+        <label><input type="checkbox" class="tg-upd" ${t.allowUpdate ? 'checked' : ''}/> UPDATE</label>
+        <label><input type="checkbox" class="tg-del" ${t.allowDelete ? 'checked' : ''}/> DELETE</label>
+        <input type="text" class="tg-pk" placeholder="pk" value="${escapeHtml(t.primaryKey || 'id')}" />
+        <button type="button" class="btn btn-danger btn-sm tg-remove">×</button>
+      `;
+      row.querySelector('.tg-remove').onclick = () => row.remove();
+      wrap.appendChild(row);
+    }
+
+    function collectTableGrants() {
+      return [...document.querySelectorAll('#tableGrants .table-grant-row')]
+        .map((row) => {
+          const tableName = row.querySelector('.tg-name').value.trim();
+          if (!tableName) return null;
+          return {
+            tableName,
+            allowSelect: row.querySelector('.tg-sel').checked,
+            allowInsert: row.querySelector('.tg-ins').checked,
+            allowUpdate: row.querySelector('.tg-upd').checked,
+            allowDelete: row.querySelector('.tg-del').checked,
+            primaryKey: row.querySelector('.tg-pk').value.trim() || 'id',
+          };
+        })
+        .filter(Boolean);
+    }
+
+    async function loadGrants() {
+      if (!currentConnectionId) return;
+      const res = await fetch(
+        base + '/api/sql/connections/' + encodeURIComponent(currentConnectionId) + '/grants',
+        { headers: { Accept: 'application/json' } }
+      );
+      const data = await res.json();
+      const tbody = document.getElementById('grantsBody');
+      const grants = data.grants || [];
+      if (!grants.length) {
+        tbody.innerHTML = '<tr><td colspan="4" class="muted">No grants — keys cannot use this connection</td></tr>';
+        return;
+      }
+      tbody.innerHTML = grants.map((g) => {
+        const tables = (g.tables || []).map((t) => {
+          const ops = [
+            t.allowSelect ? 'R' : '',
+            t.allowInsert ? 'C' : '',
+            t.allowUpdate ? 'U' : '',
+            t.allowDelete ? 'D' : '',
+          ].filter(Boolean).join('');
+          return `${escapeHtml(t.tableName)}[${ops || '—'}]`;
+        }).join(', ') || '—';
+        return `<tr>
+          <td>${escapeHtml(g.apiKeyName || g.apiKeyId)} <code class="small">${escapeHtml(g.apiKeyPrefix || '')}…</code></td>
+          <td>${g.canIntrospect ? 'yes' : 'no'}</td>
+          <td class="small">${tables}</td>
+          <td>
+            <button type="button" class="btn btn-secondary btn-sm" data-load-grant="${escapeHtml(g.apiKeyId)}">Edit</button>
+            <button type="button" class="btn btn-danger btn-sm" data-revoke-grant="${escapeHtml(g.id)}">Revoke</button>
+          </td>
+        </tr>`;
+      }).join('');
+
+      tbody.querySelectorAll('[data-revoke-grant]').forEach((btn) => {
+        btn.onclick = async () => {
+          if (!confirm('Revoke this grant?')) return;
+          const r = await fetch(base + '/api/sql/grants/' + encodeURIComponent(btn.dataset.revokeGrant), {
+            method: 'DELETE',
+            headers: { Accept: 'application/json' },
+          });
+          if (!r.ok) {
+            const d = await r.json();
+            showAlert('error', d.error || 'Revoke failed');
+            return;
+          }
+          showAlert('success', 'Grant revoked');
+          loadGrants();
+        };
+      });
+
+      tbody.querySelectorAll('[data-load-grant]').forEach((btn) => {
+        btn.onclick = () => {
+          const g = grants.find((x) => x.apiKeyId === btn.dataset.loadGrant);
+          if (!g) return;
+          document.getElementById('grantKey').value = g.apiKeyId;
+          document.getElementById('canIntrospect').checked = !!g.canIntrospect;
+          document.getElementById('tableGrants').innerHTML = '';
+          (g.tables || []).forEach((t) => addTableRow(t));
+          if (!(g.tables || []).length) addTableRow();
+        };
+      });
+    }
+
+    async function saveGrant() {
+      if (!currentConnectionId) {
+        showAlert('error', 'Save the connection first');
+        return;
+      }
+      const apiKeyId = document.getElementById('grantKey').value;
+      if (!apiKeyId) {
+        showAlert('error', 'Select an API key');
+        return;
+      }
+      const tables = collectTableGrants();
+      if (!tables.length) {
+        showAlert('error', 'Add at least one table grant');
+        return;
+      }
+      const res = await fetch(
+        base + '/api/sql/connections/' + encodeURIComponent(currentConnectionId) + '/grants',
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({
+            apiKeyId,
+            canIntrospect: document.getElementById('canIntrospect').checked,
+            tables,
+          }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        showAlert('error', data.error || 'Grant save failed');
+        return;
+      }
+      showAlert('success', 'Grant saved');
+      loadGrants();
+    }
+
+    async function loadTableNames() {
+      if (!currentConnectionId) {
+        showAlert('error', 'Save the connection first');
+        return;
+      }
+      const res = await fetch(
+        base + '/api/sql/connections/' + encodeURIComponent(currentConnectionId) + '/tables',
+        { headers: { Accept: 'application/json' } }
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        showAlert('error', data.error || 'Could not list tables');
+        return;
+      }
+      const names = (data.tables || []).map((t) => t.name);
+      if (!names.length) {
+        showAlert('warning', 'No tables found in database');
+        return;
+      }
+      const pick = prompt(
+        'Tables found (' + names.length + '). Enter comma-separated names to add as SELECT grants:\n\n' +
+          names.slice(0, 40).join(', ') + (names.length > 40 ? '…' : ''),
+        names.slice(0, 5).join(', ')
+      );
+      if (!pick) return;
+      pick.split(',').map((s) => s.trim()).filter(Boolean).forEach((n) => {
+        addTableRow({ tableName: n, allowSelect: true });
+      });
+      showAlert('success', 'Table rows added — adjust ops and Save grant');
+    }
+
+    document.getElementById('btnNew').onclick = openNew;
+    document.getElementById('btnSave').onclick = saveConnection;
+    document.getElementById('btnTest').onclick = testForm;
+    document.getElementById('btnCancel').onclick = () => {
+      showPanel('listPanel');
+      loadConnections();
+    };
+    document.getElementById('btnAddTable').onclick = () => addTableRow();
+    document.getElementById('btnSaveGrant').onclick = saveGrant;
+    document.getElementById('btnLoadTables').onclick = loadTableNames;
+    document.getElementById('logout').onclick = async (e) => {
+      e.preventDefault();
+      await fetch(base + '/logout', { method: 'POST' });
+      window.location.href = base + '/login';
+    };
+
+    (async () => {
+      if (!(await ensureAuth())) return;
+      await loadKeys();
+      await loadConnections();
+    })();
+  </script>
+</body>
+</html>

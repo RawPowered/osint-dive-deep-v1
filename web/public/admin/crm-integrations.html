@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>CRM Integrations</title>
+  <link rel="stylesheet" href="/css/app.css" />
+  <style>
+    .integration-list { display: grid; gap: 0.75rem; }
+    .integration-row { border-bottom: 1px solid var(--border); padding: 1rem 0; }
+    .integration-row:last-child { border-bottom: 0; }
+    .integration-row h3 { margin: 0 0 0.35rem; }
+    .meta { color: var(--muted); font-family: var(--mono); font-size: 0.82rem; overflow-wrap: anywhere; }
+    .actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem 1rem; }
+    .form-grid .full { grid-column: 1 / -1; }
+    .panel[hidden] { display: none; }
+    .actions [hidden] { display: none !important; }
+    .grant-grid { display: grid; grid-template-columns: 1fr auto auto auto; gap: 0.75rem; align-items: end; }
+    @media (max-width: 760px) {
+      .form-grid, .grant-grid { grid-template-columns: 1fr; }
+      .form-grid .full { grid-column: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <span class="brand">Control panel</span>
+    <nav class="topbar-nav">
+      <a id="navDash" href="#">Dashboard</a>
+      <a id="navKeys" href="#">API Keys</a>
+      <a id="navSql" href="#">SQL</a>
+      <a id="navDocs" href="#">Docs</a>
+      <a id="navSentinel" href="#">Sentinel</a>
+      <a href="#" id="logout">Sign out</a>
+    </nav>
+  </header>
+
+  <main class="container container-wide">
+    <div class="admin-header">
+      <div>
+        <h1>CRM integrations</h1>
+        <p class="muted">Encrypted upstream credentials, location binding, import configuration, and API-key grants.</p>
+      </div>
+      <button type="button" class="btn btn-primary" id="newButton">New integration</button>
+    </div>
+    <div id="alert" hidden></div>
+
+    <section class="panel" id="listPanel">
+      <div class="integration-list" id="integrationList"><p class="muted">Loading...</p></div>
+    </section>
+
+    <section class="panel" id="editPanel" hidden>
+      <div class="card">
+        <h2 id="formTitle">CRM integration</h2>
+        <input type="hidden" id="integrationId" />
+        <div class="form-grid">
+          <div><label for="name">Name</label><input id="name" placeholder="Primary LeadConnector" /></div>
+          <div><label for="provider">Provider</label><select id="provider"><option value="leadconnector-pit">LeadConnector Private Integration</option><option value="nova-edge">CRM</option><option value="generic">Generic API</option></select></div>
+          <div><label for="locationId">Location ID</label><input id="locationId" autocomplete="off" /></div>
+          <div class="full"><label for="contactUrl">CRM contact URL</label><input id="contactUrl" type="url" placeholder="https://crm.example.invalid/v2/location/.../contacts/detail/..." /></div>
+          <div><label for="baseUrl">CRM API base URL</label><input id="baseUrl" type="url" placeholder="https://services.example.com" /></div>
+          <div><label for="authScheme">Authorization scheme</label><input id="authScheme" value="Bearer" /></div>
+          <div><label for="credential">Private Integration Token / credential</label><input id="credential" type="password" autocomplete="new-password" placeholder="Paste token only; blank keeps current" /></div>
+          <div><label for="contactsPath">Contacts path</label><input id="contactsPath" value="/contacts/" /></div>
+          <div><label for="recordsPath">Records response path</label><input id="recordsPath" value="contacts" /></div>
+          <div><label for="idPath">Contact ID path</label><input id="idPath" value="id" /></div>
+          <div><label for="locationPath">Payload location path</label><input id="locationPath" value="locationId" /></div>
+          <div><label for="cursorParam">Cursor query parameter</label><input id="cursorParam" value="startAfterId" /></div>
+          <div><label for="nextCursorPath">Next cursor response path</label><input id="nextCursorPath" value="meta.startAfterId" /></div>
+          <div><label for="pageDelayMs">Page interval (ms)</label><input id="pageDelayMs" type="number" min="0" max="5000" value="250" /></div>
+          <div><label for="updatedAfterParam">Updated-after parameter</label><input id="updatedAfterParam" placeholder="Optional incremental watermark" /></div>
+          <div><label for="version">Version header</label><input id="version" placeholder="Optional" /></div>
+          <div><label for="defaultServiceType">Default service type</label><input id="defaultServiceType" value="Other" /></div>
+          <div style="align-self:end"><label><input id="isEnabled" type="checkbox" checked /> Enabled</label></div>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="pitPresetButton">LeadConnector PIT defaults</button>
+          <button type="button" class="btn btn-secondary" id="novaPresetButton">CRM defaults</button>
+          <button type="button" class="btn btn-primary" id="saveButton">Save</button>
+          <button type="button" class="btn btn-secondary" id="testButton">Test saved connection</button>
+          <button type="button" class="btn btn-secondary" id="cancelButton">Back</button>
+          <button type="button" class="btn btn-danger" id="deleteButton">Delete</button>
+        </div>
+      </div>
+
+      <div class="card" id="grantCard" hidden>
+        <h2>API-key grant</h2>
+        <p class="muted">Grant multiple Dialer keys to reuse this encrypted, location-bound credential without copying it.</p>
+        <div class="grant-grid">
+          <div><label for="grantKey">API key</label><select id="grantKey"></select></div>
+          <label><input id="allowRead" type="checkbox" checked /> Read</label>
+          <label><input id="allowImport" type="checkbox" /> Import</label>
+          <label><input id="allowManage" type="checkbox" /> Manage leads</label>
+        </div>
+        <div class="actions"><button type="button" class="btn btn-primary" id="saveGrantButton">Save grant</button></div>
+        <div style="overflow-x:auto;margin-top:1rem">
+          <table>
+            <thead><tr><th>Key</th><th>Read</th><th>Import</th><th>Manage leads</th></tr></thead>
+            <tbody id="grantRows"><tr><td colspan="4" class="muted">No grants</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const base = location.pathname.replace(/\/crm-integrations\/?$/, '') || '';
+    const byId = (id) => document.getElementById(id);
+    byId('navDash').href = base;
+    byId('navKeys').href = base + '/keys';
+    byId('navSql').href = base + '/connections';
+    byId('navDocs').href = base + '/docs';
+    byId('navSentinel').href = base + '/sentinel';
+    let integrations = [];
+    let apiKeys = [];
+
+    function escapeHtml(value) {
+      return String(value == null ? '' : value).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function alertMessage(type, message) {
+      const el = byId('alert');
+      el.hidden = false;
+      el.className = 'alert alert-' + type;
+      el.textContent = message;
+    }
+
+    async function jsonFetch(url, options = {}) {
+      const response = await fetch(url, {
+        ...options,
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json', ...(options.headers || {}) },
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Request failed');
+      return data;
+    }
+
+    function showList() {
+      byId('listPanel').hidden = false;
+      byId('editPanel').hidden = true;
+    }
+
+    function showEdit(integration = null) {
+      byId('listPanel').hidden = true;
+      byId('editPanel').hidden = false;
+      const config = integration ? integration.config || {} : {};
+      byId('formTitle').textContent = integration ? 'Edit integration' : 'New integration';
+      byId('integrationId').value = integration ? integration.id : '';
+      byId('name').value = integration ? integration.name : '';
+      if (integration && ![...byId('provider').options].some((option) => option.value === integration.provider)) {
+        byId('provider').add(new Option(integration.provider, integration.provider));
+      }
+      byId('provider').value = integration ? integration.provider : 'leadconnector-pit';
+      byId('locationId').value = integration ? integration.locationId : '';
+      byId('contactUrl').value = '';
+      byId('baseUrl').value = integration ? integration.baseUrl : 'https://services.leadconnectorhq.com';
+      byId('authScheme').value = integration ? integration.authScheme : 'Bearer';
+      byId('credential').value = '';
+      byId('contactsPath').value = config.contactsPath || '/contacts/';
+      byId('recordsPath').value = config.recordsPath || 'contacts';
+      byId('idPath').value = config.idPath || 'id';
+      byId('locationPath').value = config.locationPath || 'locationId';
+      byId('cursorParam').value = config.cursorParam || 'startAfterId';
+      byId('nextCursorPath').value = config.nextCursorPath || 'meta.startAfterId';
+      byId('pageDelayMs').value = config.pageDelayMs ?? (byId('provider').value === 'leadconnector-pit' ? 250 : 0);
+      byId('updatedAfterParam').value = config.updatedAfterParam || '';
+      byId('version').value = config.version || (integration ? '' : '2021-07-28');
+      byId('defaultServiceType').value = config.defaultServiceType || 'Other';
+      byId('isEnabled').checked = integration ? integration.isEnabled : true;
+      byId('grantCard').hidden = !integration;
+      byId('testButton').hidden = !integration;
+      byId('testButton').disabled = !integration;
+      byId('deleteButton').hidden = !integration;
+      syncProviderFields();
+      if (integration) loadDetail(integration.id);
+    }
+
+    function syncProviderFields() {
+      const isPit = byId('provider').value === 'leadconnector-pit';
+      if (isPit) byId('authScheme').value = 'Bearer';
+      byId('authScheme').disabled = isPit;
+    }
+
+    function applyContactUrl() {
+      const value = byId('contactUrl').value.trim();
+      if (!value) return;
+      try {
+        const url = new URL(value);
+        const match = url.pathname.match(/^\/v2\/location\/([^/]+)\/contacts\/detail\/([^/]+)\/?$/);
+        if (url.hostname !== 'crm.example.invalid' || !match) {
+          throw new Error('Unsupported CRM contact URL');
+        }
+        byId('locationId').value = decodeURIComponent(match[1]);
+        byId('contactUrl').dataset.contactId = decodeURIComponent(match[2]);
+      } catch (error) {
+        byId('contactUrl').dataset.contactId = '';
+        alertMessage('error', error.message || 'Invalid CRM contact URL');
+      }
+    }
+
+    function payload() {
+      const data = {
+        name: byId('name').value.trim(), provider: byId('provider').value.trim(),
+        locationId: byId('locationId').value.trim(), baseUrl: byId('baseUrl').value.trim(),
+        authScheme: byId('authScheme').value.trim(), isEnabled: byId('isEnabled').checked,
+        config: {
+          contactsPath: byId('contactsPath').value.trim(), recordsPath: byId('recordsPath').value.trim(),
+          idPath: byId('idPath').value.trim(), locationPath: byId('locationPath').value.trim(),
+          cursorParam: byId('cursorParam').value.trim(), nextCursorPath: byId('nextCursorPath').value.trim(),
+          pageDelayMs: Math.min(Math.max(Number(byId('pageDelayMs').value) || 0, 0), 5000),
+          updatedAfterParam: byId('updatedAfterParam').value.trim() || undefined,
+          version: byId('version').value.trim() || undefined,
+          maxPageSize: byId('provider').value === 'leadconnector-pit' ? 100 : 500,
+          defaultServiceType: byId('defaultServiceType').value.trim() || 'Other',
+        },
+      };
+      if (byId('credential').value) data.credential = byId('credential').value;
+      return data;
+    }
+
+    async function loadIntegrations() {
+      const data = await jsonFetch(base + '/api/crm/integrations');
+      integrations = data.integrations || [];
+      byId('integrationList').innerHTML = integrations.length ? integrations.map((item) => `
+        <div class="integration-row">
+          <h3>${escapeHtml(item.name)}</h3>
+          <div class="meta">${escapeHtml(item.provider)} | ${escapeHtml(item.locationId)} | ${escapeHtml(item.baseUrl)}</div>
+          <div class="meta">${item.isEnabled ? 'enabled' : 'disabled'} | credential: ${item.hasCredential ? 'stored' : 'missing'} | rotation: ${escapeHtml(item.rotationStatus || 'unknown')} | last sync: ${escapeHtml(item.lastSyncAt || 'never')}</div>
+          <div class="actions"><button class="btn btn-secondary btn-sm" data-edit="${item.id}">Edit</button></div>
+        </div>`).join('') : '<p class="muted">No CRM integrations configured.</p>';
+      document.querySelectorAll('[data-edit]').forEach((button) => {
+        button.onclick = () => showEdit(integrations.find((item) => item.id === button.dataset.edit));
+      });
+    }
+
+    async function loadKeys() {
+      const data = await jsonFetch(base + '/api/sql/keys-for-grants');
+      apiKeys = data.keys || [];
+      byId('grantKey').innerHTML = apiKeys.map((key) => `<option value="${key.id}">${escapeHtml(key.name)} (${escapeHtml(key.key_prefix)})</option>`).join('');
+    }
+
+    async function loadDetail(id) {
+      const data = await jsonFetch(base + '/api/crm/integrations/' + encodeURIComponent(id));
+      const grants = data.grants || [];
+      byId('grantRows').innerHTML = grants.length ? grants.map((grant) => `<tr>
+        <td>${escapeHtml(grant.name)} <span class="meta">${escapeHtml(grant.keyPrefix)}</span></td>
+        <td>${grant.allowRead ? 'Yes' : 'No'}</td><td>${grant.allowImport ? 'Yes' : 'No'}</td>
+        <td>${grant.allowManageLeads ? 'Yes' : 'No'}</td></tr>`).join('') : '<tr><td colspan="4" class="muted">No grants</td></tr>';
+    }
+
+    byId('newButton').onclick = () => showEdit();
+    byId('provider').onchange = syncProviderFields;
+    byId('contactUrl').onchange = applyContactUrl;
+    byId('pitPresetButton').onclick = () => {
+      byId('provider').value = 'leadconnector-pit';
+      byId('baseUrl').value = 'https://services.leadconnectorhq.com';
+      byId('authScheme').value = 'Bearer';
+      byId('contactsPath').value = '/contacts/';
+      byId('recordsPath').value = 'contacts';
+      byId('idPath').value = 'id';
+      byId('locationPath').value = 'locationId';
+      byId('cursorParam').value = 'startAfterId';
+      byId('nextCursorPath').value = 'meta.startAfterId';
+      byId('pageDelayMs').value = '250';
+      byId('version').value = '2021-07-28';
+      syncProviderFields();
+    };
+    byId('novaPresetButton').onclick = () => {
+      byId('provider').value = 'nova-edge';
+      byId('baseUrl').value = 'https://crm.example.invalid';
+      byId('authScheme').value = 'Bearer';
+      byId('contactsPath').value = '/backend/contacts/';
+      byId('recordsPath').value = 'contacts';
+      byId('idPath').value = 'id';
+      byId('locationPath').value = 'locationId';
+      byId('cursorParam').value = 'startAfterId';
+      byId('nextCursorPath').value = 'meta.startAfterId';
+      byId('pageDelayMs').value = '250';
+      byId('version').value = '2021-07-28';
+      syncProviderFields();
+    };
+    byId('cancelButton').onclick = () => showList();
+    byId('saveButton').onclick = async () => {
+      try {
+        const id = byId('integrationId').value;
+        const data = await jsonFetch(base + '/api/crm/integrations' + (id ? '/' + encodeURIComponent(id) : ''), {
+          method: id ? 'PUT' : 'POST', body: JSON.stringify(payload()),
+        });
+        alertMessage('success', 'CRM integration saved.');
+        await loadIntegrations();
+        showEdit(data.integration);
+      } catch (error) { alertMessage('error', error.message); }
+    };
+    byId('testButton').onclick = async () => {
+      try {
+        const id = byId('integrationId').value;
+        if (!id) throw new Error('Save the integration before testing the connection.');
+        const data = await jsonFetch(base + '/api/crm/integrations/' + encodeURIComponent(id) + '/test', { method: 'POST', body: '{}' });
+        alertMessage('success', `Connected. Received ${data.recordsReceived} sample record(s).`);
+      } catch (error) { alertMessage('error', error.message); }
+    };
+    byId('deleteButton').onclick = async () => {
+      const id = byId('integrationId').value;
+      if (!id || !window.confirm('Delete this integration configuration? Imported leads remain untouched.')) return;
+      try {
+        await jsonFetch(base + '/api/crm/integrations/' + encodeURIComponent(id), { method: 'DELETE' });
+        alertMessage('success', 'Integration deleted or disabled. Imported lead data was preserved.');
+        await loadIntegrations(); showList();
+      } catch (error) { alertMessage('error', error.message); }
+    };
+    byId('saveGrantButton').onclick = async () => {
+      try {
+        const id = byId('integrationId').value;
+        await jsonFetch(base + '/api/crm/integrations/' + encodeURIComponent(id) + '/grants', {
+          method: 'PUT', body: JSON.stringify({ apiKeyId: byId('grantKey').value,
+            allowRead: byId('allowRead').checked, allowImport: byId('allowImport').checked,
+            allowManageLeads: byId('allowManage').checked }),
+        });
+        alertMessage('success', 'API-key grant saved.'); await loadDetail(id);
+      } catch (error) { alertMessage('error', error.message); }
+    };
+    byId('logout').onclick = async (event) => {
+      event.preventDefault(); await fetch(base + '/logout', { method: 'POST' }); location.href = base + '/login';
+    };
+
+    (async () => {
+      try {
+        const me = await fetch(base + '/me', { headers: { Accept: 'application/json' } });
+        if (!me.ok) { location.href = base + '/login?next=' + encodeURIComponent(location.pathname); return; }
+        await Promise.all([loadIntegrations(), loadKeys()]);
+      } catch (error) { alertMessage('error', error.message); }
+    })();
+  </script>
+</body>
+</html>

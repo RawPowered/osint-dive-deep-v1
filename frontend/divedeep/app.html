@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>DiveDeep Digital Identity Control Center</title>
+  <link rel="stylesheet" href="/css/divedeep.css?v=20260726-positioning-1" />
+</head>
+<body class="divedeep-body fid-app">
+  <div id="bootLoader" class="fid-loading-screen" aria-live="polite" aria-label="Loading your DiveDeep workspace">
+    <div class="fid-loading-orb"></div>
+    <div class="fid-loading-card">
+      <div class="fid-loading-mark" aria-hidden="true"></div>
+      <strong>Preparing your DiveDeep workspace</strong>
+      <p id="bootLoaderMessage">Loading your protected profile…</p>
+      <div id="bootLoaderActions" class="fid-loading-actions" hidden>
+        <button id="bootRetry" class="fid-btn fid-btn-primary" type="button">Try again</button>
+        <a class="fid-btn" href="/divedeep/login">Return to sign in</a>
+      </div>
+    </div>
+  </div>
+
+  <header class="fid-app-top">
+    <div class="fid-app-top-inner">
+      <a class="fid-brand" href="/divedeep/app"><span class="fid-brand-logo">OSINT Dive Deep</span><span class="fid-sr-only">OSINT Dive Deep v1</span></a>
+      <div class="fid-toolbar">
+        <span id="customerName" class="fid-status-pill">Loading…</span>
+        <button id="logoutButton" class="fid-btn fid-btn-sm">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="fid-app-layout">
+    <aside class="fid-sidebar" aria-label="Dashboard sections">
+      <button class="fid-tab active" data-pane="overview">Control center</button>
+      <button class="fid-tab" data-pane="authorization">Authorization</button>
+      <button class="fid-tab" data-pane="profile">Protected profile</button>
+      <button class="fid-tab" data-pane="connections">Connected profiles</button>
+      <button class="fid-tab" data-pane="findings">Decision center<span class="fid-sr-only"> — Found online</span></button>
+      <button class="fid-tab" data-pane="requests">Actions & monitoring<span class="fid-sr-only"> — Removal activity</span></button>
+      <button class="fid-tab" data-pane="account">Coverage plan</button>
+    </aside>
+
+    <main class="fid-content">
+      <section id="pane-overview" class="fid-pane active">
+        <div class="fid-page-head">
+          <div><h1>Your digital identity control center</h1><p>One governed record of what was discovered, reviewed, preserved, submitted, removed, and monitored.</p></div>
+          <span id="workflowStatus" class="fid-status-pill">Onboarding</span>
+        </div>
+        <div id="onboardingContainer"></div>
+        <div id="overviewContent" hidden>
+          <section class="fid-discovery-next"><div><strong>Start only when you are ready</strong><p>Confirm the first authorized discovery request after your required workflow gates are complete. No removal action is automatic.</p></div><button id="firstScrubRequest" class="fid-btn fid-btn-primary">Start authorized discovery</button></section>
+          <div class="fid-stat-grid">
+            <div class="fid-stat"><span>Findings documented</span><strong id="statFound">0</strong></div>
+            <div class="fid-stat"><span>Still present</span><strong id="statPresent">0</strong></div>
+            <div class="fid-stat"><span>Actions delivered</span><strong id="statSent">0</strong></div>
+            <div class="fid-stat"><span>Verified removed</span><strong id="statRemoved">0</strong></div>
+          </div>
+          <section class="fid-overview-brief">
+            <article><b>Manifest-controlled coverage</b><p>Your package pins a published source-set version so the approved source groups for each service cycle are deterministic and auditable.</p></article>
+            <article><b>Review before action</b><p>Automation and image analysis can assist prioritization, but sensitive decisions remain human-reviewed and customer-controlled.</p></article>
+            <article><b>Preserve-aware privacy</b><p>Protected identifiers, owned accounts, reference photos, findings, visibility rules, deliveries, and monitoring stay in one controlled record.</p></article>
+          </section>
+          <section class="fid-panel fid-panel-soft">
+            <div class="fid-panel-head"><div><h2>Coverage snapshot</h2><p class="fid-help">Your active package determines the published source groups available to this workflow. Displayed platforms are examples, not partnership claims.</p></div></div>
+            <div class="fid-provider-cloud compact" aria-label="Supported platforms and source groups">
+              <span class="fid-provider-pill"><span class="fid-provider-logo" aria-hidden="true">ME</span><span>Meta</span></span>
+              <span class="fid-provider-pill provider-facebook"><span class="fid-provider-logo" aria-hidden="true">FB</span><span>Facebook</span></span>
+              <span class="fid-provider-pill provider-instagram"><span class="fid-provider-logo" aria-hidden="true">IG</span><span>Instagram</span></span>
+              <span class="fid-provider-pill provider-linkedin"><span class="fid-provider-logo" aria-hidden="true">LI</span><span>LinkedIn</span></span>
+              <span class="fid-provider-pill provider-x"><span class="fid-provider-logo" aria-hidden="true">X</span><span>X</span></span>
+              <span class="fid-provider-pill provider-tiktok"><span class="fid-provider-logo" aria-hidden="true">TT</span><span>TikTok</span></span>
+              <span class="fid-provider-pill provider-youtube"><span class="fid-provider-logo" aria-hidden="true">YT</span><span>YouTube</span></span>
+              <span class="fid-provider-pill provider-reddit"><span class="fid-provider-logo" aria-hidden="true">RD</span><span>Reddit</span></span>
+              <span class="fid-provider-pill provider-pinterest"><span class="fid-provider-logo" aria-hidden="true">PI</span><span>Pinterest</span></span>
+              <span class="fid-provider-pill provider-github"><span class="fid-provider-logo" aria-hidden="true">GH</span><span>GitHub</span></span>
+              <span class="fid-provider-pill"><span class="fid-provider-logo" aria-hidden="true">GO</span><span>Google</span></span>
+              <span class="fid-provider-pill"><span class="fid-provider-logo" aria-hidden="true">BI</span><span>Bing</span></span>
+              <span class="fid-provider-pill"><span class="fid-provider-logo" aria-hidden="true">DD</span><span>DuckDuckGo</span></span>
+              <span class="fid-provider-pill"><span class="fid-provider-logo" aria-hidden="true">GM</span><span>Google Maps</span></span>
+            </div>
+          </section>
+          <div class="fid-dashboard-grid">
+            <section class="fid-panel">
+              <div class="fid-panel-head"><h2>Recent findings</h2><button class="fid-btn fid-btn-sm" data-go="findings">View all</button></div>
+              <div id="recentFindings" class="fid-list"></div>
+            </section>
+            <section class="fid-panel">
+              <div class="fid-panel-head"><h2>Activity</h2></div>
+              <div id="activityTimeline" class="fid-timeline"></div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <section id="pane-authorization" class="fid-pane">
+        <div class="fid-page-head"><div><h1>Authorization</h1><p>Review, sign, download, renew, or revoke the authority DiveDeep uses to act for you.</p></div><span id="authorizationStatus" class="fid-status-pill">Required</span></div>
+        <div id="authorizationContent"></div>
+      </section>
+
+      <section id="pane-profile" class="fid-pane">
+        <div class="fid-page-head"><div><h1>Protected profile</h1><p>The identity details DiveDeep is authorized to use.</p></div></div>
+        <div id="profileEmpty" class="fid-empty">Complete onboarding to create your protected profile.</div>
+        <div id="profileContent" hidden>
+          <div class="fid-profile-grid">
+            <section class="fid-panel">
+              <div class="fid-panel-head"><h2>Identity identifiers</h2></div>
+              <div id="identifierList" class="fid-identifier-list"></div>
+              <form id="identifierForm" class="fid-form-inline">
+                <select class="fid-select" name="type"><option value="alias">Alias</option><option value="email">Email</option><option value="phone">Phone</option><option value="address">Address</option><option value="username">Username</option><option value="domain">Owned domain</option></select>
+                <input class="fid-input" name="value" placeholder="Add another authorized identifier" required />
+                <button class="fid-btn fid-btn-primary" type="submit">Add</button>
+              </form>
+              <div class="fid-form-error" id="identifierError"></div>
+            </section>
+            <section class="fid-panel">
+              <div class="fid-panel-head"><h2>Visibility rules</h2></div>
+              <div id="policyList" class="fid-list"></div>
+              <form id="policyForm" class="fid-form-grid" style="margin-top:14px">
+                <label class="fid-field"><span class="fid-label">Rule type</span><select class="fid-select" name="scopeType"><option value="domain">Website domain</option><option value="category">Source category</option><option value="identifier_type">Identifier type</option></select></label>
+                <label class="fid-field"><span class="fid-label">Value</span><input class="fid-input" name="scopeValue" placeholder="example.com" required /></label>
+                <label class="fid-field"><span class="fid-label">Action</span><select class="fid-select" name="action"><option value="preserve">Preserve</option><option value="remove">Remove</option><option value="monitor">Monitor</option><option value="review">Review first</option><option value="ignore">Ignore</option></select></label>
+                <label class="fid-field"><span class="fid-label">Priority</span><input class="fid-input" type="number" name="priority" value="100" min="-1000" max="1000" /></label>
+                <button class="fid-btn fid-btn-primary full" type="submit">Save visibility rule</button>
+              </form>
+              <div class="fid-form-error" id="policyError"></div>
+            </section>
+          </div>
+          <section class="fid-panel" style="margin-top:16px">
+            <div class="fid-panel-head"><div><h2>Authorized reference photos</h2><p class="fid-help">Used only for approved visual matching. EXIF should be removed before external processing.</p></div></div>
+            <div id="photoList" class="fid-photo-grid"></div>
+            <form id="photoForm" class="fid-form-grid" style="margin-top:14px">
+              <label class="fid-field"><span class="fid-label">Photo label</span><input class="fid-input" name="label" value="Primary reference photo" /></label>
+              <label class="fid-field"><span class="fid-label">Purpose</span><select class="fid-select" name="purpose"><option value="identity_search">Identity search</option><option value="sensitive_search">Sensitive-site search</option><option value="verification">Removal verification</option></select></label>
+              <label class="fid-field full"><span class="fid-label">JPEG, PNG, or WebP · maximum 5 MB</span><input class="fid-input" type="file" name="photo" accept="image/jpeg,image/png,image/webp" required /></label>
+              <button class="fid-btn fid-btn-primary full" type="submit">Upload encrypted reference photo</button>
+            </form>
+            <div class="fid-form-error" id="photoError"></div>
+          </section>
+        </div>
+      </section>
+
+      <section id="pane-connections" class="fid-pane">
+        <div class="fid-page-head"><div><h1>Connected profiles</h1><p>Review authorized Meta data, choose private visual references, and protect accounts you own from removal requests.</p></div><div class="fid-toolbar"><button id="metaSync" class="fid-btn fid-btn-secondary" type="button">Sync Meta data</button><a id="facebookConnect" class="fid-btn fid-btn-primary" href="/divedeep/connect/facebook">Connect Facebook</a></div></div>
+        <section class="fid-panel">
+          <nav class="fid-connection-subnav" aria-label="Connected profile areas">
+            <button class="active" type="button" data-connection-tab="overview">Accounts</button>
+            <button type="button" data-connection-tab="facebook-images">Facebook Images</button>
+            <button type="button" data-connection-tab="facebook-posts">Facebook Posts</button>
+            <button type="button" data-connection-tab="instagram-images">Instagram Images</button>
+            <button type="button" data-connection-tab="protection">Account Protection</button>
+          </nav>
+          <div id="metaSyncStatus" class="fid-sync-status" role="status"></div>
+          <div id="connectionList" class="fid-connection-grid" data-connection-section="overview"></div>
+          <section data-connection-section="facebook-images" hidden>
+            <div class="fid-panel-head"><div><h2>Facebook Images</h2><p>Synced metadata stays encrypted. Image bytes are imported only when you choose a reference for your whitelist.</p></div></div>
+            <div id="facebookLibraryList" class="fid-album-photo-grid"></div>
+          </section>
+          <section id="facebookAlbumPicker" class="fid-album-picker" data-connection-section="facebook-images" hidden>
+            <div class="fid-panel-head"><div><h2>Choose Facebook reference photos</h2><p>Select only photos of yourself that you authorize DiveDeep to use for private visual matching.</p></div><button id="loadFacebookAlbums" class="fid-btn fid-btn-sm">Load albums</button></div>
+            <div id="facebookAlbumList" class="fid-list"></div>
+            <div id="facebookPhotoList" class="fid-album-photo-grid"></div>
+            <div id="facebookAlbumError" class="fid-form-error"></div>
+          </section>
+          <section data-connection-section="facebook-posts" hidden>
+            <div class="fid-panel-head"><div><h2>Facebook Posts</h2><p>Review the posts Meta authorized DiveDeep to ingest. DiveDeep does not publish, edit, or delete Facebook posts.</p></div></div>
+            <div id="facebookPostList" class="fid-list"></div>
+          </section>
+          <section data-connection-section="instagram-images" hidden>
+            <div class="fid-panel-head"><div><h2>Instagram Images</h2><p>Choose authorized Instagram media as private reference material for visual matching and verification.</p></div></div>
+            <div id="instagramLibraryList" class="fid-album-photo-grid"></div>
+          </section>
+          <section id="instagramMediaPicker" class="fid-album-picker" data-connection-section="instagram-images" hidden>
+            <div class="fid-panel-head"><div><h2>Choose Instagram reference images</h2><p>Connect a professional account through Meta, then select images you authorize DiveDeep to use privately.</p></div><button id="loadInstagramAccounts" class="fid-btn fid-btn-sm">Load accounts</button></div>
+            <div id="instagramAccountList" class="fid-list"></div>
+            <div id="instagramMediaList" class="fid-album-photo-grid"></div>
+            <div id="instagramMediaError" class="fid-form-error"></div>
+          </section>
+          <section data-connection-section="protection" hidden>
+            <div class="fid-panel-head"><div><h2>Account Protection</h2><p>Protected owned profiles cannot become removal requests. Copies and impersonation accounts remain eligible for review.</p></div></div>
+            <div id="accountProtectionList" class="fid-list"></div>
+          </section>
+          <form id="connectionForm" class="fid-form-grid" data-connection-section="overview" style="margin-top:18px">
+            <label class="fid-field"><span class="fid-label">Platform</span><select class="fid-select" name="provider"><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="x">X</option><option value="tiktok">TikTok</option><option value="linkedin">LinkedIn</option><option value="reddit">Reddit</option><option value="youtube">YouTube</option><option value="pinterest">Pinterest</option><option value="snapchat">Snapchat</option><option value="threads">Threads</option><option value="github">GitHub</option><option value="other">Other</option></select></label>
+            <label class="fid-field"><span class="fid-label">Username</span><input class="fid-input" name="username" placeholder="username" /></label>
+            <label class="fid-field full"><span class="fid-label">Public profile URL</span><input class="fid-input" type="url" name="profileUrl" placeholder="https://…" /></label>
+            <label class="fid-field full"><span class="fid-label">Display name on profile</span><input class="fid-input" name="displayName" /></label>
+            <button class="fid-btn fid-btn-primary full" type="submit">Add this profile</button>
+          </form>
+          <div class="fid-form-error" id="connectionError"></div>
+        </section>
+      </section>
+
+      <section id="pane-findings" class="fid-pane">
+        <div class="fid-page-head"><div><h1>Decision center</h1><p>Review potential and confirmed exposure, then choose the available preserve, remove, monitor, ignore, or validation path.</p></div></div>
+        <div id="findingPager" class="fid-pager" hidden></div>
+        <div id="findingList" class="fid-list"></div>
+      </section>
+
+      <section id="pane-requests" class="fid-pane">
+        <div class="fid-page-head"><div><h1>Actions and monitoring</h1><p>Track authorized delivery attempts, customer-required steps, verification outcomes, and reappearance checks.</p></div></div>
+        <div id="requestList" class="fid-list"></div>
+      </section>
+
+      <section id="pane-account" class="fid-pane">
+        <div class="fid-page-head"><div><h1>Coverage and protection plan</h1><p>Your plan pins a published package version, source-set version, and applicable image-analysis profile for each governed workflow.</p></div></div>
+        <div id="planCards" class="fid-plans"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="fid-toast" role="status"></div>
+  <script src="/divedeep-runtime.js?v=20260726-positioning-1"></script>
+  <script src="/js/divedeep-app.js?v=20260724-176"></script>
+</body>
+</html>

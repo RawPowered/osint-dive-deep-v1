@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>OWL</title>
+  <link rel="stylesheet" href="/css/app.css" />
+  <link rel="stylesheet" href="/css/owl.css" />
+</head>
+<body class="owl-page">
+  <header class="topbar">
+    <span class="brand">OWL</span>
+    <nav class="topbar-nav">
+      <a id="navDash" href="#">Dashboard</a>
+      <a id="navKeys" href="#">API Keys</a>
+      <a id="navSql" href="#">SQL</a>
+      <a id="navCrm" href="#">CRM</a>
+      <a id="navEagle" href="#">EAGLE</a>
+      <a id="navSong" href="#">SONG</a>
+      <a id="navHawk" href="#">HAWK</a>
+      <a id="navParrot" href="#">PARROT</a>
+      <a id="navSentinel" href="#">Sentinel</a>
+      <a id="navDocs" href="#">Docs</a>
+      <a href="#" id="logout">Sign out</a>
+    </nav>
+  </header>
+
+  <main class="owl-shell">
+    <section class="owl-title-band">
+      <div>
+        <h1>OWL</h1>
+        <p>Operational Workspace Layer</p>
+      </div>
+      <div class="owl-scope-state" id="scopeState">Select an API key, source, and location</div>
+    </section>
+
+    <section class="owl-context" aria-label="Database operating context">
+      <div class="owl-field">
+        <label for="apiKey">Calling API key</label>
+        <select id="apiKey"></select>
+      </div>
+      <div class="owl-field">
+        <label for="source">Assigned database</label>
+        <select id="source"></select>
+      </div>
+      <div class="owl-field owl-location-field">
+        <label for="location">Location</label>
+        <select id="location"></select>
+      </div>
+      <button type="button" class="btn btn-primary" id="refreshButton">Refresh</button>
+    </section>
+    <div id="scopeBridge" class="owl-scope-bridge" aria-live="polite"></div>
+
+    <div id="alert" hidden></div>
+
+    <section class="owl-kpis" id="summary">
+      <div><span>Leads</span><strong id="kpiLeads">-</strong></div>
+      <div><span>Users</span><strong id="kpiUsers">-</strong></div>
+      <div><span>Dialers</span><strong id="kpiDialers">-</strong></div>
+      <div><span>Schedules</span><strong id="kpiSchedules">-</strong></div>
+    </section>
+
+    <nav class="owl-tabs" aria-label="OWL views">
+      <button class="active" data-tab="pools">Service Pools</button>
+      <button data-tab="assignment">Assignment Logic</button>
+      <button data-tab="webhooks">Intake Webhooks</button>
+      <button data-tab="leads">Leads</button>
+      <button data-tab="users">Users</button>
+      <button data-tab="dialers">Dialers</button>
+      <button data-tab="schedules">Schedules</button>
+      <button data-tab="compliance">Compliance</button>
+      <button data-tab="audit">Audit</button>
+    </nav>
+
+    <section class="owl-panel active" id="panel-pools">
+      <div class="owl-section-head">
+        <div><h2>Dialer Service Pools</h2><span id="servicePoolCount" class="muted"></span></div>
+        <div class="owl-actions"><button type="button" class="btn btn-secondary btn-sm" id="previewServicesButton">Preview tag sync</button><button type="button" class="btn btn-primary btn-sm" id="newServiceButton">New service</button></div>
+      </div>
+      <div class="owl-pool-summary">
+        <div><span>Configured services</span><strong id="serviceConfigured">-</strong></div>
+        <div><span>Routed leads</span><strong id="serviceLeads">-</strong></div>
+        <div><span>Dialer available</span><strong id="serviceAvailable">-</strong></div>
+        <div><span>Unmapped values</span><strong id="serviceUnmapped">-</strong></div>
+      </div>
+      <section class="owl-assignment-policy" aria-labelledby="assignmentPolicyTitle">
+        <div><span class="owl-eyebrow">Assignment policy</span><h3 id="assignmentPolicyTitle">Round-robin controls</h3><p>Schedules are informational unless enforcement is explicitly enabled. Language matching applies to automatic round robin and fallback selection.</p></div>
+        <label class="owl-policy-switch"><input id="requireAssignmentSchedule" type="checkbox" /> Require a submitted weekly schedule</label>
+        <label>CRM language custom-field ID<input id="assignmentLanguageFieldId" placeholder="Optional custom field ID" /></label>
+        <label>CRM language data path<input id="assignmentLanguageFieldKey" placeholder="Optional, e.g. language" /></label>
+        <label class="owl-policy-rules">Language rules<textarea id="assignmentLanguageRules" rows="3" placeholder="es | Spanish | spanish, español, es, pr, puerto rico"></textarea><small>One language per line: code | label | exact tag or field values.</small></label>
+        <button type="button" class="btn btn-secondary btn-sm" id="saveAssignmentPolicyButton">Save assignment policy</button>
+      </section>
+      <div class="owl-pool-board owl-service-board" id="servicePoolBoard"></div>
+      <div class="owl-routing-head"><h3>CRM tag mappings</h3><span class="muted">Case-insensitive keyword matching; first match selects the service</span></div>
+      <div class="owl-table-wrap owl-routing-table"><table><thead><tr><th>Service</th><th>Tag keywords</th><th>Calendar</th><th>Fallback</th><th>Leads</th><th>Available</th><th>Outcomes</th><th></th></tr></thead><tbody id="serviceRuleRows"></tbody></table></div>
+      <div class="owl-unmapped" id="unmappedServices" hidden></div>
+
+      <div class="owl-section-head owl-section-divider">
+        <div><h2>Lifecycle Destinations</h2><span id="poolCount" class="muted"></span></div>
+        <button type="button" class="btn btn-secondary btn-sm" id="newPoolButton">New destination</button>
+      </div>
+      <div class="owl-pool-summary">
+        <div><span>Dialer eligible</span><strong id="poolAssignable">-</strong></div>
+        <div><span>In progress</span><strong id="poolActive">-</strong></div>
+        <div><span>Terminal outcomes</span><strong id="poolTerminal">-</strong></div>
+        <div><span>Unmapped statuses</span><strong id="poolUnmapped">-</strong></div>
+      </div>
+      <div class="owl-pool-board" id="poolBoard"></div>
+      <div class="owl-routing-head"><h3>Routing matrix</h3><span class="muted">Status aliases, destination, ownership, and Dialer eligibility</span></div>
+      <div class="owl-table-wrap owl-routing-table"><table><thead><tr><th>Pool</th><th>Accepted statuses</th><th>Destination</th><th>Ownership</th><th>Dialer</th><th>Lifecycle</th><th></th></tr></thead><tbody id="poolRuleRows"></tbody></table></div>
+      <div class="owl-unmapped" id="unmappedPools" hidden></div>
+      <div class="owl-routing-head"><h3>Service distribution</h3><span class="muted">Underlying status segments by service type</span></div>
+      <div class="owl-table-wrap"><table><thead><tr><th>Service</th><th>Status</th><th>Total</th><th>Available</th><th>Assigned</th><th>Newest</th></tr></thead><tbody id="poolRows"></tbody></table></div>
+    </section>
+
+    <section class="owl-panel" id="panel-assignment">
+      <div class="logic-layout">
+        <aside class="logic-nav">
+          <div class="logic-step active"><span>1</span> <div><strong>Pool & Service</strong><small>Select pool and service</small></div></div>
+          <div class="logic-step"><span>2</span> <div><strong>Eligibility Rules</strong><small>Define who can receive leads</small></div></div>
+          <div class="logic-step"><span>3</span> <div><strong>User Queue</strong><small>Manage round-robin queue</small></div></div>
+          <div class="logic-step"><span>4</span> <div><strong>Assignment Logic</strong><small>Set distribution behavior</small></div></div>
+          <div class="logic-step"><span>5</span> <div><strong>Fallbacks</strong><small>Define fallback handling</small></div></div>
+          <div class="logic-step"><span>6</span> <div><strong>Review & Activate</strong><small>Review and publish rule</small></div></div>
+        </aside>
+        <div class="logic-main">
+          <div class="logic-header">
+            <div>
+              <label>Pool</label>
+              <select id="logicPoolSelect"><option value="">Loading pools...</option></select>
+            </div>
+            <div>
+              <label>Service Type</label>
+              <div class="logic-tabs" id="logicServiceTabs"></div>
+            </div>
+            <div>
+              <label>Assignment Mode</label>
+              <select id="logicModeSelect"><option value="round-robin">Round Robin</option></select>
+            </div>
+            <div class="logic-status">
+              <label>Rule Status</label>
+              <label class="logic-switch"><input type="checkbox" id="logicActiveToggle" checked><span>Active</span></label>
+            </div>
+          </div>
+          <div class="logic-metrics">
+            <div><span>Eligible Users</span><strong id="logicEligibleUsers">0</strong></div>
+            <div><span class="dot available"></span> <span>Available Now</span><strong id="logicAvailableUsers">0</strong></div>
+            <div class="green-text">✓ Daily Cap Protected</div>
+            <div class="blue-text">✓ Compliance Enabled</div>
+            <div>📅 Connected Calendars <strong id="logicCalendars">0/0</strong></div>
+          </div>
+          <div class="logic-flow">
+            <div><span>Lead enters</span><br><small>selected pool</small></div>
+            <span class="arrow">→</span>
+            <div><span>Compliance /</span><br><small>DNC check</small></div>
+            <span class="arrow">→</span>
+            <div><span>Match required</span><br><small>criteria</small></div>
+            <span class="arrow">→</span>
+            <div><span>Build eligible</span><br><small>user set</small></div>
+            <span class="arrow">→</span>
+            <div><span>Round-robin</span><br><small>queue</small></div>
+            <span class="arrow">→</span>
+            <div><span>Assign to next</span><br><small>available user</small></div>
+            <span class="arrow">→</span>
+            <div class="fallback"><span>Fallback if</span><br><small>unavailable</small></div>
+          </div>
+          
+          <div class="logic-section-title">
+            <h3>Round-Robin User Queue ⓘ</h3>
+            <small>Eligible users ordered by round-robin position. Next assignment will go to the highlighted user.</small>
+          </div>
+          
+          <div class="logic-queue-wrap">
+            <div class="logic-queue" id="logicUserQueue">
+              <!-- User cards will go here dynamically -->
+            </div>
+          </div>
+          <div class="logic-queue-sub">Queue rotates to the next eligible user after each successful assignment.</div>
+
+          <div class="logic-grid-bottom">
+            <div class="logic-criteria">
+              <h3>Eligibility Criteria</h3>
+              <small>Users must meet all required criteria to be eligible.</small>
+              <label class="logic-criteria-row"><input type="checkbox" checked disabled> Language match required when lead language is known</label>
+              <label class="logic-criteria-row"><input type="checkbox" checked disabled> Only users with active schedule</label>
+              <label class="logic-criteria-row"><input type="checkbox" checked disabled> Only users with connected calendar</label>
+              <label class="logic-criteria-row"><input type="checkbox" checked disabled> Respect daily assignment cap</label>
+              <label class="logic-criteria-row"><input type="checkbox" checked disabled> Respect service skill match</label>
+              <label class="logic-criteria-row"><input type="checkbox" checked disabled> Exclude users marked unavailable or paused</label>
+              <label class="logic-criteria-row"><input type="checkbox" checked disabled> Require compliance clearance</label>
+              <button type="button" class="btn btn-secondary btn-sm" style="margin-top:10px;">Edit Criteria</button>
+            </div>
+            <div class="logic-matrix">
+              <h3>Assignment Order (Rotation Matrix) ⓘ</h3>
+              <small>Current rotation order and user load.</small>
+              <div class="logic-table-wrap">
+                <table class="logic-table">
+                  <thead><tr><th>Position</th><th>User</th><th>Status</th><th>Skills</th><th>Assigned Today</th><th>Next Eligible</th></tr></thead>
+                  <tbody id="logicMatrixRows"></tbody>
+                </table>
+              </div>
+              <small class="muted" style="display:block; margin-top:8px;">Rotation starts at #1 and moves to the next eligible user in sequence.</small>
+            </div>
+          </div>
+        </div>
+        
+        <aside class="logic-preview">
+          <h3>Live Assignment Preview ⓘ <span class="dot available" style="float:right;">Live</span></h3>
+          <div class="logic-preview-box">
+            <h4>Sample Lead</h4>
+            <div class="preview-row"><span>Name</span> <strong>New Homeowner</strong></div>
+            <div class="preview-row"><span>Service</span> <strong id="previewLeadService">-</strong></div>
+            <div class="preview-row"><span>Language</span> <strong>Default</strong></div>
+            <div class="preview-row"><span>DNC Status</span> <strong class="green-text">✓ Clear</strong></div>
+          </div>
+          <div class="logic-preview-matched">
+            <h4>Matched Users (<span id="previewMatchedCount">0</span>)</h4>
+            <div id="previewMatchedList"></div>
+          </div>
+          <div class="logic-preview-matched">
+            <h4>Next in Round Robin</h4>
+            <div id="previewNextMatch"></div>
+          </div>
+          <div class="logic-preview-matched">
+            <h4>Fallback</h4>
+            <div id="previewFallbackMatch"></div>
+          </div>
+          <div class="logic-preview-why">
+            <h4>Why this matched</h4>
+            <div class="green-text">✓ Language matches</div>
+            <div class="green-text">✓ Has active schedule & connected calendar</div>
+            <div class="green-text">✓ Has matching skill</div>
+            <div class="green-text">✓ Below daily assignment cap</div>
+            <div class="green-text">✓ Compliance clear</div>
+          </div>
+        </aside>
+      </div>
+      <div class="logic-actions-bar">
+        <button type="button" class="btn btn-secondary">Cancel</button>
+        <div style="flex:1"></div>
+        <button type="button" class="btn btn-secondary" style="display:flex; align-items:center; gap:6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Save Draft</button>
+        <button type="button" class="btn btn-primary" id="logicActivateBtn" style="background:#3b82f6; color:#fff;">Activate Rule</button>
+      </div>
+    </section>
+
+    <section class="owl-panel" id="panel-webhooks">
+      <div class="owl-section-head">
+        <div><h2>OWL Contact Intake Webhooks</h2><span class="muted">Synchronize live GHL contacts into the selected operational database before HAWK eligibility.</span></div>
+        <span class="owl-badge" id="owlWebhookState">Not configured</span>
+      </div>
+      <div class="owl-form-grid owl-webhook-config">
+        <label>CRM connection<select id="owlWebhookIntegration"><option value="">Select a GHL connection</option></select></label>
+        <label>Operational database<input id="owlWebhookSource" readonly /></label>
+        <label class="owl-policy-switch"><input id="owlWebhookContactCreated" type="checkbox" checked /> Accept <code>contact_created</code></label>
+        <label class="owl-policy-switch"><input id="owlWebhookContactUpdated" type="checkbox" checked /> Accept <code>contact_updated</code></label>
+        <label class="full">Webhook URL<input id="owlWebhookUrl" readonly placeholder="Provision an endpoint" /></label>
+        <label class="full">Bearer secret <input id="owlWebhookSecret" readonly placeholder="Shown only after provisioning or rotation" /></label>
+      </div>
+      <div class="owl-actions owl-webhook-actions">
+        <button type="button" class="btn btn-primary" id="owlWebhookProvision">Provision / Save</button>
+        <button type="button" class="btn btn-secondary" id="owlWebhookRotate">Rotate secret</button>
+        <button type="button" class="btn btn-secondary" id="owlWebhookDisable">Disable</button>
+      </div>
+      <div class="owl-routing-head"><h3>GHL request body</h3><span class="muted">Use an optional unique eventId when GHL exposes one. OWL fetches the authoritative contact directly from GHL.</span></div>
+      <pre class="owl-webhook-example" id="owlWebhookExample"></pre>
+      <div class="owl-routing-head"><h3>Controlled live sync test</h3><span class="muted">Fetch one contact and upsert it into the selected operational lead store.</span></div>
+      <div class="owl-filter-row owl-webhook-test">
+        <label>GHL Contact ID<input id="owlWebhookTestContact" placeholder="Contact ID" /></label>
+        <button type="button" class="btn btn-secondary" id="owlWebhookTest">Sync contact now</button>
+        <span class="muted" id="owlWebhookTestResult"></span>
+      </div>
+      <div class="owl-routing-head"><h3>Recent deliveries</h3><span class="muted" id="owlWebhookLastSuccess"></span></div>
+      <div class="owl-table-wrap"><table><thead><tr><th>Received</th><th>Event</th><th>Contact</th><th>Status</th><th>Outcome</th><th>Duration</th><th>Error</th></tr></thead><tbody id="owlWebhookDeliveryRows"></tbody></table></div>
+    </section>
+
+    <section class="owl-panel" id="panel-leads">
+      <div class="owl-section-head">
+        <h2>Leads</h2>
+        <div class="owl-actions">
+          <select id="leadSource" aria-label="CRM lead source"><option value="">No CRM source</option></select>
+          <button type="button" class="btn btn-primary btn-sm" id="pullLeadsButton">Sync CRM changes</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="fullPullLeadsButton" title="Re-read every CRM contact to reconcile older records and removals">Full reconciliation</button>
+          <select id="assignUser" aria-label="Assignment user"></select>
+          <button type="button" class="btn btn-primary btn-sm" id="assignButton">Assign selected</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="unassignButton">Unassign selected</button>
+        </div>
+      </div>
+      <div class="owl-import-status muted" id="pullStatus" hidden></div>
+      <div class="owl-filter-row">
+        <input id="leadSearch" placeholder="Search contact data" />
+        <select id="leadService"><option value="">All services</option></select>
+        <select id="leadStatus"><option value="">All statuses</option><option>uncontacted</option><option>assigned</option><option>contacted</option><option>appointment</option><option>not_interested</option><option>do_not_call</option><option>invalid</option></select>
+        <select id="leadDnc"><option value="">All DNC states</option><option value="pending">Pending</option><option value="clean">Clean</option><option value="blocked">Blocked</option></select>
+        <select id="leadChannel"><option value="">All marketing channels</option><option value="phone">Phone available</option><option value="email">Email available</option><option value="sms">SMS available</option></select>
+        <select id="leadDncReview"><option value="">All review states</option><option value="1">Review required</option><option value="0">No review flag</option></select>
+        <button type="button" class="btn btn-secondary btn-sm" id="leadFilterButton">Apply</button>
+      </div>
+      <div class="owl-bulk-bar">
+        <strong id="selectedLeadCount">0 selected</strong>
+        <select id="moveService" aria-label="Destination service"><option value="">Move to service</option></select>
+        <button type="button" class="btn btn-secondary btn-sm" id="moveServiceButton">Set service</button>
+        <select id="movePool" aria-label="Destination pool"><option value="">Move to pool</option></select>
+        <select id="moveUser" aria-label="Destination owner"><option value="">No owner selected</option></select>
+        <button type="button" class="btn btn-primary btn-sm" id="movePoolButton">Move selected</button>
+      </div>
+      <div class="owl-table-wrap"><table><thead><tr><th class="check-col"><input type="checkbox" id="leadCheckAll" aria-label="Select all leads" /></th><th>Contact</th><th>Service</th><th>Lifecycle</th><th>Channels / DNC</th><th>Assigned</th><th>Added</th><th></th></tr></thead><tbody id="leadRows"></tbody></table></div>
+      <div class="owl-pager"><span id="leadTotal"></span><button class="btn btn-secondary btn-sm" id="leadPrev">Previous</button><button class="btn btn-secondary btn-sm" id="leadNext">Next</button></div>
+    </section>
+
+    <section class="owl-panel" id="panel-users">
+      <div class="owl-section-head"><div><h2>Dialer Users</h2><span class="muted">Manage identity separately from credentials; every password rotation is audited and sent to Sentinel.</span></div><button type="button" class="btn btn-primary btn-sm" id="newUserButton">New dialer user</button></div>
+      <div class="owl-table-wrap"><table><thead><tr><th>Username</th><th>User ID</th><th>Role</th><th>Credential</th><th>CRM user</th><th>HAWK pools</th><th>Email</th><th>Phone</th><th></th></tr></thead><tbody id="userRows"></tbody></table></div>
+      <div class="owl-section-head owl-access-heading" id="accessHeading"><div><h2>Administrative Access</h2><span class="muted">Every administrator completes password verification and Google MFA; delegated accounts never inherit root ownership.</span></div><button type="button" class="btn btn-primary btn-sm" id="newAccessButton">New administrator</button></div>
+      <div class="owl-table-wrap" id="accessTable"><table><thead><tr><th>Username</th><th>Access title</th><th>API tenant</th><th>Email</th><th>MFA</th><th>Status</th><th>Created</th></tr></thead><tbody id="accessRows"></tbody></table></div>
+    </section>
+
+    <section class="owl-panel" id="panel-dialers">
+      <div class="owl-section-head"><h2>Dialer Monitor</h2><span class="muted">Workspace lease and last login activity</span></div>
+      <div class="owl-table-wrap"><table><thead><tr><th>Agent</th><th>User ID</th><th>Presence</th><th>CRM contact</th><th>Workspace updated</th><th>Last login</th><th>IP</th></tr></thead><tbody id="dialerRows"></tbody></table></div>
+    </section>
+
+    <section class="owl-panel" id="panel-schedules">
+      <div class="owl-section-head owl-schedule-heading">
+        <div><span class="owl-eyebrow">People &amp; performance</span><h2>Weekly team plan</h2><span class="muted" id="scheduleWeekLabel">Current Eastern week</span></div>
+        <span class="owl-policy-note" id="schedulePolicyNote"><strong>Planning mode</strong>Schedules are informational and do not block assignment.</span>
+      </div>
+      <div class="owl-schedule-summary" aria-label="Weekly schedule summary">
+        <div><span>Team members</span><strong id="scheduleUsers">-</strong><small>dialer users</small></div>
+        <div><span>Plans ready</span><strong id="scheduleSubmitted">-</strong><small>submitted</small></div>
+        <div class="attention"><span>Need attention</span><strong id="scheduleAttention">-</strong><small>missing or draft</small></div>
+        <div><span>Promised</span><strong id="schedulePlanned">-</strong><small>hours this week</small></div>
+        <div><span>Verified so far</span><strong id="scheduleActual">-</strong><small>heartbeat-backed hours</small></div>
+        <div><span>On shift now</span><strong id="scheduleActive">-</strong><small>recent heartbeat</small></div>
+      </div>
+      <div class="owl-reading-guide"><strong>How to read this report</strong><span><b>Promised</b> comes from the submitted plan.</span><span><b>Verified</b> counts heartbeat-backed active minutes.</span><span><b>CRM-confirmed</b> means the CRM contains an outbound call event attributed to the assigned user.</span></div>
+      <div class="owl-ops-toolbar" aria-label="Schedule report filters">
+        <label>Find team member<input id="scheduleSearch" type="search" placeholder="Name or user ID" /></label>
+        <label>Plan state<select id="scheduleStateFilter"><option value="">All plan states</option><option value="attention">Needs attention</option><option value="submitted">Submitted</option><option value="draft">Draft</option><option value="missing">Missing</option><option value="working">On shift now</option></select></label>
+        <label>Order by<select id="scheduleSort"><option value="attention">Attention first</option><option value="name">Name</option><option value="gap">Largest time gap</option><option value="confirmed">Most CRM-confirmed</option></select></label>
+        <span id="scheduleVisible" class="owl-toolbar-count" aria-live="polite"></span>
+      </div>
+      <div class="owl-table-wrap owl-schedule-table"><table><thead><tr><th>Team member</th><th>Weekly plan</th><th>Promised vs verified</th><th>Work performed</th><th>Call evidence</th><th>Appointments</th><th>Last activity</th><th>Actions</th></tr></thead><tbody id="scheduleRows"></tbody></table></div>
+      <div class="owl-section-head owl-section-divider"><div><h2>Work Sessions</h2><span class="muted">Clocked activity for the selected week</span></div></div>
+      <div class="owl-table-wrap owl-work-table"><table><thead><tr><th>Agent</th><th>Started</th><th>Ended</th><th>Duration</th><th>Status</th><th>Source</th></tr></thead><tbody id="workSessionRows"></tbody></table></div>
+    </section>
+
+    <section class="owl-panel" id="panel-compliance">
+      <div class="owl-section-head owl-schedule-heading">
+        <div><span class="owl-eyebrow">Policy decisions &amp; call evidence</span><h2>Marketing compliance</h2><span class="muted">Why a lead was released or filtered, using the lead's local market and CRM history.</span></div>
+        <span class="owl-policy-note"><strong>Policy window</strong>8:00 AM–7:00 PM lead-local time. Florida permits no more than 3 outbound attempts in a rolling 24 hours.</span>
+      </div>
+      <div class="owl-compliance-flow" aria-label="Compliance decision process">
+        <div><b>1</b><span><strong>Resolve the market</strong>State and timezone establish the lead-local calling window.</span></div>
+        <div><b>2</b><span><strong>Check policy</strong>OWL checks local hours and jurisdictional attempt limits.</span></div>
+        <div><b>3</b><span><strong>Verify the CRM</strong>A CRM call event is the actual dial result; authorization alone is not performance.</span></div>
+      </div>
+      <div class="owl-pool-summary owl-compliance-summary">
+        <div><span>Decisions · 24h</span><strong id="complianceScreened">-</strong></div>
+        <div><span>Released</span><strong id="complianceAllowed">-</strong><small id="complianceReleaseRate">eligible to dial</small></div>
+        <div><span>Filtered</span><strong id="complianceBlocked">-</strong><small>protected from dial</small></div>
+        <div><span>Authorization intents</span><strong id="complianceAttempts">-</strong><small>never counted as calls</small></div>
+        <div><span>CRM-confirmed</span><strong id="complianceConfirmed">-</strong><small id="complianceEvidenceRate">actual call events</small></div>
+      </div>
+      <div class="owl-subsection-head"><div><h3>Why leads were filtered</h3><span>Counts show blocked decisions in the last 24 hours.</span></div></div>
+      <div id="complianceReasons" class="owl-compliance-reasons"></div>
+      <div class="owl-subsection-head"><div><h3>Decision ledger</h3><span>Every row explains the market, policy result, and next eligible time.</span></div></div>
+      <div class="owl-ops-toolbar owl-compliance-toolbar" aria-label="Compliance decision filters">
+        <label>Find lead or user<input id="complianceSearch" type="search" placeholder="Lead, user, service, or market" /></label>
+        <label>Decision<select id="complianceDecisionFilter"><option value="">All decisions</option><option value="blocked">Filtered only</option><option value="allowed">Released only</option></select></label>
+        <label>Reason<select id="complianceReasonFilter"><option value="">All reasons</option></select></label>
+        <span id="complianceVisible" class="owl-toolbar-count" aria-live="polite"></span>
+      </div>
+      <div class="owl-table-wrap owl-compliance-table"><table><thead><tr><th>Checked</th><th>Lead / user</th><th>Market context</th><th>Rolling attempts</th><th>Decision &amp; explanation</th><th>Next eligible</th></tr></thead><tbody id="complianceRows"></tbody></table></div>
+      <div class="owl-subsection-head owl-section-divider"><div><h3>Call evidence ledger</h3><span><strong>CRM-confirmed</strong> rows are final dial results and are the only records counted toward attempt limits. Authorization intents prove access was granted, not that a call occurred.</span></div></div>
+      <div class="owl-ops-toolbar owl-evidence-toolbar" aria-label="Call evidence filters"><label>Evidence state<select id="evidenceFilter"><option value="">All evidence</option><option value="dialer">Authorization intents</option><option value="crm">CRM-confirmed</option><option value="unattributed">Missing user attribution</option></select></label><span id="evidenceVisible" class="owl-toolbar-count" aria-live="polite"></span></div>
+      <div class="owl-table-wrap owl-call-table"><table><thead><tr><th>Occurred</th><th>Assigned user</th><th>Lead</th><th>Evidence</th><th>CRM status</th><th>Reconciled</th></tr></thead><tbody id="callEvidenceRows"></tbody></table></div>
+    </section>
+
+    <section class="owl-panel" id="panel-audit">
+      <div class="owl-section-head owl-schedule-heading"><div><span class="owl-eyebrow">Accountability</span><h2>Change history</h2><span class="muted">A human-readable trail of administrative mutations in the core control database.</span></div><span class="owl-policy-note"><strong>Audit scope</strong>Showing the 200 most recent events for the selected API key, source, and location.</span></div>
+      <div class="owl-audit-summary"><div><span>Events loaded</span><strong id="auditTotal">-</strong></div><div><span>Administrators</span><strong id="auditActors">-</strong></div><div><span>Action types</span><strong id="auditActions">-</strong></div></div>
+      <div class="owl-audit-toolbar"><label>Search history<input id="auditSearch" type="search" placeholder="Admin, action, entity, or detail" /></label><label>Action type<select id="auditActionFilter"><option value="">All actions</option></select></label><span id="auditVisible" class="muted"></span><button type="button" class="btn btn-secondary btn-sm" id="auditExportButton">Export filtered CSV</button></div>
+      <div class="owl-table-wrap owl-audit-table"><table><thead><tr><th>When / actor</th><th>Context</th><th>Change</th><th>Entity</th><th>What happened</th></tr></thead><tbody id="auditRows"></tbody></table></div>
+    </section>
+  </main>
+
+  <dialog id="leadDialog" class="owl-dialog">
+    <form method="dialog" id="leadForm">
+      <div class="owl-dialog-head"><h2>Edit lead</h2><button value="cancel" aria-label="Close">&times;</button></div>
+      <input type="hidden" id="editLeadId" />
+      <label>Service type<input id="editLeadService" /></label>
+      <label>Status<select id="editLeadStatus"><option>uncontacted</option><option>assigned</option><option>contacted</option><option>appointment</option><option>not_interested</option><option>do_not_call</option><option>invalid</option></select></label>
+      <label>Assigned user ID<input id="editLeadAssigned" /></label>
+      <label>Contact data JSON<textarea id="editLeadContact" rows="12"></textarea></label>
+      <div class="owl-policy-note"><strong>Scheduled-call troubleshooting</strong>Create a temporary, audited exception without deleting the appointment or moving the lead out of Scheduled.</div>
+      <label>Release reason<input id="scheduledReleaseReason" maxlength="255" placeholder="Incident or test reason (required)" /></label>
+      <div class="owl-form-grid">
+        <label>Minutes<input id="scheduledReleaseMinutes" type="number" min="1" max="1440" value="30" /></label>
+        <label>Uses<input id="scheduledReleaseUses" type="number" min="1" max="5" value="1" /></label>
+      </div>
+      <button type="button" class="btn btn-secondary" id="scheduledReleaseButton">Allow troubleshooting call</button>
+      <div class="owl-actions"><button value="cancel" class="btn btn-secondary">Cancel</button><button type="button" class="btn btn-primary" id="saveLeadButton">Save</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="dncScreenDialog" class="owl-dialog owl-dialog-wide">
+    <form method="dialog">
+      <div class="owl-dialog-head"><div><h2>DNC Screening</h2><span id="dncScreenCount" class="muted"></span><br /><span class="muted small">Phone numbers are sent server-to-server; credentials and phone values are excluded from OWL and Sentinel logs.</span></div><button value="cancel" aria-label="Close">&times;</button></div>
+      <div class="owl-screen-toolbar">
+        <button type="button" class="btn btn-primary btn-sm" id="dncRefreshAllButton">Scrub all pending leads</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="dncReviewRescrubButton">Re-scrub review holds</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="dncReviewReleaseButton">Release B holds to dial population</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="dncCrmSyncButton">Sync saved results to GHL</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="dncRescrubPoolButton">Re-scrub DNC pool</button>
+        <span id="dncReviewCount" class="muted small"></span>
+        <span id="dncRescrubCount" class="muted small"></span>
+      </div>
+      <p class="muted small">Pending screening advances only new leads. Review holds are non-callable and re-run only through the explicit review action. Administrative release applies only to provider code B configuration/coverage holds; it preserves the B evidence and never releases true DNC or jurisdiction-restriction codes. Consent, calling-time, Florida attempt-limit, and channel-preference checks still apply before dialing.</p>
+      <div id="dncScreenStatus" class="owl-sync-summary" hidden></div>
+      <div class="owl-table-wrap owl-screen-table"><table><thead><tr><th>Contact</th><th>Service</th><th>Added</th><th>Result</th><th>Actions</th></tr></thead><tbody id="dncScreenRows"></tbody></table></div>
+      <section id="dncRunResultsPanel" hidden>
+        <div class="owl-subsection-head"><div><h3>Latest scrub results</h3><span id="dncRunResultsCount">Provider decisions and unresolved data issues from this run.</span></div></div>
+        <div class="owl-table-wrap owl-run-results-table"><table><thead><tr><th>Contact</th><th>Decision</th><th>Reason / issue</th><th>Review</th></tr></thead><tbody id="dncRunResultRows"></tbody></table></div>
+      </section>
+      <div class="owl-actions owl-dialog-actions"><button value="cancel" class="btn btn-secondary">Close</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="serviceDialog" class="owl-dialog">
+    <form method="dialog">
+      <div class="owl-dialog-head"><h2 id="serviceDialogTitle">Service pool</h2><button value="cancel" aria-label="Close">&times;</button></div>
+      <div class="owl-form-grid">
+        <label>Service name<input id="editServiceName" placeholder="Roofing" /></label>
+        <label>Color<input id="editServiceColor" type="color" value="#64748b" /></label>
+        <label class="full">CRM tag keywords<input id="editServiceKeywords" placeholder="roof, shingle" /></label>
+        <label class="full">Calendar IDs<input id="editServiceCalendarIds" placeholder="calendar_primary, calendar_overflow" /></label>
+        <label class="full">Default calendar ID<input id="editServiceDefaultCalendar" placeholder="calendar_primary" /></label>
+        <label class="full">Default fallback dialer<select id="editServiceFallbackUser"><option value="">No fallback dialer</option></select><small>Used only after Assigned Dialer, record owner, and permitted round robin are unavailable.</small></label>
+        <label>Sort order<input id="editServiceSort" type="number" min="0" max="10000" value="100" /></label>
+      </div>
+      <div class="owl-toggle-row"><label><input id="editServiceFallback" type="checkbox" /> Fallback service</label><label><input id="editServiceEnabled" type="checkbox" checked /> Enabled</label></div>
+      <div class="owl-actions"><button value="cancel" class="btn btn-secondary">Cancel</button><button type="button" class="btn btn-primary" id="saveServiceButton">Save service</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="serviceSyncDialog" class="owl-dialog">
+    <form method="dialog">
+      <div class="owl-dialog-head"><h2>CRM tag sync preview</h2><button value="cancel" aria-label="Close">&times;</button></div>
+      <div id="serviceSyncSummary" class="owl-sync-summary"></div>
+      <div class="owl-table-wrap"><table><thead><tr><th>Lead</th><th>Current</th><th>Resolved</th></tr></thead><tbody id="serviceSyncRows"></tbody></table></div>
+      <div class="owl-actions"><button value="cancel" class="btn btn-secondary">Cancel</button><button type="button" class="btn btn-primary" id="applyServicesButton">Apply changes</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="poolDialog" class="owl-dialog">
+    <form method="dialog" id="poolForm">
+      <div class="owl-dialog-head"><h2 id="poolDialogTitle">Pool rule</h2><button value="cancel" aria-label="Close">&times;</button></div>
+      <div class="owl-form-grid">
+        <label>Pool key<input id="editPoolKey" placeholder="follow_up" /></label>
+        <label>Display label<input id="editPoolLabel" /></label>
+        <label class="full">Accepted status aliases<input id="editPoolStatuses" placeholder="status_one, status_two" /></label>
+        <label>Destination status<input id="editPoolDestination" /></label>
+        <label>Ownership<select id="editPoolAssignment"><option value="clear">Clear owner</option><option value="preserve">Keep current owner</option><option value="require_user">Require selected owner</option></select></label>
+        <label>Color<input id="editPoolColor" type="color" value="#64748b" /></label>
+        <label>Sort order<input id="editPoolSort" type="number" min="0" max="10000" value="100" /></label>
+      </div>
+      <div class="owl-toggle-row">
+        <label><input id="editPoolAssignable" type="checkbox" /> Dialer assignable</label>
+        <label><input id="editPoolTerminal" type="checkbox" /> Terminal outcome</label>
+        <label><input id="editPoolEnabled" type="checkbox" checked /> Enabled</label>
+      </div>
+      <div class="owl-actions"><button value="cancel" class="btn btn-secondary">Cancel</button><button type="button" class="btn btn-primary" id="savePoolButton">Save rule</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="userDialog" class="owl-dialog">
+    <form method="dialog" id="userForm">
+      <div class="owl-dialog-head"><h2 id="userDialogTitle">User</h2><button value="cancel" aria-label="Close">&times;</button></div>
+      <label>User ID<input id="editUserId" readonly /></label>
+      <label>Username<input id="editUsername" autocomplete="off" /></label>
+      <label>Dialer role<select id="editUserRole"><option value="agent">Dialer Operator</option><option value="supervisor">Dialer Lead</option></select></label>
+      <label>Linked CRM user<select id="editCrmUser"><option value="">No CRM user linked</option></select><small>Loaded read-only from the selected location. OWL stores only the selected ID and display name.</small></label>
+      <label>Email<input id="editUserEmail" type="email" /></label>
+      <label>Phone<input id="editUserPhone" /></label>
+      <fieldset class="owl-pool-permissions">
+        <legend>HAWK service-pool permissions</legend>
+        <p>Round robin can assign this user only to the selected service pools. A CRM user ID is required.</p>
+        <div id="editUserPoolPermissions"></div>
+      </fieldset>
+      <fieldset class="owl-pool-permissions">
+        <legend>Languages this dialer can service</legend>
+        <p>English remains backward-compatible. Spanish leads require an explicit Spanish permission.</p>
+        <div id="editUserLanguagePermissions"></div>
+      </fieldset>
+      <fieldset id="createUserPasswordFields" class="owl-credential-fields">
+        <legend>Initial credential</legend>
+        <p>Use 12–128 characters with upper, lower, and numeric characters. OWL stores only a bcrypt hash.</p>
+        <label>Password<input id="editUserPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" /></label>
+        <label>Confirm password<input id="editUserPasswordConfirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" /></label>
+      </fieldset>
+      <div class="owl-actions"><button value="cancel" class="btn btn-secondary">Cancel</button><button type="button" class="btn btn-primary" id="saveUserButton">Save</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="passwordDialog" class="owl-dialog owl-dialog-compact">
+    <form method="dialog" id="passwordForm">
+      <div class="owl-dialog-head"><div><span class="owl-eyebrow">Credential rotation</span><h2>Change dialer password</h2></div><button value="cancel" aria-label="Close">&times;</button></div>
+      <p class="owl-dialog-intro">Set a new password for <strong id="passwordUserLabel">this user</strong>. Successful changes revoke active operator sessions and create both OWL Audit and Sentinel records.</p>
+      <input id="passwordUserId" type="hidden" />
+      <label>New password<input id="newUserPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required /></label>
+      <label>Confirm new password<input id="newUserPasswordConfirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required /></label>
+      <p class="owl-credential-policy">12–128 characters · uppercase · lowercase · number</p>
+      <div class="owl-actions owl-dialog-actions"><button value="cancel" class="btn btn-secondary">Cancel</button><button type="button" class="btn btn-primary" id="changePasswordButton">Change password</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="accessDialog" class="owl-dialog">
+    <form method="dialog">
+      <div class="owl-dialog-head"><h2>New administrator</h2><button value="cancel" aria-label="Close">&times;</button></div>
+      <label>Access title<select id="editAccessType"><option value="tenant">Workspace Custodian</option><option value="platform">System Steward</option></select></label>
+      <label id="accessKeyLabel">API tenant<select id="editAccessKey"></select></label>
+      <label>Username<input id="editAccessUsername" autocomplete="off" /></label>
+      <label>Google account email<input id="editAccessEmail" type="email" required /></label>
+      <p class="muted small">Add this exact address to GOOGLE_OAUTH_ALLOWED_EMAILS before creating the account. It binds on the administrator's first successful Google verification.</p>
+      <label>Password<input id="editAccessPassword" type="password" autocomplete="new-password" minlength="12" /></label>
+      <label>Confirm password<input id="editAccessPasswordConfirm" type="password" autocomplete="new-password" minlength="12" /></label>
+      <div class="owl-actions"><button value="cancel" class="btn btn-secondary">Cancel</button><button type="button" class="btn btn-primary" id="saveAccessButton">Create administrator</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="performanceDialog" class="owl-dialog owl-dialog-wide owl-performance-dialog">
+    <form method="dialog">
+      <div class="owl-dialog-head"><div><span class="owl-eyebrow">Team-member intelligence</span><h2 id="performanceTitle">Weekly performance</h2><span class="muted" id="performanceWeek"></span></div><button value="cancel" aria-label="Close">&times;</button></div>
+      <div class="owl-performance-state" id="performanceState"></div>
+      <div class="owl-performance-summary">
+        <div><span>Promised</span><strong id="performancePromised">-</strong><small>submitted weekly plan</small></div>
+        <div><span>Verified</span><strong id="performanceVerified">-</strong><small id="performanceAdherence">against time due</small></div>
+        <div><span>CRM-confirmed</span><strong id="performanceConfirmed">-</strong><small id="performanceEvidence">call evidence coverage</small></div>
+        <div><span>Appointments</span><strong id="performanceAppointments">-</strong><small id="performanceConversion">confirmed-call conversion</small></div>
+      </div>
+      <div class="owl-performance-grid">
+        <section><div class="owl-subsection-head"><div><h3>Promised schedule</h3><span>Enforcement follows the location's assignment policy.</span></div></div><div class="owl-detail-week" id="performanceWeekRows"></div></section>
+        <section><div class="owl-subsection-head"><div><h3>Activity funnel</h3><span>Operational activity compared with CRM evidence.</span></div></div><div class="owl-funnel" id="performanceFunnel"></div></section>
+      </div>
+      <div class="owl-subsection-head owl-section-divider"><div><h3>Recent work sessions</h3><span>Clocked sessions for this reporting week.</span></div></div>
+      <div class="owl-table-wrap owl-detail-session-table"><table><thead><tr><th>Started</th><th>Ended</th><th>Duration</th><th>Status</th><th>Source</th></tr></thead><tbody id="performanceSessionRows"></tbody></table></div>
+      <div class="owl-actions owl-dialog-actions"><button value="cancel" class="btn btn-secondary">Close</button><button type="button" class="btn btn-primary" id="detailEditPlanButton">Edit weekly plan</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="scheduleDialog" class="owl-dialog owl-dialog-wide owl-schedule-dialog">
+    <form method="dialog">
+      <div class="owl-dialog-head"><div><span class="owl-eyebrow">Weekly commitment</span><h2 id="editScheduleTitle">Edit weekly schedule</h2><span class="muted" id="editScheduleWeek"></span></div><button value="cancel" aria-label="Close">&times;</button></div>
+      <input type="hidden" id="editScheduleUserId" />
+      <p class="owl-dialog-intro">Set the hours this team member is promising to work. Breaks are removed from promised time. Add another shift for split days.</p>
+      <div class="owl-editor-tools"><span>Quick setup</span><button type="button" class="btn btn-secondary btn-sm" id="standardWeekButton">Apply 9–5 weekdays · 30m break</button><button type="button" class="btn btn-secondary btn-sm" id="clearWeekButton">Clear week</button></div>
+      <div class="owl-week-editor" id="scheduleDayRows"></div>
+      <div class="owl-editor-total"><span>Weekly promised time</span><strong id="editScheduleTotal">0h 0m</strong></div>
+      <p class="owl-dialog-note">A draft is useful for planning. It blocks assignment only when schedule enforcement is enabled for this location.</p>
+      <div class="owl-actions owl-dialog-actions"><button value="cancel" class="btn btn-secondary">Cancel</button><button type="button" class="btn btn-secondary" id="saveScheduleButton">Save draft</button><button type="button" class="btn btn-primary" id="submitScheduleButton">Save and submit</button></div>
+    </form>
+  </dialog>
+
+  <script src="/js/owl-console.js?v=20260717-owl-sync-1"></script>
+</body>
+</html>

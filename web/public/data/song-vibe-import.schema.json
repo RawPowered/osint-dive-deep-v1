@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.example.invalid/data/song-vibe-import.schema.json",
+  "title": "DiveDeep SONG Vibe Script Import",
+  "type": "object",
+  "required": ["services"],
+  "properties": {
+    "templateVersion": { "type": "string", "const": "song-vibe-1" },
+    "services": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "items": { "$ref": "#/$defs/service" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "service": {
+      "type": "object",
+      "required": ["serviceType", "mainScript", "concerns", "outcomes"],
+      "properties": {
+        "serviceType": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "languageCode": { "type": "string", "minLength": 2, "maxLength": 35, "pattern": "^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$", "default": "en-US" },
+        "scriptName": { "type": "string", "minLength": 1, "maxLength": 191 },
+        "description": { "type": "string", "maxLength": 1000 },
+        "reason": { "type": "string", "maxLength": 500 },
+        "mainScript": {
+          "type": "object",
+          "required": ["identity", "reason", "address", "diagnosis", "trust", "appointment", "confirmation"],
+          "properties": {
+            "identity": { "$ref": "#/$defs/stage" },
+            "reason": { "$ref": "#/$defs/stage" },
+            "address": { "$ref": "#/$defs/stage" },
+            "diagnosis": { "$ref": "#/$defs/stage" },
+            "trust": { "$ref": "#/$defs/stage" },
+            "appointment": { "$ref": "#/$defs/stage" },
+            "confirmation": { "$ref": "#/$defs/stage" },
+            "wrapUp": { "$ref": "#/$defs/stage" }
+          },
+          "additionalProperties": false
+        },
+        "concerns": {
+          "type": "array",
+          "maxItems": 12,
+          "items": { "$ref": "#/$defs/concern" }
+        },
+        "outcomes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "items": { "type": "string", "minLength": 1, "maxLength": 128 }
+        }
+      },
+      "additionalProperties": false
+    },
+    "stage": {
+      "type": "object",
+      "required": ["text", "type", "answers"],
+      "properties": {
+        "text": { "type": "string", "minLength": 1, "maxLength": 8000 },
+        "type": { "type": "string", "enum": ["question", "statement"] },
+        "helperText": { "type": "string", "maxLength": 2000 },
+        "answers": {
+          "type": "array",
+          "maxItems": 12,
+          "items": { "$ref": "#/$defs/answer" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "answer": {
+      "type": "object",
+      "required": ["id", "label", "action"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$" },
+        "label": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "outcome": { "type": "string", "maxLength": 64 },
+        "response": { "type": "string", "maxLength": 2000 },
+        "agentResponse": { "type": "string", "maxLength": 2000 },
+        "action": { "type": "string", "enum": ["proceed", "show_negative_path", "book_appointment", "jump_to_stage"] },
+        "targetStage": { "type": "string", "enum": ["identity", "reason", "address", "diagnosis", "trust", "appointment", "confirmation", "wrap_up"] },
+        "negativePathText": { "type": "string", "maxLength": 2000 },
+        "negativePathOutcome": { "type": "string", "maxLength": 128 }
+      },
+      "additionalProperties": false
+    },
+    "concern": {
+      "type": "object",
+      "required": ["id", "label", "response", "action"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$" },
+        "label": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "response": { "type": "string", "maxLength": 2000 },
+        "type": { "type": "string", "enum": ["question", "statement"] },
+        "action": { "type": "string", "enum": ["proceed", "end_call", "jump_to_stage"] },
+        "targetStage": { "type": "string", "enum": ["identity", "reason", "address", "diagnosis", "trust", "appointment", "confirmation", "wrap_up"] },
+        "outcome": { "type": "string", "maxLength": 64 }
+      },
+      "additionalProperties": false
+    }
+  }
+}

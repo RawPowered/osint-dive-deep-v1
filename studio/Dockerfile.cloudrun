@@ -1,0 +1,29 @@
+FROM python:3.12-slim-bookworm@sha256:d50fb7611f86d04a3b0471b46d7557818d88983fc3136726336b2a4c657aa30b
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    DIVEDEEP_EPHEMERAL_ROOT=/tmp/divedeep/job \
+    DIVEDEEP_RELEASE_REVISION=2026-07-28-gcp-rc1 \
+    PATH=/opt/venvs/core/bin:/opt/venvs/sherlock/bin:/opt/venvs/maigret/bin:$PATH
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl git tini \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/divedeep
+COPY requirements-cloud-worker.lock.txt requirements-sherlock.lock.txt requirements-maigret.lock.txt ./
+RUN /usr/local/bin/python -m venv /opt/venvs/core \
+    && /opt/venvs/core/bin/python -m pip install --no-cache-dir --require-hashes -r requirements-cloud-worker.lock.txt \
+    && /usr/local/bin/python -m venv /opt/venvs/sherlock \
+    && /opt/venvs/sherlock/bin/python -m pip install --no-cache-dir --require-hashes -r requirements-sherlock.lock.txt \
+    && /usr/local/bin/python -m venv /opt/venvs/maigret \
+    && /opt/venvs/maigret/bin/python -m pip install --no-cache-dir --require-hashes -r requirements-maigret.lock.txt
+
+COPY . /opt/divedeep
+RUN useradd --system --uid 10001 --create-home --home-dir /home/divedeep divedeep \
+    && chown -R divedeep:divedeep /opt/divedeep /home/divedeep
+
+USER 10001:10001
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["python", "-m", "osint_studio.cloud_worker"]

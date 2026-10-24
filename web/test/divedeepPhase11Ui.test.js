@@ -1,0 +1,23 @@
+'use strict';
+const assert = require('assert/strict');
+const fs = require('fs');
+const path = require('path');
+const root = path.resolve(__dirname, '..');
+const html = fs.readFileSync(path.join(root, 'public/admin/divedeep.html'), 'utf8');
+const js = fs.readFileSync(path.join(root, 'public/js/divedeep-admin-v1.13.0.js'), 'utf8');
+const css = fs.readFileSync(path.join(root, 'public/css/divedeep-admin.css'), 'utf8');
+
+assert.match(html, /data-catalog-tab="imageAnalysis"/);
+assert.match(html, /Prepared customer analysis wall/);
+assert.match(html, /Blurred preview stream/);
+assert.match(html, /divedeep-admin-v1\.13\.0\.js/);
+assert.match(js, /aws_rekognition/);
+assert.match(js, /Verify AWS identity/);
+assert.match(js, /Verify Rekognition access/);
+assert.match(js, /customer-validation policy JSON/);
+assert.match(js, /\/api\/divedeep\/image-analysis\/profiles/);
+assert.match(js, /imageProfileVersionId/);
+assert.match(css, /\.fida-analysis-wall/);
+assert.match(css, /filter:blur/);
+assert.equal(/localStorage|sessionStorage/.test(js), false);
+console.log('DiveDeep Phase 1.1 admin UI contract checks passed');

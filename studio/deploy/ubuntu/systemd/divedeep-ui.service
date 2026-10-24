@@ -1,0 +1,25 @@
+[Unit]
+Description=DiveDeep Streamlit Operator UI
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=divedeep
+Group=divedeep
+WorkingDirectory=/opt/divedeep/current
+EnvironmentFile=/etc/divedeep/divedeep.env
+ExecStartPre=/usr/bin/test -L /opt/divedeep/current
+ExecStart=/opt/divedeep/current/run.sh
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/lib/divedeep /var/cache/divedeep /var/log/divedeep
+
+[Install]
+WantedBy=multi-user.target

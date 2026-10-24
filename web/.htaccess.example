@@ -1,0 +1,15 @@
+# Apache Passenger template. Copy this file to .htaccess on the individual
+# server instance and replace every INSTANCE_* placeholder.
+# Keep credentials in the instance .env file; never add secret SetEnv values.
+
+PassengerAppRoot "INSTANCE_ABSOLUTE_APP_ROOT"
+PassengerBaseURI "/"
+PassengerNodejs "INSTANCE_ABSOLUTE_NODE_BINARY"
+PassengerAppType node
+PassengerStartupFile server.js
+
+Options -Indexes
+
+<FilesMatch "^\.(env|git|htaccess)">
+  Require all denied
+</FilesMatch>

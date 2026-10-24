@@ -1,0 +1,19 @@
+steps:
+  - name: gcr.io/cloud-builders/docker@sha256:680b2a8d18a794c165cf97a3f9476784d5d962e945d424cb40b3e086cde0c284
+    args:
+      - build
+      - --file=Dockerfile.cloudrun
+      - --label=org.opencontainers.image.title=DiveDeep Cloud Run Worker
+      - --label=org.opencontainers.image.version=5.29.0
+      - --label=org.opencontainers.image.revision=${_SOURCE_SHA256}
+      - --label=org.opencontainers.image.created=${_PACKAGED_AT}
+      - --label=com.divedeep.divedeep.packaging-revision=2026-07-28-gcp-rc1
+      - --tag=${_IMAGE}
+      - .
+images:
+  - ${_IMAGE}
+substitutions:
+  _PACKAGED_AT: '2026-07-28'
+  _SOURCE_SHA256: 'unverified-manual-build'
+options:
+  logging: CLOUD_LOGGING_ONLY

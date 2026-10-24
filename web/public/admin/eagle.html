@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>EAGLE Lead Intelligence</title>
+  <link rel="stylesheet" href="/css/app.css" />
+  <link rel="stylesheet" href="/css/eagle.css" />
+</head>
+<body class="eagle-page eagle-view-overview">
+  <header class="topbar eagle-topbar">
+    <a class="brand" id="navHome" href="#"><span class="eagle-brand-mark" aria-hidden="true">E</span><span>EAGLE</span></a>
+    <span class="eagle-sidebar-label">Executive intelligence</span>
+    <nav class="eagle-side-nav" aria-label="EAGLE navigation">
+      <button type="button" class="active" data-eagle-view="overview"><i aria-hidden="true">⌂</i>Overview</button>
+      <button type="button" data-eagle-view="markets"><i aria-hidden="true">◇</i>Markets</button>
+      <button type="button" data-eagle-view="leads"><i aria-hidden="true">◎</i>Lead Detail</button>
+      <button type="button" data-eagle-view="demographics"><i aria-hidden="true">◉</i>Demographics</button>
+      <button type="button" data-eagle-view="campaigns"><i aria-hidden="true">◌</i>Campaign Monitor</button>
+      <button type="button" data-eagle-view="validation"><i aria-hidden="true">✓</i>Validation</button>
+      <button type="button" data-eagle-view="targets"><i aria-hidden="true">◈</i>Targets</button>
+    </nav>
+    <nav class="topbar-nav eagle-workspace-nav" aria-label="DiveDeep workspace">
+      <a id="navDashboard" href="#">Dashboard</a><a id="navOwl" href="#">OWL</a><a id="navSong" href="#">SONG</a><a id="navHawk" href="#">HAWK</a><a id="navParrot" href="#">PARROT</a><a id="navCrm" href="#">CRM Sync</a><a id="navDocs" href="#">Docs</a>
+    </nav>
+    <a href="#" id="logout" class="eagle-signout">Sign out</a>
+  </header>
+
+  <main class="eagle-shell">
+    <section class="eagle-heading">
+      <div><span class="eagle-eyebrow">EAGLE intelligence</span><h1>Executive Dashboard</h1><p>Lead performance, market coverage, and campaign outcomes</p></div>
+      <div class="eagle-freshness"><span>CRM snapshot</span><strong id="snapshotFreshness">Not loaded</strong></div>
+    </section>
+
+    <section class="eagle-context" aria-label="Reporting context">
+      <label>API portfolio<select id="apiKey"></select></label>
+      <label>CRM location<select id="integration"></select></label>
+      <label>Lead period<select id="period"><option value="30">Last 30 days</option><option value="7">Last 7 days</option><option value="90">Last 90 days</option><option value="365">Last 12 months</option><option value="">All time</option></select></label>
+      <button type="button" class="btn btn-primary" id="refreshCrm">Refresh from CRM</button>
+    </section>
+    <div class="eagle-report-scope" id="reportScope" aria-live="polite">Select a CRM snapshot to begin.</div>
+
+    <div id="alert" hidden></div>
+    <div class="eagle-sync" id="syncStatus" hidden><span id="syncText"></span><span class="eagle-progress"><i id="syncProgress"></i></span></div>
+
+    <section class="eagle-kpis" aria-label="Executive summary">
+      <div class="eagle-kpi-primary" role="button" tabindex="0" data-kpi-drill="leads" aria-label="Open leads in the selected period" title="Distinct CRM contacts added during the selected period. Open scoped lead detail."><i aria-hidden="true">+</i><span id="kpiLeadLabel">New leads</span><strong id="kpiTotal">-</strong><small id="kpiLeadDelta">No comparison</small><em data-target-badge="new_leads"></em></div>
+      <div class="eagle-kpi-positive" role="button" tabindex="0" data-kpi-drill="leads" data-kpi-disposition="Scheduled" aria-label="Open currently scheduled lead detail" title="Contacts whose current normalized disposition is Scheduled. Open filtered lead detail."><i aria-hidden="true">S</i><span>Currently scheduled</span><strong id="kpiScheduled">-</strong><small id="kpiScheduledRate">-</small><em data-target-badge="current_scheduled_rate"></em></div>
+      <div class="eagle-kpi-positive" role="button" tabindex="0" data-kpi-drill="leads" data-kpi-disposition="Closed Won" aria-label="Open currently won lead detail" title="Contacts whose current normalized disposition is Closed Won. Open filtered lead detail."><i aria-hidden="true">W</i><span>Currently won</span><strong id="kpiWon">-</strong><small id="kpiWonRate">-</small><em data-target-badge="current_won_rate"></em></div>
+      <div class="eagle-kpi-risk" role="button" tabindex="0" data-kpi-drill="leads" aria-label="Open lead detail to review actionable unassigned contacts" title="Leads without a CRM or dialer owner, excluding DNC and terminal dispositions. Open lead detail to review ownership."><i aria-hidden="true">!</i><span>Actionable unassigned</span><strong id="kpiUnassigned">-</strong><small>Needs an owner</small><em data-target-badge="actionable_unassigned"></em></div>
+      <div role="button" tabindex="0" data-kpi-drill="drivers" data-kpi-dimension="sources" aria-label="Open source attribution analytics" title="Contacts with a governed marketing source divided by contacts in scope. Open the source performance breakdown."><i aria-hidden="true">%</i><span>Source attributed</span><strong id="kpiSourceCoverage">-</strong><small id="kpiSourceRatio">-</small><em data-target-badge="source_coverage"></em></div>
+      <div class="eagle-kpi-risk" role="button" tabindex="0" data-kpi-drill="leads" data-kpi-disposition="DNC" aria-label="Open DNC blocked lead detail" title="DNC-blocked contacts divided by contacts in scope. Open filtered lead detail."><i aria-hidden="true">×</i><span>DNC blocked</span><strong id="kpiDnc">-</strong><small id="kpiDncRate">-</small><em data-target-badge="dnc_rate"></em></div>
+    </section>
+
+    <section class="eagle-health" aria-label="Data quality summary">
+      <div><span>Location completeness</span><strong id="healthLocation">-</strong></div>
+      <div><span>Campaign attributed</span><strong id="healthCampaign">-</strong></div>
+      <p>Scheduled and won are mutually exclusive <strong>current CRM states</strong>. Historical conversion requires appointment and opportunity events.</p>
+    </section>
+
+    <section class="eagle-rollout-banner parallel" id="rolloutBanner" aria-live="polite">
+      <div><span id="rolloutMode">Parallel validation</span><strong id="rolloutReadiness">Validation status loading</strong></div>
+      <button type="button" class="btn btn-secondary btn-sm" data-open-view="validation">Open validation</button>
+    </section>
+
+    <details class="eagle-filter-drawer">
+      <summary><span>More filters</span><strong>Refine dashboard scope</strong><small>State, city, service, disposition, source, and campaign</small></summary>
+    <section class="eagle-filters" aria-label="Dashboard filters">
+      <label>State<select id="stateFilter"><option value="">All states</option></select></label>
+      <label>City<select id="cityFilter"><option value="">All cities</option></select></label>
+      <label>Service<select id="serviceFilter"><option value="">All services</option></select></label>
+      <label>Disposition<select id="dispositionFilter"><option value="">All dispositions</option></select></label>
+      <label>Source<select id="sourceFilter"><option value="">All sources</option></select></label>
+      <label>Campaign<select id="campaignFilter"><option value="">All campaigns</option></select></label>
+      <button type="button" class="btn btn-secondary btn-sm" id="clearFilters">Clear</button>
+    </section>
+    </details>
+
+    <nav class="eagle-view-tabs" aria-label="EAGLE views">
+      <button type="button" class="active" data-eagle-view="overview">Overview</button>
+      <button type="button" data-eagle-view="markets">Markets</button>
+      <button type="button" data-eagle-view="leads">Lead Detail</button>
+      <button type="button" data-eagle-view="demographics">Demographics</button>
+      <button type="button" data-eagle-view="campaigns">Campaign Monitor</button>
+      <button type="button" data-eagle-view="validation">Validation</button>
+      <button type="button" data-eagle-view="targets">Targets</button>
+    </nav>
+
+    <div class="eagle-view-panel active" id="view-overview">
+
+    <section class="eagle-band eagle-executive-brief eagle-command-center eagle-overview-insight">
+      <div class="eagle-command-hero">
+        <div class="eagle-command-copy">
+          <div class="eagle-command-kicker"><span>Executive command center</span><strong id="briefPosture">Assessing</strong></div>
+          <h2 id="briefHeadline">Building the executive picture for this reporting scope.</h2>
+          <p id="briefNarrative">Governed priorities, momentum, and evidence will appear here.</p>
+          <div class="eagle-command-actions"><button type="button" id="briefPrimaryAction" class="eagle-command-action" hidden></button><span id="briefAsOf">Loading</span></div>
+        </div>
+        <div class="eagle-command-scorecards" id="briefScorecards" aria-label="Executive decision metrics"></div>
+      </div>
+      <details class="eagle-command-details"><summary>Open executive decision brief <strong id="briefAttentionCountSummary">0 priorities</strong></summary><div class="eagle-brief-grid">
+        <article class="eagle-brief-panel eagle-priority-panel"><div class="eagle-brief-panel-head"><div><span>Decide now</span><h3>Priority moves</h3></div><strong id="briefAttentionCount">0</strong></div><div id="briefAttention" class="eagle-brief-list"></div></article>
+        <article class="eagle-brief-panel"><div class="eagle-brief-panel-head"><div><span>Direction</span><h3>Period momentum</h3></div></div><div id="briefMomentum" class="eagle-brief-list"></div></article>
+        <article class="eagle-brief-panel"><div class="eagle-brief-panel-head"><div><span>Confidence</span><h3>Evidence status</h3></div></div><div id="briefTrust" class="eagle-trust-list"></div></article>
+      </div></details>
+    </section>
+
+    <section class="eagle-band eagle-overview-pulse">
+      <div class="eagle-band-head eagle-section-heading"><div><span class="eagle-section-number">01</span><h2>Pipeline pulse</h2><p>Is demand accelerating, and is the team moving it forward?</p></div><div class="eagle-chart-legend"><span><i class="current"></i>Selected period</span><span><i class="previous"></i>Prior period</span></div></div>
+      <div class="eagle-flow-grid">
+        <div class="eagle-chart-wrap"><svg id="trendChart" viewBox="0 0 760 260" role="img" aria-label="Lead intake compared with prior period"></svg></div>
+        <div class="eagle-bars-panel"><div class="eagle-panel-heading"><h3>Current disposition</h3><p>Mutually exclusive CRM states</p><span class="eagle-reconciliation" id="dispositionReconciliation">Checking reconciliation</span></div><div id="funnelBars" class="eagle-bars"></div></div>
+      </div>
+    </section>
+
+    <section class="eagle-band eagle-governed-only eagle-overview-outcomes">
+      <div class="eagle-band-head eagle-section-heading"><div><span class="eagle-section-number">02</span><h2>Revenue outcome evidence</h2><p id="cohortMaturity">Authoritative lifecycle events with a maturity window</p></div><div class="eagle-source-statuses"><span id="appointmentSourceStatus">Appointments: checking</span><span id="opportunitySourceStatus">Opportunities: checking</span><button type="button" class="eagle-card-link" data-open-view="validation">Open validation →</button></div></div>
+      <div class="eagle-historical-grid">
+        <div class="eagle-cohort-panel">
+          <div class="eagle-cohort-stages" aria-label="Historical cohort stages">
+            <div><span>Mature leads</span><strong id="cohortEligible">-</strong><small id="cohortExcluded">- excluded</small></div>
+            <i aria-hidden="true">→</i>
+            <div><span>Ever booked</span><strong id="cohortAppointed">-</strong><small id="cohortAppointmentRate">-</small></div>
+            <i aria-hidden="true">→</i>
+            <div id="cohortWonStage"><span>Ever won</span><strong id="cohortWon">-</strong><small id="cohortWinRate">-</small></div>
+          </div>
+          <div class="eagle-cohort-rates">
+            <div><span>Lead-to-appointment</span><strong id="historicalAppointmentRate">-</strong><small id="historicalAppointmentMeta">-</small></div>
+            <div><span>Lead-to-win</span><strong id="historicalWinRate">-</strong><small id="historicalWinMeta">-</small></div>
+            <div><span>Appointment-to-win</span><strong id="historicalCloseRate">-</strong><small id="historicalCloseMeta">-</small></div>
+          </div>
+        </div>
+        <div class="eagle-outcome-panel"><div class="eagle-panel-heading"><h3>Outcome event pace</h3><p>Bookings and wins by authoritative event date</p><div class="eagle-chart-legend"><span><i class="current"></i>Appointments</span><span><i class="wins"></i>Wins</span></div></div><svg id="outcomeTrendChart" viewBox="0 0 760 260" role="img" aria-label="Authoritative appointment and win events over time"></svg></div>
+      </div>
+    </section>
+
+    <section class="eagle-band eagle-overview-audience">
+      <div class="eagle-band-head"><div><h2>Audience at a glance</h2><p id="overviewAudienceSubtitle">Loading privacy-safe audience signals</p></div><button type="button" class="eagle-card-link" data-open-view="demographics">View demographics →</button></div>
+      <div id="overviewAudience" class="eagle-overview-audience-grid"></div>
+    </section>
+
+    <section class="eagle-band eagle-overview-drivers">
+      <div class="eagle-band-head eagle-section-heading"><div><span class="eagle-section-number">03</span><h2>What is driving performance?</h2><p>Current outcomes by business dimension, with server-governed rates and sample confidence</p></div><div class="eagle-actions"><span class="eagle-reconciliation" id="driverReconciliation">Checking reconciliation</span><label class="eagle-inline-label">Break down by<select id="driverDimension"><option value="sources">Source</option><option value="campaigns">Campaign</option><option value="services">Service</option><option value="cities">Market</option></select></label></div></div>
+      <div class="eagle-table-wrap eagle-driver-table"><table><thead><tr><th id="driverHeading">Source</th><th>Leads</th><th>Share</th><th>Currently scheduled</th><th>Currently won</th><th>Sample note</th></tr></thead><tbody id="driverRows"></tbody></table></div>
+    </section>
+
+    <section class="eagle-band eagle-overview-markets">
+      <div class="eagle-band-head eagle-section-heading"><div><span class="eagle-section-number">04</span><h2>Where demand is concentrating</h2><p>Markets ranked by share, current progression, and population-adjusted density</p></div><div class="eagle-actions"><span class="eagle-reconciliation" id="marketReconciliation">Checking reconciliation</span><button type="button" class="btn btn-secondary btn-sm" data-open-view="markets">Open market detail</button></div></div>
+      <div class="eagle-table-wrap eagle-market-table"><table><thead><tr><th>Market</th><th>Leads</th><th>Share</th><th>Currently scheduled</th><th>Currently won</th><th>Density</th></tr></thead><tbody id="marketRows"></tbody></table></div>
+    </section>
+    </div>
+
+    <section class="eagle-view-panel" id="view-targets" hidden>
+      <section class="eagle-band eagle-targets">
+        <div class="eagle-band-head"><div><h2>Governed business targets</h2><p>Approved integration-level thresholds; EAGLE calculates variance on the server.</p></div></div>
+        <div class="eagle-validation-kpis eagle-target-kpis">
+          <div><span>Configured</span><strong id="targetConfigured">-</strong><small>Active KPI targets</small></div>
+          <div><span>On target</span><strong id="targetOn">-</strong><small>Meeting approved threshold</small></div>
+          <div><span>Near target</span><strong id="targetNear">-</strong><small>Inside warning margin</small></div>
+          <div><span>Off target</span><strong id="targetOff">-</strong><small>Outside warning margin</small></div>
+          <div><span>Not applicable</span><strong id="targetNotApplicable">-</strong><small>Scope does not match</small></div>
+        </div>
+        <div class="eagle-target-grid">
+          <div class="eagle-validation-panel"><h3>Current target assessments</h3><div class="eagle-table-wrap"><table><thead><tr><th>Metric</th><th>Scope</th><th>Current</th><th>Target</th><th>Status</th><th>Owner</th></tr></thead><tbody id="targetRows"></tbody></table></div></div>
+          <div class="eagle-validation-panel"><h3>Create or revise a target</h3>
+            <label>Metric<select id="targetMetric"><option value="new_leads">New leads</option><option value="current_scheduled_rate">Current scheduled rate</option><option value="current_won_rate">Current won rate</option><option value="actionable_unassigned">Actionable unassigned</option><option value="source_coverage">Source coverage</option><option value="campaign_coverage">Campaign coverage</option><option value="dnc_rate">DNC rate</option><option value="location_completeness">Location completeness</option><option value="lead_to_appointment_rate">Lead-to-appointment rate</option><option value="lead_to_win_rate">Lead-to-win rate</option><option value="appointment_to_win_rate">Appointment-to-win rate</option></select></label>
+            <div class="eagle-target-fields"><label>Target period<select id="targetPeriod"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option><option value="365">Last 12 months</option><option value="">All time</option></select></label><label>Direction<select id="targetDirection"><option value="at_least">At least</option><option value="at_most">At most</option></select></label><label>Target value<input id="targetValue" type="number" min="0" step="0.1" /></label><label>Warning margin<input id="targetMargin" type="number" min="0" step="0.1" value="0" /></label><label>Business owner<input id="targetOwner" placeholder="Revenue Operations" /></label></div>
+            <label class="eagle-target-active"><input id="targetActive" type="checkbox" checked /> Active in executive assessment</label>
+            <label>Governance reason<textarea id="targetReason" rows="3" placeholder="Approval, revision, or deactivation reason"></textarea></label>
+            <p id="targetUnitHint" class="muted">Values use the metric's governed unit.</p><button type="button" class="btn btn-primary" id="saveTarget">Save target</button>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section class="eagle-view-panel" id="view-validation" hidden>
+      <section class="eagle-band eagle-validation">
+        <div class="eagle-band-head"><div><h2>Executive validation</h2><p>Compare frozen EAGLE metrics with independently sourced control totals before promotion.</p></div></div>
+        <div class="eagle-validation-kpis">
+          <div><span>Rollout mode</span><strong id="validationMode">-</strong><small>Per CRM integration</small></div>
+          <div><span>Consecutive passes</span><strong id="validationPasses">-</strong><small>Distinct snapshots</small></div>
+          <div><span>Required passes</span><strong id="validationRequired">-</strong><small>Promotion gate</small></div>
+          <div><span>Latest result</span><strong id="validationLatest">-</strong><small id="validationLatestMeta">No run recorded</small></div>
+        </div>
+        <div class="eagle-validation-grid">
+          <div class="eagle-validation-panel">
+            <h3>Run a control-total comparison</h3>
+            <div class="eagle-validation-fields"><label>Reference system<input id="validationReferenceSystem" placeholder="Finance workbook, CRM report…" /></label><label>Evidence reference<input id="validationEvidence" placeholder="Report URL, export ID, or ticket" /></label></div>
+            <div class="eagle-table-wrap"><table><thead><tr><th>Use</th><th>Metric</th><th>EAGLE</th><th>Reference</th><th>Tolerance</th></tr></thead><tbody id="validationMetricRows"></tbody></table></div>
+            <button type="button" class="btn btn-primary" id="runValidation">Run validation</button>
+          </div>
+          <div class="eagle-validation-panel">
+            <h3>Rollout control</h3>
+            <p class="muted">Governed mode unlocks the historical funnel only after the promotion gate passes. Every change is audited.</p>
+            <label>Change reason<textarea id="rolloutReason" rows="3" placeholder="Why is this mode appropriate now?"></textarea></label>
+            <div class="eagle-rollout-actions"><button class="btn btn-secondary btn-sm" data-rollout-mode="legacy">Legacy</button><button class="btn btn-secondary btn-sm" data-rollout-mode="parallel">Parallel</button><button class="btn btn-primary btn-sm" data-rollout-mode="governed">Governed</button></div>
+            <h3>Validation history</h3>
+            <div class="eagle-table-wrap"><table><thead><tr><th>Snapshot</th><th>Result</th><th>Checks</th><th>Created</th></tr></thead><tbody id="validationRunRows"></tbody></table></div>
+            <h3>Rollout audit</h3>
+            <div class="eagle-table-wrap"><table><thead><tr><th>Mode change</th><th>Reason</th><th>Created</th></tr></thead><tbody id="rolloutAuditRows"></tbody></table></div>
+          </div>
+        </div>
+        <div class="eagle-schedule-debug">
+          <div class="eagle-schedule-debug-head"><div><span class="eagle-section-number">DBG</span><h3>Schedule debugging</h3><p>Reopen a submitted week or remove the current plan while preserving an EAGLE and Sentinel audit trail.</p></div><strong id="debugScheduleWeek">Current week</strong></div>
+          <div class="eagle-schedule-debug-grid">
+            <div class="eagle-validation-panel">
+              <div class="eagle-validation-fields">
+                <label>Dialer user<select id="debugScheduleUser"><option value="">Select a user</option></select></label>
+                <label>Reset operation<select id="debugScheduleMode"><option value="submission_only">Clear submission status (reopen draft)</option><option value="schedule_and_submission">Clear schedule and submission</option></select></label>
+              </div>
+              <div id="debugScheduleState" class="eagle-debug-state">Select a user to review the current-week state.</div>
+              <label>Debug reason<textarea id="debugScheduleReason" rows="3" placeholder="Ticket, defect, or reproducible condition requiring this reset"></textarea></label>
+              <label class="eagle-debug-confirm"><input id="debugScheduleConfirm" type="checkbox" /> I understand this changes the selected user’s current-week schedule state.</label>
+              <button type="button" class="btn btn-danger" id="resetSchedule">Apply audited reset</button>
+            </div>
+            <div class="eagle-validation-panel">
+              <h3>Recent schedule debug actions</h3>
+              <div class="eagle-table-wrap"><table><thead><tr><th>User / action</th><th>Reason</th><th>Actor / time</th></tr></thead><tbody id="debugScheduleAuditRows"><tr><td colspan="3" class="eagle-empty">No debug actions loaded.</td></tr></tbody></table></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section class="eagle-view-panel" id="view-markets" hidden>
+      <section class="eagle-band eagle-geo">
+        <div class="eagle-band-head"><div><h2>Market detail</h2><p id="geoSubtitle">CRM contact locations</p></div><div class="eagle-actions"><span id="censusReference" class="eagle-reference-status">Census reference not loaded</span><button type="button" class="btn btn-secondary btn-sm" id="refreshCensus">Refresh Census data</button><div class="eagle-map-legend"><span>Lower</span><i></i><span>Higher</span></div></div></div>
+        <div class="eagle-context-note">Population footprint is Census context, not market penetration. A single contact can represent a state or place.</div>
+        <div class="eagle-geo-metrics">
+          <div><span>Location completeness</span><strong id="geoCompleteness">-</strong><small>Contacts with usable state</small></div>
+          <div><span>State population footprint</span><strong id="geoStateFootprint">-</strong><small id="geoStatePresence">- of 50 states</small></div>
+          <div><span>Place population footprint</span><strong id="geoPlaceFootprint">-</strong><small id="geoPlacePresence">- Census places matched</small></div>
+          <div><span>Lead density</span><strong id="geoLeadDensity">-</strong><small>Matched contacts per 100,000 residents</small></div>
+        </div>
+        <div class="eagle-geo-grid">
+          <div class="eagle-map-wrap"><svg id="eagleMap" viewBox="0 0 975 610" role="img" aria-label="Interactive United States lead map"></svg><div id="mapTooltip" class="eagle-tooltip" hidden></div></div>
+          <div class="eagle-rankings">
+            <div class="eagle-ranking-tabs"><button class="active" data-geo-view="states">States</button><button data-geo-view="cities">Cities</button></div>
+            <div id="geoRanking" class="eagle-ranking-list"></div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section class="eagle-view-panel" id="view-leads" hidden>
+      <section class="eagle-band eagle-detail-band">
+        <div class="eagle-band-head">
+          <div><h2>Lead Detail</h2><p id="leadCount">CRM-first spreadsheet view</p></div>
+          <div class="eagle-actions"><input id="leadSearch" type="search" placeholder="Search name, email, phone, or ID" /><button type="button" class="btn btn-secondary btn-sm" id="searchButton">Search</button><a class="btn btn-primary btn-sm" id="exportCsv" href="#">Export CSV</a></div>
+        </div>
+        <div class="eagle-context-note">This table uses the shared report filters. Search applies only to Lead Detail and CSV export, not the executive scorecard.</div>
+        <div class="eagle-table-wrap eagle-leads-table"><table><thead><tr><th>Name</th><th>Location</th><th>Source / Campaign</th><th>Service</th><th>Disposition</th><th>Owner</th><th>DNC</th><th>Added</th><th>CRM</th></tr></thead><tbody id="leadRows"></tbody></table></div>
+        <div class="eagle-pager"><button type="button" class="btn btn-secondary btn-sm" id="leadPrev">Previous</button><span id="leadPage"></span><button type="button" class="btn btn-secondary btn-sm" id="leadNext">Next</button></div>
+      </section>
+    </section>
+
+    <section class="eagle-view-panel" id="view-demographics" hidden>
+      <div class="eagle-band-head eagle-demographic-heading">
+        <div><span class="eagle-eyebrow">Audience intelligence</span><h2>Who is in the pipeline?</h2><p id="demographicSubtitle">Turning enrichment into an executive audience story</p></div>
+      </div>
+
+      <section class="eagle-demographic-hero" aria-label="Executive audience profile">
+        <article class="eagle-audience-story">
+          <span class="eagle-demographic-kicker">Audience readout</span>
+          <h2 id="demographicHeroHeadline">Loading audience signals…</h2>
+          <p id="demographicHeroConfidence">Evaluating decision-useful demographic coverage.</p>
+          <div class="eagle-audience-statline"><span><strong id="demoProfiles">-</strong> profiles in scope</span><span><strong id="demoFields">-</strong> populated fields</span><span><strong id="demoValues">-</strong> data points</span></div>
+        </article>
+        <article class="eagle-insight-coverage">
+          <div class="eagle-coverage-ring" id="demographicInsightRing" style="--coverage:0"><div><strong id="demographicInsightCoverage">0%</strong><span>insight ready</span></div></div>
+          <p><strong id="demographicInsightProfiles">0 profiles</strong><span>contain household, financial, property, or audience signals</span></p>
+        </article>
+      </section>
+
+      <section class="eagle-band eagle-demographic-signals">
+        <div class="eagle-band-head"><div><h2>Audience at a glance</h2><p>High-signal characteristics ranked for immediate executive comprehension</p></div><span id="demographicSignalConfidence" class="eagle-reference-status">Assessing sample</span></div>
+        <div id="demographicSpotlights" class="eagle-demographic-spotlights"></div>
+      </section>
+
+      <section class="eagle-band eagle-demographic-composition">
+        <div class="eagle-band-head"><div><h2>Audience composition</h2><p>Dominant segments and the shape behind the headline</p></div></div>
+        <div id="demographicComposition" class="eagle-composition-grid"></div>
+      </section>
+
+      <section class="eagle-band eagle-demographic-readiness">
+        <div class="eagle-band-head"><div><h2>Data lens</h2><p>Where the audience story is strong—and where collection still limits confidence</p></div></div>
+        <div class="eagle-demographic-readiness-grid"><div id="demographicDomainReadiness" class="eagle-domain-readiness"></div><aside><span>Priority coverage gaps</span><div id="demographicCoverageGaps"></div></aside></div>
+      </section>
+
+      <details class="eagle-demographic-workbench" id="demographicWorkbench" open>
+        <summary><span>Audience explorer</span><strong>Find the audience behind any signal</strong><small>Search every field, inspect segment distribution, and understand sample coverage without exposing protected individual values.</small></summary>
+        <div class="eagle-demographic-workbench-body">
+          <div class="eagle-demographic-toolbar">
+            <div><span class="eagle-eyebrow">Start with a question</span><h2>Which audience characteristic do you want to understand?</h2><p>Browse by domain or search a field such as homeowner, income, credit, generation, household, or a CRM custom field.</p></div>
+            <label class="eagle-demographic-search"><span>Search audience fields</span><input id="demographicFieldSearch" type="search" placeholder="Search any demographic field" autocomplete="off"></label>
+          </div>
+          <div class="eagle-band-head eagle-demographic-inventory-head"><div><h2>Coverage by domain</h2><p id="demographicInventoryMeta">Full field inventory for validation and deeper analysis</p></div><select id="demographicCategoryFilter" aria-label="Demographic category"><option value="">All categories</option></select></div>
+          <div id="demographicCategories" class="eagle-demographic-categories"></div>
+          <section class="eagle-band eagle-demographic-explorer">
+            <div class="eagle-band-head"><div><span class="eagle-eyebrow">Selected audience lens</span><h2 id="demographicFieldTitle">Field explorer</h2><p id="demographicFieldMeta">Select a field to inspect its coverage and distribution</p></div><select id="demographicField" aria-label="Demographic field"><option value="">Select field</option></select></div>
+            <div id="demographicFieldSummary" class="eagle-demographic-field-summary"></div>
+            <div class="eagle-demographic-detail"><div class="eagle-demographic-statline" id="demographicNumeric" hidden></div><div id="demographicDistribution" class="eagle-distribution"></div></div>
+            <section id="demographicContacts" class="eagle-demographic-contacts" hidden aria-live="polite"></section>
+            <p class="eagle-demographic-privacy-note">This is an executive audience view: segment counts and distributions are shown, while protected individual values remain suppressed.</p>
+          </section>
+        </div>
+      </details>
+    </section>
+
+    <section class="eagle-view-panel" id="view-campaigns" hidden>
+      <div class="eagle-band-head eagle-campaign-heading">
+        <div><h2>Campaign Monitor</h2><p>CRM form submissions and attributable lead outcomes by page, form, and social source</p></div>
+        <div class="eagle-actions"><span id="campaignSyncState" class="eagle-reference-status">Activity not synchronized</span><button type="button" class="btn btn-primary btn-sm" id="refreshCampaigns">Sync CRM activity</button></div>
+      </div>
+      <div class="eagle-sync" id="campaignSyncStatus" hidden><span id="campaignSyncText"></span><span class="eagle-progress"><i id="campaignSyncProgress"></i></span></div>
+
+      <section class="eagle-campaign-kpis" aria-label="Campaign conversion summary">
+        <div><span>Submissions</span><strong id="campaignSubmissions">-</strong><small>Form conversion events</small></div>
+        <div><span>Contacts</span><strong id="campaignContacts">-</strong><small>Unique attributed leads</small></div>
+        <div><span>Landing pages</span><strong id="campaignPages">-</strong><small>Distinct destination URLs</small></div>
+        <div><span>Facebook</span><strong id="campaignFacebook">-</strong><small>Attributed submissions</small></div>
+        <div><span>Scheduled</span><strong id="campaignScheduled">-</strong><small>Unique contacts</small></div>
+        <div><span>Closed won</span><strong id="campaignWon">-</strong><small>Unique contacts</small></div>
+      </section>
+
+      <section class="eagle-band">
+        <div class="eagle-band-head"><div><h2>Conversion Sources</h2><p>Lead submissions and CRM outcomes; impression and spend metrics are not included</p></div></div>
+        <div class="eagle-campaign-grid">
+          <div><h3>Landing pages</h3><div class="eagle-table-wrap"><table><thead><tr><th>Page</th><th>Leads</th><th>Scheduled</th><th>Won</th></tr></thead><tbody id="campaignPageRows"></tbody></table></div></div>
+          <div><h3>Forms and widgets</h3><div class="eagle-table-wrap"><table><thead><tr><th>Form</th><th>Leads</th><th>Scheduled</th><th>Won</th></tr></thead><tbody id="campaignFormRows"></tbody></table></div></div>
+          <div><h3>Facebook attribution</h3><div class="eagle-table-wrap"><table><thead><tr><th>Campaign / content</th><th>Leads</th><th>Scheduled</th><th>Won</th></tr></thead><tbody id="campaignSocialRows"></tbody></table></div></div>
+        </div>
+      </section>
+
+      <section class="eagle-band">
+        <div class="eagle-band-head"><div><h2>Submission Pace</h2><p>Attributed CRM form events over the selected lead period</p></div></div>
+        <div class="eagle-chart-wrap"><svg id="campaignTrend" viewBox="0 0 1200 260" role="img" aria-label="Campaign form submission trend"></svg></div>
+      </section>
+
+      <section class="eagle-band">
+        <div class="eagle-band-head"><div><h2>Recent Activity</h2><p>Attribution metadata only; submitted answers and message content are not retained</p></div></div>
+        <div class="eagle-table-wrap eagle-campaign-events"><table><thead><tr><th>Time</th><th>Contact</th><th>Form</th><th>Landing page</th><th>Source</th><th>Campaign</th><th>Outcome</th></tr></thead><tbody id="campaignEventRows"></tbody></table></div>
+      </section>
+    </section>
+  </main>
+  <script src="/js/d3.min.js"></script>
+  <script src="/js/topojson-client.min.js"></script>
+  <script src="/js/eagle-dashboard.js"></script>
+</body>
+</html>

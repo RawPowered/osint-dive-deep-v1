@@ -1,0 +1,12 @@
+streamlit==1.59.2
+pandas==2.3.3
+requests==2.34.2
+beautifulsoup4==4.15.0
+ddgs==9.14.4
+duckdb==1.5.4
+playwright==1.61.0
+folium==0.20.0
+streamlit-folium==0.27.2
+Pillow==12.3.0
+fastapi==0.116.1
+uvicorn==0.35.0

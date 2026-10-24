@@ -1,0 +1,24 @@
+{
+  "product": "OSINT Dive Deep v1",
+  "schemaVersion": 2,
+  "customer": {
+    "id": "test-customer",
+    "email": "person@example.invalid"
+  },
+  "divedeep": {
+    "profile": {
+      "id": "test-profile",
+      "displayName": "Synthetic Test Subject",
+      "authorization": {
+        "status": "active"
+      },
+      "identifiers": []
+    }
+  },
+  "manualProcessing": {
+    "instructions": [],
+    "sourceSets": []
+  },
+  "photos": [],
+  "connections": []
+}

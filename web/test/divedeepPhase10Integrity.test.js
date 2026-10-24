@@ -1,0 +1,17 @@
+'use strict';
+const assert = require('assert/strict');
+const crypto = require('crypto');
+const readiness = require('../src/services/diveDeepProductionReadiness');
+const body = Buffer.from('phase10-upload');
+const expected = { sha256: crypto.createHash('sha256').update(body).digest('hex'), byteSize: body.length };
+assert.equal(readiness.verifyUploadIntegrity(body, expected).ok, true);
+const corrupt = Buffer.from(body); corrupt[1] ^= 0xff;
+const result = readiness.verifyUploadIntegrity(corrupt, expected);
+assert.equal(result.ok, false);
+assert.equal(result.hashMatches, false);
+const compatibility = readiness.validatePackageCompatibility({ apiVersion:'1.16.0',schemaVersion:64,workerVersion:'5.29.0',workerProtocol:'divedeep-worker-v1',frontendVersion:'1.6.3',nodeVersion:'20.0.0' });
+assert.equal(compatibility.ok, true);
+assert.equal(readiness.validatePackageCompatibility({ apiVersion:'1.16.0',schemaVersion:64,workerVersion:'5.28.9',workerProtocol:'divedeep-worker-v1',frontendVersion:'1.6.3',nodeVersion:'20.0.0' }).ok, false);
+const safe = readiness.sanitizeOperationalDetails({ count: 2, nested: { token: 'private', evidenceId: 'private', status: 'passed' }, bucket: 'private-bucket' });
+assert.deepEqual(safe, { count: 2, nested: { status: 'passed' } });
+console.log('DiveDeep Phase 10 integrity and compatibility checks passed');

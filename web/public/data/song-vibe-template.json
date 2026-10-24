@@ -1,0 +1,148 @@
+{
+  "templateVersion": "song-vibe-1",
+  "services": [
+    {
+      "serviceType": "Roofing",
+      "languageCode": "en-US",
+      "scriptName": "Roofing - Search Intent Flow",
+      "description": "Inbound search-intent qualification and appointment flow.",
+      "reason": "help with the roof on your home",
+      "mainScript": {
+        "identity": {
+          "text": "{getGreeting()}, is this {contact.firstName}?",
+          "type": "question",
+          "helperText": "Wait for the customer to confirm their identity.",
+          "answers": [
+            {
+              "id": "identity_confirmed",
+              "label": "Yes, confirmed",
+              "action": "proceed"
+            },
+            {
+              "id": "identity_wrong_person",
+              "label": "No / wrong person",
+              "action": "show_negative_path",
+              "negativePathText": "Thanks for letting me know. I have the wrong number. Take care.",
+              "negativePathOutcome": "Wrong Number"
+            }
+          ]
+        },
+        "reason": {
+          "text": "Hi {contact.firstName}, this is {agent.firstName} with DiveDeep. Your information came through for help with the roof in {contact.city}. I'll keep this quick and help you get the right next step.",
+          "type": "statement",
+          "answers": [
+            {
+              "id": "reason_continue",
+              "label": "Continue",
+              "action": "proceed"
+            },
+            {
+              "id": "reason_unsure",
+              "label": "Does not remember",
+              "response": "No problem. These requests often come through while homeowners are comparing local options. Let me confirm the property and point you in the right direction.",
+              "action": "proceed"
+            },
+            {
+              "id": "reason_opt_out",
+              "label": "Not interested / opt out",
+              "action": "show_negative_path",
+              "negativePathText": "Understood. I'll update the request and close it out. Take care.",
+              "negativePathOutcome": "Not Interested"
+            }
+          ]
+        },
+        "address": {
+          "text": "What is the property address for the roof we're discussing?",
+          "type": "question",
+          "helperText": "Enter the address exactly as the customer states it.",
+          "answers": [
+            {
+              "id": "address_confirmed",
+              "label": "Address confirmed",
+              "action": "proceed"
+            }
+          ]
+        },
+        "diagnosis": {
+          "text": "What is going on with the roof: an active issue, storm concern, age, or are you comparing options?",
+          "type": "question",
+          "answers": []
+        },
+        "trust": {
+          "text": "DiveDeep is licensed, bonded, and insured. The inspection gives you a clear understanding of the condition, priority, and practical options before you make a decision.",
+          "type": "statement",
+          "answers": [
+            {
+              "id": "trust_continue",
+              "label": "Move to scheduling",
+              "action": "proceed"
+            }
+          ]
+        },
+        "appointment": {
+          "text": "Let's get the inspection on the calendar. Is earlier in the day or later usually better for you?",
+          "type": "question",
+          "answers": [
+            {
+              "id": "appointment_book",
+              "label": "Book inspection",
+              "action": "book_appointment"
+            },
+            {
+              "id": "appointment_skip",
+              "label": "No appointment",
+              "action": "proceed"
+            }
+          ]
+        },
+        "confirmation": {
+          "text": "Perfect. You're set. Watch for the confirmation with the date, time, and property details.",
+          "type": "statement",
+          "answers": [
+            {
+              "id": "confirmation_continue",
+              "label": "Continue to wrap-up",
+              "action": "proceed"
+            }
+          ]
+        },
+        "wrapUp": {
+          "text": "Select the call outcome, add final notes, and save the result to the CRM.",
+          "type": "statement",
+          "answers": []
+        }
+      },
+      "concerns": [
+        {
+          "id": "active_leak",
+          "label": "Active leak",
+          "response": "Understood. The priority is finding the source and preventing more damage. Let's get the roof inspected.",
+          "type": "statement",
+          "action": "proceed"
+        },
+        {
+          "id": "storm_damage",
+          "label": "Storm damage",
+          "response": "That makes sense. An inspection will show what actually needs attention.",
+          "type": "statement",
+          "action": "proceed"
+        },
+        {
+          "id": "urgent_booking",
+          "label": "Ready to schedule",
+          "response": "Absolutely. Let's move directly to the available inspection times.",
+          "type": "statement",
+          "action": "jump_to_stage",
+          "targetStage": "appointment"
+        }
+      ],
+      "outcomes": [
+        "Appointment Booked",
+        "Follow Up",
+        "Not Interested",
+        "Wrong Number",
+        "No Answer"
+      ]
+    }
+  ]
+}

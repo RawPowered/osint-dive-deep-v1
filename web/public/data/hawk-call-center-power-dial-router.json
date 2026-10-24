@@ -1,0 +1,494 @@
+{
+  "format": "hawk-automation-1",
+  "generatedFor": {
+    "locationId": "REPLACE_WITH_LOCATION_ID",
+    "architecture": "HAWK performs authoritative eligibility and service-pool routing. Native HighLevel contact workflows consume cc-queue-* tags, create associated Dials records, create or update the Dial Pipeline opportunity, and add the Manual Call action.",
+    "membershipTag": "Call Center",
+    "recheckTag": "cc-recheck",
+    "servicePools": [
+      "Roofing",
+      "Solar",
+      "Kitchen",
+      "Bathroom",
+      "Remodeling",
+      "Mold / Water Damage",
+      "Other"
+    ]
+  },
+  "flows": [
+    {
+      "name": "Call Center - OWL eligibility and service pool router",
+      "description": "Every initial or repeat dial request enters through cc-recheck. HAWK performs a pre-queue fail-closed check for queueable lifecycle, DNC, phone availability, configured calendars, marketing hours, and attempt limits, then emits exactly one cc-queue-* tag. HighLevel assigns the operator at the native Manual Call action stage.",
+      "integrationId": null,
+      "graph": {
+        "schemaVersion": 1,
+        "startNodeId": "trigger",
+        "nodes": [
+          {
+            "id": "trigger",
+            "type": "trigger",
+            "name": "Call Center recheck requested",
+            "config": {
+              "event": "contact.tag_added",
+              "tag": "cc-recheck"
+            },
+            "nextNodeId": "consume_recheck",
+            "position": { "x": 500, "y": 40 }
+          },
+          {
+            "id": "consume_recheck",
+            "type": "action",
+            "action": "ghl.remove_tags",
+            "name": "Consume recheck token",
+            "config": {
+              "contactId": "{{trigger.contactId}}",
+              "tags": ["cc-recheck"]
+            },
+            "nextNodeId": "evaluate_eligibility",
+            "position": { "x": 500, "y": 180 }
+          },
+          {
+            "id": "evaluate_eligibility",
+            "type": "action",
+            "action": "divedeep.evaluate_dialer_eligibility",
+            "name": "Evaluate dialer eligibility",
+            "config": {
+              "contactId": "{{trigger.contactId}}",
+              "requireAssignment": false
+            },
+            "nextNodeId": "eligible_check",
+            "position": { "x": 500, "y": 320 }
+          },
+          {
+            "id": "eligible_check",
+            "type": "condition",
+            "name": "OWL approved",
+            "config": {
+              "field": "steps.evaluate_eligibility.response.eligible",
+              "operator": "equals",
+              "value": true
+            },
+            "routes": [
+              { "label": "Eligible", "when": true, "targetNodeId": "clear_old_state" },
+              { "label": "Excluded", "when": false, "targetNodeId": "clear_queue_state" }
+            ],
+            "position": { "x": 500, "y": 460 }
+          },
+          {
+            "id": "clear_old_state",
+            "type": "action",
+            "action": "ghl.remove_tags",
+            "name": "Clear stale Call Center state",
+            "config": {
+              "contactId": "{{trigger.contactId}}",
+              "tags": [
+                "cc-eligible",
+                "cc-blocked",
+                "cc-deferred",
+                "cc-scheduled",
+                "cc-queue-roofing",
+                "cc-queue-solar",
+                "cc-queue-kitchen",
+                "cc-queue-bathroom",
+                "cc-queue-remodeling",
+                "cc-queue-mold-water",
+                "cc-queue-other"
+              ]
+            },
+            "nextNodeId": "mark_ready",
+            "position": { "x": 250, "y": 600 }
+          },
+          {
+            "id": "mark_ready",
+            "type": "action",
+            "action": "ghl.update_contact",
+            "name": "Record OWL approval",
+            "config": {
+              "contactId": "{{trigger.contactId}}",
+              "fields": {
+                "customFields": [
+                  {
+                    "id": "VsXb7HofKxm6F5sr7edH",
+                    "field_value": "READY - {{steps.evaluate_eligibility.response.serviceType}}"
+                  }
+                ]
+              }
+            },
+            "nextNodeId": "is_roofing",
+            "position": { "x": 250, "y": 740 }
+          },
+          {
+            "id": "is_roofing",
+            "type": "condition",
+            "name": "Roofing pool",
+            "config": {
+              "field": "steps.evaluate_eligibility.response.serviceType",
+              "operator": "equals",
+              "value": "Roofing"
+            },
+            "routes": [
+              { "label": "Roofing", "when": true, "targetNodeId": "queue_roofing" },
+              { "label": "Next", "when": false, "targetNodeId": "is_solar" }
+            ],
+            "position": { "x": 250, "y": 880 }
+          },
+          {
+            "id": "is_solar",
+            "type": "condition",
+            "name": "Solar pool",
+            "config": {
+              "field": "steps.evaluate_eligibility.response.serviceType",
+              "operator": "equals",
+              "value": "Solar"
+            },
+            "routes": [
+              { "label": "Solar", "when": true, "targetNodeId": "queue_solar" },
+              { "label": "Next", "when": false, "targetNodeId": "is_remodeling" }
+            ],
+            "position": { "x": 250, "y": 1020 }
+          },
+          {
+            "id": "is_remodeling",
+            "type": "condition",
+            "name": "Remodeling pool",
+            "config": {
+              "field": "steps.evaluate_eligibility.response.serviceType",
+              "operator": "equals",
+              "value": "Remodeling"
+            },
+            "routes": [
+              { "label": "Remodeling", "when": true, "targetNodeId": "is_kitchen" },
+              { "label": "Next", "when": false, "targetNodeId": "is_mold_water" }
+            ],
+            "position": { "x": 250, "y": 1160 }
+          },
+          {
+            "id": "is_kitchen",
+            "type": "condition",
+            "name": "Kitchen project",
+            "config": {
+              "field": "trigger.customFields.UBhDJPK0h3jhmuNqsg9P",
+              "operator": "contains",
+              "value": "Kitchen"
+            },
+            "routes": [
+              { "label": "Kitchen", "when": true, "targetNodeId": "queue_kitchen" },
+              { "label": "Next", "when": false, "targetNodeId": "is_bathroom" }
+            ],
+            "position": { "x": 50, "y": 1300 }
+          },
+          {
+            "id": "is_bathroom",
+            "type": "condition",
+            "name": "Bathroom project",
+            "config": {
+              "field": "trigger.customFields.UBhDJPK0h3jhmuNqsg9P",
+              "operator": "contains",
+              "value": "Bath"
+            },
+            "routes": [
+              { "label": "Bathroom", "when": true, "targetNodeId": "queue_bathroom" },
+              { "label": "General remodel", "when": false, "targetNodeId": "queue_remodeling" }
+            ],
+            "position": { "x": 50, "y": 1440 }
+          },
+          {
+            "id": "is_mold_water",
+            "type": "condition",
+            "name": "Mold or water pool",
+            "config": {
+              "field": "steps.evaluate_eligibility.response.serviceType",
+              "operator": "equals",
+              "value": "Mold / Water Damage"
+            },
+            "routes": [
+              { "label": "Mold / Water", "when": true, "targetNodeId": "queue_mold_water" },
+              { "label": "Fallback", "when": false, "targetNodeId": "queue_other" }
+            ],
+            "position": { "x": 450, "y": 1300 }
+          },
+          {
+            "id": "queue_roofing",
+            "type": "action",
+            "action": "ghl.add_tags",
+            "name": "Queue Roofing",
+            "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-eligible", "cc-queue-roofing"] },
+            "nextNodeId": "queued_end",
+            "position": { "x": 900, "y": 880 }
+          },
+          {
+            "id": "queue_solar",
+            "type": "action",
+            "action": "ghl.add_tags",
+            "name": "Queue Solar",
+            "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-eligible", "cc-queue-solar"] },
+            "nextNodeId": "queued_end",
+            "position": { "x": 900, "y": 1020 }
+          },
+          {
+            "id": "queue_kitchen",
+            "type": "action",
+            "action": "ghl.add_tags",
+            "name": "Queue Kitchen",
+            "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-eligible", "cc-queue-kitchen"] },
+            "nextNodeId": "queued_end",
+            "position": { "x": 900, "y": 1160 }
+          },
+          {
+            "id": "queue_bathroom",
+            "type": "action",
+            "action": "ghl.add_tags",
+            "name": "Queue Bathroom",
+            "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-eligible", "cc-queue-bathroom"] },
+            "nextNodeId": "queued_end",
+            "position": { "x": 900, "y": 1300 }
+          },
+          {
+            "id": "queue_remodeling",
+            "type": "action",
+            "action": "ghl.add_tags",
+            "name": "Queue Remodeling",
+            "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-eligible", "cc-queue-remodeling"] },
+            "nextNodeId": "queued_end",
+            "position": { "x": 900, "y": 1440 }
+          },
+          {
+            "id": "queue_mold_water",
+            "type": "action",
+            "action": "ghl.add_tags",
+            "name": "Queue Mold or Water",
+            "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-eligible", "cc-queue-mold-water"] },
+            "nextNodeId": "queued_end",
+            "position": { "x": 900, "y": 1580 }
+          },
+          {
+            "id": "queue_other",
+            "type": "action",
+            "action": "ghl.add_tags",
+            "name": "Queue Other",
+            "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-eligible", "cc-queue-other"] },
+            "nextNodeId": "queued_end",
+            "position": { "x": 900, "y": 1720 }
+          },
+          {
+            "id": "queued_end",
+            "type": "end",
+            "name": "Native Manual Call workflow requested",
+            "config": {},
+            "position": { "x": 1200, "y": 1300 }
+          },
+          {
+            "id": "clear_queue_state",
+            "type": "action",
+            "action": "ghl.remove_tags",
+            "name": "Remove every callable state",
+            "config": {
+              "contactId": "{{trigger.contactId}}",
+              "tags": [
+                "cc-eligible",
+                "cc-blocked",
+                "cc-deferred",
+                "cc-scheduled",
+                "cc-queue-roofing",
+                "cc-queue-solar",
+                "cc-queue-kitchen",
+                "cc-queue-bathroom",
+                "cc-queue-remodeling",
+                "cc-queue-mold-water",
+                "cc-queue-other"
+              ]
+            },
+            "nextNodeId": "mark_excluded",
+            "position": { "x": 650, "y": 600 }
+          },
+          {
+            "id": "mark_excluded",
+            "type": "action",
+            "action": "ghl.update_contact",
+            "name": "Record exclusion reason",
+            "config": {
+              "contactId": "{{trigger.contactId}}",
+              "fields": {
+                "customFields": [
+                  {
+                    "id": "VsXb7HofKxm6F5sr7edH",
+                    "field_value": "BLOCKED - {{steps.evaluate_eligibility.response.reason}}"
+                  }
+                ]
+              }
+            },
+            "nextNodeId": "is_deferred",
+            "position": { "x": 650, "y": 740 }
+          },
+          {
+            "id": "is_deferred",
+            "type": "condition",
+            "name": "Retryable exclusion",
+            "config": {
+              "field": "steps.evaluate_eligibility.response.reason",
+              "operator": "in",
+              "value": [
+                "outside_marketing_hours",
+                "florida_attempt_limit",
+                "calendar_verification_unavailable"
+              ]
+            },
+            "routes": [
+              { "label": "Retry later", "when": true, "targetNodeId": "tag_deferred" },
+              { "label": "Next", "when": false, "targetNodeId": "is_scheduled" }
+            ],
+            "position": { "x": 650, "y": 880 }
+          },
+          {
+            "id": "is_scheduled",
+            "type": "condition",
+            "name": "Existing appointment",
+            "config": {
+              "field": "steps.evaluate_eligibility.response.reason",
+              "operator": "equals",
+              "value": "appointment_scheduled"
+            },
+            "routes": [
+              { "label": "Scheduled", "when": true, "targetNodeId": "tag_scheduled" },
+              { "label": "Blocked", "when": false, "targetNodeId": "tag_blocked" }
+            ],
+            "position": { "x": 650, "y": 1020 }
+          },
+          {
+            "id": "tag_deferred",
+            "type": "action",
+            "action": "ghl.add_tags",
+            "name": "Mark deferred",
+            "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-deferred"] },
+            "nextNodeId": "excluded_end",
+            "position": { "x": 1050, "y": 880 }
+          },
+          {
+            "id": "tag_scheduled",
+            "type": "action",
+            "action": "ghl.add_tags",
+            "name": "Mark scheduled",
+            "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-scheduled"] },
+            "nextNodeId": "excluded_end",
+            "position": { "x": 1050, "y": 1020 }
+          },
+          {
+            "id": "tag_blocked",
+            "type": "action",
+            "action": "ghl.add_tags",
+            "name": "Mark blocked",
+            "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-blocked"] },
+            "nextNodeId": "excluded_end",
+            "position": { "x": 1050, "y": 1160 }
+          },
+          {
+            "id": "excluded_end",
+            "type": "end",
+            "name": "Excluded from Manual Actions",
+            "config": {},
+            "position": { "x": 1350, "y": 1020 }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Call Center - closed sale exit",
+      "description": "When a Dial Pipeline opportunity is won, remove the persistent Call Center membership and every queue-control tag so the contact cannot re-enter Power Dial.",
+      "integrationId": null,
+      "graph": {
+        "schemaVersion": 1,
+        "startNodeId": "trigger",
+        "nodes": [
+          {
+            "id": "trigger",
+            "type": "trigger",
+            "name": "Opportunity status changed",
+            "config": { "event": "opportunity.status_changed" },
+            "nextNodeId": "is_won",
+            "position": { "x": 420, "y": 40 }
+          },
+          {
+            "id": "is_won",
+            "type": "condition",
+            "name": "Closed won",
+            "config": {
+              "field": "trigger.opportunity.status",
+              "operator": "equals",
+              "value": "won"
+            },
+            "routes": [
+              { "label": "Won", "when": true, "targetNodeId": "remove_call_center_tags" },
+              { "label": "Ignore", "when": false, "targetNodeId": "ignored_end" }
+            ],
+            "position": { "x": 420, "y": 190 }
+          },
+          {
+            "id": "remove_call_center_tags",
+            "type": "action",
+            "action": "ghl.remove_tags",
+            "name": "Exit Call Center",
+            "config": {
+              "contactId": "{{trigger.contactId}}",
+              "tags": [
+                "Call Center",
+                "cc-recheck",
+                "cc-eligible",
+                "cc-blocked",
+                "cc-deferred",
+                "cc-scheduled",
+                "cc-queue-roofing",
+                "cc-queue-solar",
+                "cc-queue-kitchen",
+                "cc-queue-bathroom",
+                "cc-queue-remodeling",
+                "cc-queue-mold-water",
+                "cc-queue-other"
+              ]
+            },
+            "nextNodeId": "mark_closed_sale",
+            "position": { "x": 260, "y": 340 }
+          },
+          {
+            "id": "mark_closed_sale",
+            "type": "action",
+            "action": "ghl.update_contact",
+            "name": "Record closed sale",
+            "config": {
+              "contactId": "{{trigger.contactId}}",
+              "fields": {
+                "customFields": [
+                  { "id": "VsXb7HofKxm6F5sr7edH", "field_value": "CLOSED - SALE" }
+                ]
+              }
+            },
+            "nextNodeId": "tag_closed_sale",
+            "position": { "x": 260, "y": 490 }
+          },
+          {
+            "id": "tag_closed_sale",
+            "type": "action",
+            "action": "ghl.add_tags",
+            "name": "Mark closed sale",
+            "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-closed-sale"] },
+            "nextNodeId": "closed_end",
+            "position": { "x": 260, "y": 640 }
+          },
+          {
+            "id": "closed_end",
+            "type": "end",
+            "name": "Removed from Call Center",
+            "config": {},
+            "position": { "x": 260, "y": 790 }
+          },
+          {
+            "id": "ignored_end",
+            "type": "end",
+            "name": "No sale exit required",
+            "config": {},
+            "position": { "x": 620, "y": 340 }
+          }
+        ]
+      }
+    }
+  ]
+}

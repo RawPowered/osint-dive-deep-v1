@@ -1,0 +1,17 @@
+'use strict';
+const assert = require('assert/strict');
+const fs = require('fs');
+const path = require('path');
+const root = path.join(__dirname, '..');
+const html = fs.readFileSync(path.join(root, 'public/admin/divedeep.html'), 'utf8');
+const js = fs.readFileSync(path.join(root, 'public/js/divedeep-admin-v1.13.0.js'), 'utf8');
+const css = fs.readFileSync(path.join(root, 'public/css/divedeep-admin.css'), 'utf8');
+assert.match(html, /data-view="privacy-workflow"/);
+for (const id of ['privacyWorkflowView','privacyWorkflowMetrics','privacyWorkflowGrid','privacyWorkflowDetail','refreshPrivacyWorkflow']) assert.match(html, new RegExp(`id="${id}"`));
+assert.match(html, /divedeep-admin-v1\.13\.0\.js/);
+for (const token of ['loadPrivacyWorkflows','openPrivacyWorkflow','reconcilePrivacyWorkflow','closePrivacyWorkflow','awaiting_customer_validation','closure_ready']) assert.ok(js.includes(token));
+for (const selector of ['.fida-workflow-layout','.fida-gate-chain','.fida-gate-row','.fida-workflow-counts']) assert.ok(css.includes(selector));
+const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]);
+assert.deepEqual([...new Set(ids.filter((id, index) => ids.indexOf(id) !== index))], []);
+assert.equal(/localStorage|sessionStorage/.test(js), false);
+console.log('DiveDeep Phase 5 admin UIX checks passed');

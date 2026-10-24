@@ -1,0 +1,12 @@
+{
+  "releaseVersion": "1.16.0",
+  "schemaVersion": 64,
+  "api": { "minimum": "1.16.0", "customer": "v1", "enterprise": "v1", "integrations": "v1", "workers": "v1" },
+  "node": { "minimum": "20.0.0", "recommended": "20 LTS or 22 LTS" },
+  "mysql": { "minimum": "8.0", "requiredFeatures": ["InnoDB", "utf8mb4", "transactional DDL support for rehearsal planning"] },
+  "divedeepWorker": { "minimum": "5.29.0", "tested": "5.29.0", "protocol": "divedeep-worker-v1" },
+  "frontend": { "minimum": "1.6.3", "tested": "1.7.0" },
+  "primaryComputeProvider": "google_cloud_run_jobs",
+  "secondaryProviderInterface": "job-scoped container execution using divedeep-worker-v1",
+  "storage": { "interface": "private S3-compatible", "required": ["private objects", "presigned requests", "object tagging", "delete object", "head object"] }
+}

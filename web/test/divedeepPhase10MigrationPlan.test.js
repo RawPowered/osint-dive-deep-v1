@@ -1,0 +1,14 @@
+'use strict';
+const assert = require('assert/strict');
+const fs = require('fs');
+const path = require('path');
+const sql = fs.readFileSync(path.join(__dirname,'..','sql/schema.sql'),'utf8');
+const statements = sql.split('\n').filter((line)=>!/^\s*--/.test(line)).join('\n').split(';').map((part)=>part.trim()).filter(Boolean);
+const tables = [...sql.matchAll(/CREATE TABLE IF NOT EXISTS\s+([A-Za-z0-9_]+)/g)].map((match)=>match[1]);
+assert.ok(statements.length > 100);
+assert.equal(new Set(tables).size,tables.length,'Duplicate CREATE TABLE statements found');
+assert.equal((sql.match(/\(/g)||[]).length,(sql.match(/\)/g)||[]).length,'Unbalanced schema parentheses');
+const rollback = JSON.parse(fs.readFileSync(path.join(__dirname,'..','deploy/rollback/ROLLBACK_MANIFEST.example.json'),'utf8'));
+assert.equal(rollback.strategy,'restore_verified_backup_then_deploy_previous_application');
+assert.ok(rollback.targetSchemaVersion < rollback.sourceSchemaVersion);
+console.log('DiveDeep Phase 10 migration and rollback plan checks passed');

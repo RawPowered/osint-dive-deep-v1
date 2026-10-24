@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="/css/app.css" />
+</head>
+<body>
+  <header class="topbar">
+    <span class="brand">Control panel</span>
+    <nav class="topbar-nav">
+      <a id="navDocs" href="#">Docs</a>
+      <a id="navKeys" href="#">API Keys</a>
+      <a id="navConn" href="#">SQL</a>
+      <a id="navCrm" href="#">CRM</a>
+      <a id="navOwl" href="#">OWL</a>
+      <a id="navEagle" href="#">EAGLE</a>
+      <a id="navSong" href="#">SONG</a>
+      <a id="navHawk" href="#">HAWK</a>
+      <a id="navParrot" href="#">PARROT</a>
+      <a id="navDiveDeep" href="#">DiveDeep</a>
+      <a id="navSentinel" href="#">Sentinel</a>
+      <span class="muted" id="who"></span>
+      <a href="#" id="logout">Sign out</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <div class="admin-header">
+      <div>
+        <h1>Dashboard</h1>
+        <p class="muted">Keys, documentation, and API activity monitoring.</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <a class="card card-link" id="cardKeys" href="#">
+        <h3>API keys</h3>
+        <p class="muted">Create and revoke Bearer tokens for machine clients.</p>
+      </a>
+      <a class="card card-link" id="cardDocs" href="#">
+        <h3>Documentation</h3>
+        <p class="muted">Walled API wiki (login required).</p>
+      </a>
+      <a class="card card-link" id="cardSentinel" href="#">
+        <h3>API Sentinel</h3>
+        <p class="muted">Monitor API requests, auth failures, and per-key activity.</p>
+      </a>
+      <a class="card card-link" id="cardConn" href="#">
+        <h3>SQL connections</h3>
+        <p class="muted">Secondary databases, table grants, and per-key routing.</p>
+      </a>
+      <a class="card card-link" id="cardCrm" href="#">
+        <h3>CRM integrations</h3>
+        <p class="muted">Encrypted CRM connections, import mappings, and API-key grants.</p>
+      </a>
+      <a class="card card-link" id="cardOwl" href="#">
+        <h3>OWL</h3>
+        <p class="muted">Manage lead pools, assignments, users, dialers, and schedules by API-key database context.</p>
+      </a>
+      <a class="card card-link" id="cardEagle" href="#">
+        <h3>EAGLE</h3>
+        <p class="muted">Executive CRM lead intelligence, geography, marketing performance, and spreadsheet exports.</p>
+      </a>
+      <a class="card card-link" id="cardSong" href="#">
+        <h3>SONG</h3>
+        <p class="muted">Design, validate, publish, and measure conditional Dialer call scripts.</p>
+      </a>
+      <a class="card card-link" id="cardHawk" href="#">
+        <h3>HAWK</h3>
+        <p class="muted">Build, publish, monitor, and safely replay API-backed GoHighLevel automations.</p>
+      </a>
+      <a class="card card-link" id="cardParrot" href="#">
+        <h3>PARROT</h3>
+        <p class="muted">Run governed, registered Python transformations for HAWK, EAGLE, and OWL.</p>
+      </a>
+      <a class="card card-link" id="cardDiveDeep" href="#">
+        <h3>DiveDeep</h3>
+        <p class="muted">Customer privacy intake, DiveDeep exports, findings, and removal-case updates.</p>
+      </a>
+      <div class="card">
+        <h3>Your account</h3>
+        <p class="muted" id="account">…</p>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/admin.js"></script>
+</body>
+</html>

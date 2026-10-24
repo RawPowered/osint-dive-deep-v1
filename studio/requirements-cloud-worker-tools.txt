@@ -1,0 +1,8 @@
+# Optional external adapters used by published packages.
+# Versions are fixed to the latest stable upstream GitHub releases verified on 2026-07-28.
+#
+# These tools are installed into separate virtual environments by Dockerfile.cloudrun.
+# Maigret 0.6.1 currently constrains Beautiful Soup below 4.15, so combining it with
+# the DiveDeep core environment would make the production dependency set unsatisfiable.
+-r requirements-sherlock.txt
+-r requirements-maigret.txt

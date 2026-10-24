@@ -1,0 +1,26 @@
+[Unit]
+Description=DiveDeep Recon Queue Worker
+After=network-online.target divedeep-api.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=divedeep
+Group=divedeep
+WorkingDirectory=/opt/divedeep/current
+EnvironmentFile=/etc/divedeep/divedeep.env
+ExecStartPre=/usr/bin/test -L /opt/divedeep/current
+ExecStart=/opt/divedeep/current/run.sh --worker
+Restart=always
+RestartSec=5
+TimeoutStopSec=120
+KillSignal=SIGTERM
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/lib/divedeep /var/cache/divedeep /var/log/divedeep
+
+[Install]
+WantedBy=multi-user.target

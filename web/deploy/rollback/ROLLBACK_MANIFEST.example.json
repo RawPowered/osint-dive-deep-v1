@@ -1,0 +1,12 @@
+{
+  "sourceReleaseVersion": "1.16.0",
+  "sourceSchemaVersion": 64,
+  "targetReleaseVersion": "1.15.0",
+  "targetSchemaVersion": 63,
+  "strategy": "restore_verified_backup_then_deploy_previous_application",
+  "backupFile": "/secure/backups/divedeep-before-1.16.0.sql.enc",
+  "backupSha256": "replace_with_64_hex_sha256",
+  "objectStorageSnapshotId": "replace_with_provider_snapshot_or_inventory_id",
+  "createdAt": "2026-07-25T00:00:00.000Z",
+  "approvedBy": "replace_with_root_admin_id"
+}

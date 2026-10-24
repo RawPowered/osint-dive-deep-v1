@@ -1,0 +1,7 @@
+{
+  "stage": "controlled_pilot",
+  "maximumCustomers": 1,
+  "entryCriteria": ["all_phase10_checks_passed", "customer_consent_confirmed", "support_owner_assigned", "rollback_window_open"],
+  "successCriteria": ["onboarding_completed", "first_job_completed", "service_update_delivered", "retention_sweep_verified", "no_cross_tenant_access"],
+  "stopConditions": ["evidence_exposure", "worker_lease_not_recovered", "webhook_replay_duplicates", "critical_sentinel_alert", "unbounded_cost_growth"]
+}

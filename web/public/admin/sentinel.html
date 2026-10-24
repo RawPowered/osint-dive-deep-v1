@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Sentinel OpSec Console</title>
+  <link rel="stylesheet" href="/css/app.css" />
+  <link rel="stylesheet" href="/css/sentinel.css" />
+</head>
+<body class="sentinel-page">
+  <header class="topbar">
+    <span class="brand">Sentinel</span>
+    <nav class="topbar-nav">
+      <a id="navDash" href="#">Dashboard</a>
+      <a id="navKeys" href="#">API Keys</a>
+      <a id="navConn" href="#">SQL</a>
+      <a id="navHawk" href="#">HAWK</a>
+      <a id="navParrot" href="#">PARROT</a>
+      <a id="navDocs" href="#">Docs</a>
+      <a href="#" id="logout">Sign out</a>
+    </nav>
+  </header>
+
+  <main class="container-wide">
+    <div class="admin-header" style="margin-bottom:0.75rem">
+      <div>
+        <h1 style="margin:0">OpSec Console</h1>
+        <p class="muted small" style="margin:0.25rem 0 0">
+          Login security + API traffic · secrets never stored in events
+        </p>
+      </div>
+    </div>
+
+    <div id="alert" hidden></div>
+
+    <!-- Command bar -->
+    <div class="sentinel-cmd">
+      <div class="sentinel-cmd-left">
+        <div class="field">
+          <label for="selHours">Window</label>
+          <select id="selHours">
+            <option value="1">1 hour</option>
+            <option value="6">6 hours</option>
+            <option value="24" selected>24 hours</option>
+            <option value="72">3 days</option>
+            <option value="168">7 days</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="selRefresh">Auto-refresh</label>
+          <select id="selRefresh">
+            <option value="0" selected>Off</option>
+            <option value="15">15s</option>
+            <option value="30">30s</option>
+            <option value="60">60s</option>
+          </select>
+        </div>
+        <span class="sentinel-meta" id="lastUpdated">—</span>
+      </div>
+      <div class="sentinel-cmd-right">
+        <button type="button" class="btn btn-secondary btn-sm" id="btnRefresh">Refresh</button>
+        <div class="drop-menu" id="exportMenu">
+          <button type="button" class="btn btn-secondary btn-sm" id="btnExportToggle">Export ▾</button>
+          <div class="drop-menu-panel">
+            <button type="button" data-export="threats">Threats CSV</button>
+            <button type="button" data-export="cases">Cases CSV</button>
+            <button type="button" data-export="blocks">Blocks CSV</button>
+            <button type="button" data-export="new-ips">New IPs CSV</button>
+            <button type="button" data-export="logins">Logins CSV</button>
+            <button type="button" data-export="events">API events CSV</button>
+            <button type="button" id="btnCopyReport">Copy IR report</button>
+            <button type="button" id="btnDailyReport">Open daily SOC report</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-chips" id="globalChips"></div>
+
+    <div class="sentinel-tabs" role="tablist">
+      <button type="button" class="sentinel-tab active primary" data-tab="posture">Overview</button>
+      <button type="button" class="sentinel-tab" data-tab="review">Review</button>
+      <button type="button" class="sentinel-tab" data-tab="investigate">Investigate</button>
+      <button type="button" class="sentinel-tab" data-tab="playbooks">Playbooks</button>
+      <button type="button" class="sentinel-tab" data-tab="resources">Intel &amp; Resources</button>
+      <span class="sentinel-tab-divider" aria-hidden="true"></span>
+      <button type="button" class="sentinel-tab" data-tab="threats">Threats</button>
+      <button type="button" class="sentinel-tab" data-tab="api">Traffic</button>
+      <button type="button" class="sentinel-tab" data-tab="logins">Authentication</button>
+      <span class="sentinel-tab-divider" aria-hidden="true"></span>
+      <button type="button" class="sentinel-tab" data-tab="blocks">Blocks</button>
+      <button type="button" class="sentinel-tab" data-tab="rules">Rules</button>
+      <button type="button" class="sentinel-tab" data-tab="validation">Validation</button>
+      <button type="button" class="sentinel-tab" data-tab="retention">Retention</button>
+      <button type="button" class="sentinel-tab" data-tab="newips">New IPs</button>
+    </div>
+
+    <!-- POSTURE -->
+    <section class="sentinel-panel active" id="panel-posture">
+      <div class="posture-hero">
+        <div class="card posture-score-card" id="scoreCard">
+          <svg id="scoreRing" width="140" height="140" viewBox="0 0 120 120" aria-hidden="true"></svg>
+          <div class="score-context" id="scoreContext">Operational risk and response quality</div>
+          <div class="score-num" id="scoreNum">—</div>
+          <div class="score-grade" id="scoreGrade">…</div>
+        </div>
+        <div>
+          <div class="kpi-grid" id="postureKpis"></div>
+          <div class="card" style="margin-top:1rem">
+            <h3 style="margin-top:0">Activity (window)</h3>
+            <div class="chart-bars" id="activityChart" title="Hourly request volume"></div>
+            <div class="chart-legend">
+              <span><i style="background:rgba(59,130,246,0.55)"></i>Requests</span>
+              <span><i style="background:rgba(239,68,68,0.55)"></i>Errors overlay scale</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="telemetry-freshness" id="telemetryFreshness"></div>
+      <div class="card control-health-card" style="margin-bottom:1rem"><div class="section-title"><div><h3>Control health</h3><span class="muted small" id="controlHealthStatus">Checking production controls…</span></div><button type="button" class="btn btn-secondary btn-sm" id="btnControlHealth">Recheck</button></div><div class="control-health-grid" id="controlHealthChecks"></div></div>
+      <div class="card posture-priority" style="margin-bottom:1rem"><div class="section-title"><h3>Priority response queue</h3><span class="muted small">Click an item to act</span></div><div id="posturePriorityQueue"></div></div>
+      <div class="card daily-soc-card" style="margin-bottom:1rem">
+        <div class="section-title"><div><h3>Daily protection routine</h3><span class="muted small" id="dailyRoutineStatus">Not run today</span></div><div class="inline-actions"><button type="button" class="btn btn-primary btn-sm" id="btnRunRoutine">Run protections</button><button type="button" class="btn btn-secondary btn-sm" id="btnGenerateDaily">Generate report</button><button type="button" class="btn btn-secondary btn-sm" id="btnCopyDaily" disabled>Copy handoff</button></div></div>
+        <div class="daily-soc-grid" id="dailySocSummary"><p class="muted">Generate the report after reviewing the current priority queue.</p></div>
+        <div class="routine-exceptions" id="dailyRoutineExceptions"></div>
+        <pre class="daily-soc-preview" id="dailySocPreview" hidden></pre>
+      </div>
+      <div class="sentinel-split">
+        <div class="card">
+          <h3 style="margin-top:0">Open threats by severity</h3>
+          <div id="sevBreakdown" class="muted">—</div>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">Recommended actions</h3>
+          <ol class="actions-list" id="recActions"><li class="muted">Loading…</li></ol>
+        </div>
+      </div>
+      <div class="card" style="margin-top:1rem">
+        <h3 style="margin-top:0">Posture factors</h3>
+        <div id="postureFactors" class="muted">—</div>
+      </div>
+    </section>
+
+    <section class="sentinel-panel" id="panel-resources">
+      <div class="section-title"><div><h2>Intel &amp; Resources</h2><p class="muted">Authoritative intelligence, permanent references, and internal analyst guidance.</p></div><button type="button" class="btn btn-secondary btn-sm" id="btnResourceRefresh">Refresh</button></div>
+      <div class="kpi-grid" id="resourceKpis"></div>
+      <div class="filter-bar"><div class="field"><label>Type</label><select id="resourceType"><option value="">All</option><option value="intelligence">Operational intelligence</option><option value="reference">Reference</option><option value="internal">Internal</option></select></div><div class="field"><label>Review</label><select id="resourceStatus"><option value="">All</option><option value="unreviewed">Unreviewed</option><option value="in_review">In review</option><option value="relevant">Relevant</option><option value="monitoring">Monitoring</option><option value="actioned">Actioned</option><option value="not_applicable">Not applicable</option><option value="archived">Archived</option></select></div><div class="field"><label>Priority</label><select id="resourcePriority"><option value="">All</option><option value="critical">Critical</option><option value="high">High</option><option value="normal">Normal</option><option value="low">Low</option></select></div><div class="field grow"><label>Search</label><input id="resourceSearch" placeholder="publisher, topic, CVE, technique" /></div><button type="button" class="btn btn-primary btn-sm" id="btnResourceFilter">Apply</button></div>
+      <div class="resource-workspace"><div class="card"><h3>Resource queue</h3><div id="resourceList" class="resource-list"></div></div><div class="card" id="resourceDetail"><h3>Select a resource</h3><p class="muted">Review provenance, relevance, linkage, and analyst history.</p></div></div>
+    </section>
+
+    <!-- THREATS -->
+    <section class="sentinel-panel" id="panel-playbooks">
+      <div class="section-title"><div><h2>SOAR Playbooks</h2><p class="muted">Governed analyst checklists with immutable versions and execution evidence.</p></div><div class="inline-actions"><button type="button" class="btn btn-primary btn-sm" id="btnPlaybookNew">New draft</button><button type="button" class="btn btn-secondary btn-sm" id="btnPlaybookRefresh">Refresh</button></div></div>
+      <div class="kpi-grid" id="playbookKpis"></div>
+      <div class="card playbook-authoring" id="playbookAuthoring" hidden><div class="section-title"><div><h3>Create governed draft</h3><p class="muted small">Phase 2 permits observe and recommend steps only.</p></div><button type="button" class="btn btn-secondary btn-sm" id="btnPlaybookDraftClose">Close</button></div><div class="finding-condition-grid"><label>Name<input id="playbookDraftName" maxlength="160" /></label><label>Slug<input id="playbookDraftSlug" maxlength="96" placeholder="generated-from-name" /></label><label>Required entities<input id="playbookDraftEntities" placeholder="ip, api_key, path" /></label><label>ATT&amp;CK techniques<input id="playbookDraftTechniques" placeholder="T1078, T1110" /></label></div><label>Purpose<textarea id="playbookDraftPurpose" rows="2" maxlength="512"></textarea></label><label>Preconditions, one per line<textarea id="playbookDraftPreconditions" rows="3"></textarea></label><label>Checklist steps, one per line<textarea id="playbookDraftSteps" rows="6"></textarea></label><label>Rollback guidance<textarea id="playbookDraftRollback" rows="2">Manual checklist only; no system-changing action is performed.</textarea></label><div class="inline-actions"><button type="button" class="btn btn-primary btn-sm" id="btnPlaybookDraftSave">Save draft</button></div></div>
+      <div class="playbook-workspace">
+        <div class="card"><div class="section-title"><h3>Approved library</h3><select id="playbookStatusFilter"><option value="">All lifecycle states</option><option value="active">Active</option><option value="draft">Draft</option><option value="peer_review">Peer review</option><option value="approved">Approved</option><option value="deprecated">Deprecated</option></select></div><div id="playbookLibrary" class="playbook-library"></div></div>
+        <div class="card" id="playbookDetail"><h3>Select a playbook</h3><p class="muted">Review its purpose, scope, version and controlled manual steps.</p></div>
+      </div>
+      <div class="card" id="playbookSimulationPanel" style="margin-top:1rem"><div class="section-title"><div><h3>Safe execution preview</h3><p class="muted small">Inspect permissions and run aggregate-only queries. Inputs are hashed and API-key values are redacted in history.</p></div></div><div class="filter-bar"><div class="field"><label>Entity type</label><select id="playbookSimEntityType"><option value="">No entity</option><option value="ip">IP</option><option value="path">Path</option><option value="api_key">API key ID</option><option value="identity">Identity</option></select></div><div class="field"><label>Entity value</label><input id="playbookSimEntityValue" maxlength="255" autocomplete="off" /></div><div class="field"><label>Window</label><select id="playbookSimHours"><option value="24">24 hours</option><option value="72">72 hours</option><option value="168">7 days</option><option value="720">30 days</option></select></div><button type="button" class="btn btn-secondary btn-sm" id="btnPlaybookPreview">Preview</button><button type="button" class="btn btn-primary btn-sm" id="btnPlaybookDryRun">Dry run</button></div><div id="playbookSimulationResult" class="playbook-simulation-result"><p class="muted">Select a playbook to inspect its safe action plan.</p></div><h4>Recent simulations</h4><div id="playbookSimulations" class="playbook-runs"></div></div>
+      <div class="card" style="margin-top:1rem"><div class="section-title"><div><h3>Manual response runs</h3><p class="muted small">Phase 1 records analyst decisions only. No system-changing action is automated.</p></div></div><div id="playbookRuns" class="playbook-runs"></div></div>
+    </section>
+
+    <section class="sentinel-panel" id="panel-threats">
+      <div class="section-title">
+        <h2>Active findings</h2>
+        <span class="muted small" id="threatCount">—</span>
+      </div>
+      <div class="threat-list" id="threatList"></div>
+      <div class="finding-governance-summary"><span id="suppressedFindingCount">0 conditionally suppressed</span><button type="button" class="btn btn-secondary btn-sm" id="btnFindingDispositions">Review known behavior</button></div>
+      <div class="card" id="findingDispositionPanel" hidden style="margin-top:1rem"><h3>Known behavior and resolved findings</h3><div class="table-wrap"><table class="sentinel-table"><thead><tr><th>Disposition</th><th>Rule / entity</th><th>Scope</th><th>Conditions</th><th>Reason</th><th>Expires</th><th></th></tr></thead><tbody id="findingDispositionRows"></tbody></table></div></div>
+    </section>
+
+    <!-- LOGINS -->
+    <section class="sentinel-panel" id="panel-logins">
+      <div class="kpi-grid" id="loginKpis" style="margin-bottom:1rem"></div>
+      <div class="filter-bar" id="loginFilters">
+        <div class="field">
+          <label>Outcome</label>
+          <select id="lfOutcome">
+            <option value="">All</option>
+            <option value="success">success</option>
+            <option value="failure">failure</option>
+            <option value="unknown">unknown</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Type</label>
+          <select id="lfType">
+            <option value="">All</option>
+            <option value="login">login</option>
+            <option value="password_reset">password_reset</option>
+            <option value="auth_log">auth_log</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>IP</label>
+          <input type="text" id="lfIp" placeholder="x.x.x.x" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>Location</label>
+          <input type="text" id="lfLoc" placeholder="locationId" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>Search</label>
+          <input type="text" id="lfQ" placeholder="user / email / detail" autocomplete="off" />
+        </div>
+        <button type="button" class="btn btn-primary btn-sm" id="btnLoginFilter">Apply</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnLoginFilterClear">Clear</button>
+      </div>
+      <div class="sentinel-split" style="margin-bottom:1rem">
+        <div class="card">
+          <h3 style="margin-top:0">Fail bursts (1h) · IP</h3>
+          <div id="loginFailIp" class="muted">—</div>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">Fail bursts (1h) · Identity</h3>
+          <div id="loginFailUser" class="muted">—</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table class="sentinel-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Type</th>
+                <th>Outcome</th>
+                <th>User</th>
+                <th>Email</th>
+                <th>Location</th>
+                <th>IP</th>
+                <th>Detail</th>
+              </tr>
+            </thead>
+            <tbody id="loginRows"></tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <span id="loginPagerInfo">—</span>
+          <button type="button" class="btn btn-secondary btn-sm" id="loginPrev">Prev</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="loginNext">Next</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- API -->
+    <section class="sentinel-panel" id="panel-api">
+      <div class="kpi-grid" id="apiKpis" style="margin-bottom:1rem"></div>
+      <div class="filter-bar">
+        <div class="field">
+          <label>Status</label>
+          <input type="text" id="afStatus" placeholder="401" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>Method</label>
+          <select id="afMethod">
+            <option value="">All</option>
+            <option>GET</option>
+            <option>POST</option>
+            <option>PUT</option>
+            <option>DELETE</option>
+            <option>PATCH</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Surface</label>
+          <select id="afSurface">
+            <option value="">All</option>
+            <option value="api">Public API</option>
+            <option value="owl">OWL</option>
+            <option value="eagle">EAGLE</option>
+            <option value="song">SONG</option>
+            <option value="admin">Admin</option>
+            <option value="sentinel">Sentinel</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Action</label>
+          <input type="text" id="afAction" placeholder="song.script.publish" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>Outcome</label>
+          <select id="afOutcome">
+            <option value="">All</option>
+            <option value="success">success</option>
+            <option value="failure">failure</option>
+            <option value="denied">denied</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Path contains</label>
+          <input type="text" id="afPath" placeholder="/api/users" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>IP</label>
+          <input type="text" id="afIp" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>Error class</label>
+          <select id="afErr">
+            <option value="">All</option>
+            <option value="unauthorized">unauthorized</option>
+            <option value="blocked">blocked</option>
+            <option value="rate_limit">rate_limit</option>
+            <option value="client">client</option>
+            <option value="server">server</option>
+            <option value="none">none</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Search</label>
+          <input type="text" id="afQ" placeholder="path / ip / key" autocomplete="off" />
+        </div>
+        <button type="button" class="btn btn-primary btn-sm" id="btnApiFilter">Apply</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnApiFilterClear">Clear</button>
+      </div>
+      <div class="sentinel-split" style="margin-bottom:1rem">
+        <div class="card">
+          <h3 style="margin-top:0">Status codes</h3>
+          <div id="statusHist" class="muted">—</div>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">Top paths</h3>
+          <div class="table-wrap">
+            <table class="sentinel-table">
+              <thead><tr><th>Path</th><th>Req</th><th>Err</th><th>Avg ms</th></tr></thead>
+              <tbody id="topPaths"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:1rem">
+        <h3 style="margin-top:0">Per API key</h3>
+        <div class="table-wrap">
+          <table class="sentinel-table">
+            <thead>
+              <tr><th>Prefix</th><th>Requests</th><th>Errors</th><th>401s</th><th>Err%</th><th>Last seen</th></tr>
+            </thead>
+            <tbody id="byKey"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">Recent security events</h3>
+        <div class="table-wrap">
+          <table class="sentinel-table">
+            <thead>
+              <tr>
+                <th>Time</th><th>Surface</th><th>Actor</th><th>Action</th><th>Method / Path</th><th>Status</th><th>Outcome</th><th>IP</th><th>ms</th><th>Evidence</th>
+              </tr>
+            </thead>
+            <tbody id="apiRows"></tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <span id="apiPagerInfo">—</span>
+          <button type="button" class="btn btn-secondary btn-sm" id="apiPrev">Prev</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="apiNext">Next</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- INVESTIGATE -->
+    <section class="sentinel-panel" id="panel-investigate">
+      <div class="filter-bar">
+        <div class="field">
+          <label>IP</label>
+          <input type="text" id="invIp" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>Location</label>
+          <input type="text" id="invLoc" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>User / email</label>
+          <input type="text" id="invUser" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>Path contains</label>
+          <input type="text" id="invPath" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>Search</label>
+          <input type="text" id="invQ" autocomplete="off" />
+        </div>
+        <button type="button" class="btn btn-primary btn-sm" id="btnInvFilter">Run</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnInvClear">Clear</button>
+      </div>
+      <div id="invProfile" hidden>
+        <div class="section-title"><h2 id="invEntityTitle">Entity investigation</h2><span class="muted small" id="invEntityWindow"></span></div>
+        <div class="kpi-grid" id="invProfileKpis"></div>
+        <div class="sentinel-split inv-profile-split">
+          <div class="card"><h3>Top request paths</h3><div class="table-wrap"><table class="sentinel-table"><thead><tr><th>Method</th><th>Path</th><th>Requests</th><th>Errors</th><th>Last</th></tr></thead><tbody id="invPathRows"></tbody></table></div></div>
+          <div class="card"><h3>Status distribution</h3><div id="invStatuses" class="status-grid"></div><h3>Related cases</h3><div id="invRelatedCases" class="inv-related"></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">Unified timeline</h3>
+        <p class="muted small">Correlated login + API events (newest first). Click a threat to pre-fill filters.</p>
+        <div class="inv-actions" id="invIpActions" hidden>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnInvIntel">WHOIS / RDAP</button>
+          <button type="button" class="btn btn-danger btn-sm" id="btnInvBlock">Block this IP</button>
+        </div>
+        <div class="timeline" id="timeline"></div>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnInvMore" hidden>Load older events</button>
+      </div>
+    </section>
+
+    <!-- REVIEW (threat cases) -->
+    <section class="sentinel-panel" id="panel-review">
+      <div class="section-title">
+        <h2>Threat review queue</h2>
+        <span class="muted small" id="caseCount">—</span>
+      </div>
+      <div class="kpi-grid review-kpis" id="caseOpsKpis"></div>
+      <div class="review-quick-views" id="caseQuickViews">
+        <button type="button" class="btn btn-secondary btn-sm" data-case-view="unassigned">Unassigned</button>
+        <button type="button" class="btn btn-secondary btn-sm" data-case-view="breached">SLA breached</button>
+        <button type="button" class="btn btn-secondary btn-sm" data-case-view="validation">Awaiting validation</button>
+        <button type="button" class="btn btn-secondary btn-sm" data-case-view="reopened">Reopened</button>
+        <button type="button" class="btn btn-secondary btn-sm" data-case-view="all">All cases</button>
+      </div>
+      <div class="filter-bar">
+        <div class="field">
+          <label>Status</label>
+          <select id="cfStatus">
+            <option value="">All</option>
+            <option value="open" selected>open</option>
+            <option value="triage">triage</option>
+            <option value="investigating">investigating</option>
+            <option value="contained">contained</option>
+            <option value="monitoring">monitoring</option>
+            <option value="resolved">resolved</option>
+            <option value="closed">closed</option>
+            <option value="reopened">reopened</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Severity</label>
+          <select id="cfSev">
+            <option value="">All</option>
+            <option value="critical">critical</option>
+            <option value="high">high</option>
+            <option value="medium">medium</option>
+            <option value="low">low</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Owner</label>
+          <select id="cfOwner"><option value="">All</option><option value="me">Mine</option><option value="unassigned">Unassigned</option></select>
+        </div>
+        <div class="field">
+          <label>SLA</label>
+          <select id="cfSla"><option value="">All</option><option value="breached">Breached</option><option value="due_soon">Due within 2h</option></select>
+        </div>
+        <div class="field">
+          <label>Disposition</label>
+          <select id="cfDisposition"><option value="">All</option><option value="confirmed_malicious">Confirmed malicious</option><option value="suspicious">Suspicious</option><option value="false_positive">False positive</option><option value="expected_behavior">Expected behavior</option><option value="insufficient_evidence">Insufficient evidence</option></select>
+        </div>
+        <div class="field">
+          <label>Search</label>
+          <input type="text" id="cfQ" placeholder="title / entity / rule" autocomplete="off" />
+        </div>
+        <button type="button" class="btn btn-primary btn-sm" id="btnCaseFilter">Apply</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnCaseSync">Sync from threats</button>
+      </div>
+      <div class="sentinel-split review-layout">
+        <div class="card">
+          <div class="table-wrap">
+            <table class="sentinel-table">
+              <thead>
+                <tr>
+                  <th>Sev</th>
+                  <th>Status</th>
+                  <th>Title</th>
+                  <th>Entity</th>
+                  <th>Owner</th>
+                  <th>Disposition</th>
+                  <th>SLA</th>
+                  <th>Age</th>
+                  <th>Count</th>
+                  <th>Last</th>
+                </tr>
+              </thead>
+              <tbody id="caseRows"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card case-detail" id="caseDetail">
+          <p class="muted">Select a case to review evidence and respond.</p>
+        </div>
+      </div>
+      <div class="card" style="margin-top:1rem"><div class="section-title"><h3>Analyst response performance</h3><span class="muted small" id="caseOpsWindow">Current window</span></div><div class="table-wrap"><table class="sentinel-table"><thead><tr><th>Analyst</th><th>Handled</th><th>Resolved</th><th>Closed</th><th>Avg resolution</th></tr></thead><tbody id="caseAnalystRows"></tbody></table></div></div>
+    </section>
+
+    <!-- PURPLE TEAM VALIDATION -->
+    <section class="sentinel-panel" id="panel-validation">
+      <div class="section-title"><div><h2>Purple Team validation</h2><span class="muted small">Detection coverage and safe simulation outcomes</span></div><div class="field"><label>Coverage window</label><select id="validationDays"><option value="30">30 days</option><option value="90" selected>90 days</option><option value="365">1 year</option></select></div></div>
+      <div class="kpi-grid" id="validationKpis"></div>
+      <div class="sentinel-split" style="margin-top:1rem;align-items:start">
+        <div class="card"><h3>Create validation run</h3><div class="validation-form"><label>Name<input id="validationName" placeholder="Credential defense validation" /></label><label>Objective<textarea id="validationObjective" rows="2" placeholder="Control or detection objective"></textarea></label><button type="button" class="btn btn-primary btn-sm" id="btnValidationCreate">Create and start</button></div><h3>Runs</h3><div id="validationRuns" class="validation-runs"></div></div>
+        <div class="card"><h3 id="validationRunTitle">Select a validation run</h3><div id="validationObservationForm" hidden><div class="validation-observation-grid"><label>Technique ID<input id="validationTechnique" placeholder="T1110.001" /></label><label>Tactic<input id="validationTactic" placeholder="Credential Access" /></label><label>Expected rule<input id="validationRule" placeholder="login_fail_ip" /></label><label>Outcome<select id="validationOutcome"><option value="pending">Pending automatic correlation</option><option value="detected">Detected manually</option><option value="prevented">Prevented</option><option value="partial">Partial</option><option value="missed">Missed manually</option></select></label><label>Simulated at<input id="validationSimulated" type="datetime-local" /></label><label>Detected at<input id="validationDetected" type="datetime-local" /></label><label class="full">Note<textarea id="validationNote" rows="2" placeholder="Evidence-safe result summary"></textarea></label></div><div class="inline-actions"><button type="button" class="btn btn-primary btn-sm" id="btnValidationRecord">Record observation</button><button type="button" class="btn btn-secondary btn-sm" id="btnValidationEvaluate">Evaluate detections</button><button type="button" class="btn btn-secondary btn-sm" id="btnValidationComplete">Complete and create gap cases</button></div></div><div class="table-wrap" style="margin-top:1rem"><table class="sentinel-table"><thead><tr><th>Technique</th><th>Tactic</th><th>Outcome</th><th>Detection time</th><th>Case</th></tr></thead><tbody id="validationObservations"></tbody></table></div></div>
+      </div>
+      <div class="card" style="margin-top:1rem"><h3>Technique coverage</h3><div class="table-wrap"><table class="sentinel-table"><thead><tr><th>Technique</th><th>Tactic</th><th>Tests</th><th>Detected</th><th>Missed</th><th>Last tested</th></tr></thead><tbody id="validationCoverageRows"></tbody></table></div></div>
+    </section>
+
+    <!-- RETENTION GOVERNANCE -->
+    <section class="sentinel-panel" id="panel-retention">
+      <div class="section-title"><div><h2>Retention governance</h2><span class="muted small">Preview-first security data lifecycle controls</span></div><button type="button" class="btn btn-secondary btn-sm" id="btnRetentionRefresh">Refresh preview</button></div>
+      <div class="kpi-grid" id="retentionKpis"></div>
+      <div class="card" style="margin-top:1rem"><h3>Data-class policies</h3><div class="table-wrap"><table class="sentinel-table"><thead><tr><th>Data class</th><th>Retention</th><th>Enabled</th><th>Eligible now</th><th>Updated</th></tr></thead><tbody id="retentionRows"></tbody></table></div></div>
+      <div class="card retention-execute" style="margin-top:1rem"><h3>Execute approved retention</h3><p class="muted small">Durable cases, analyst notes, lifecycle history, case actions, and forensic-access audit metadata are preserved. Execution requires root access and the exact phrase shown below.</p><code id="retentionPhrase">PURGE EXPIRED SENTINEL DATA</code><div class="inline-actions" style="margin-top:.75rem"><input id="retentionConfirm" placeholder="Type the exact confirmation phrase" autocomplete="off" /><button type="button" class="btn btn-danger btn-sm" id="btnRetentionExecute">Execute retention</button></div><div id="retentionPreserved" class="muted small" style="margin-top:.75rem"></div></div>
+    </section>
+
+    <!-- NEW IPs -->
+    <section class="sentinel-panel" id="panel-newips">
+      <div class="section-title">
+        <h2>New first-fail IPs</h2>
+        <span class="muted small" id="newIpCount">—</span>
+      </div>
+      <p class="muted small" style="margin-top:0">
+        IPs whose <strong>first contact</strong> with this API was an authentication failure (401/403).
+        Human review recommended before blocking shared NAT egress.
+      </p>
+      <div class="card">
+        <div class="table-wrap">
+          <table class="sentinel-table">
+            <thead>
+              <tr>
+                <th>IP</th>
+                <th>First seen</th>
+                <th>First path</th>
+                <th>Fails</th>
+                <th>Success</th>
+                <th>Total</th>
+                <th>Blocked</th>
+                <th>Cases</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="newIpRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- BLOCKS -->
+    <section class="sentinel-panel" id="panel-blocks">
+      <div class="section-title">
+        <h2>IP blocklist</h2>
+        <span class="muted small" id="blockCount">—</span>
+      </div>
+      <div class="card" style="margin-bottom:1rem">
+        <h3 style="margin-top:0">Add block</h3>
+        <div class="filter-bar">
+          <div class="field">
+            <label>IP</label>
+            <input type="text" id="blockIp" placeholder="x.x.x.x" autocomplete="off" />
+          </div>
+          <div class="field grow">
+            <label>Reason</label>
+            <input type="text" id="blockReason" placeholder="Hostile scan / credential spray" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label>Expires (optional ISO)</label>
+            <input type="text" id="blockExpires" placeholder="leave blank = permanent" autocomplete="off" />
+          </div>
+          <button type="button" class="btn btn-danger btn-sm" id="btnAddBlock">Block IP</button>
+        </div>
+        <label class="check-inline">
+          <input type="checkbox" id="blockShowAll" /> Show revoked / expired
+        </label>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table class="sentinel-table">
+            <thead>
+              <tr>
+                <th>IP</th>
+                <th>Reason</th>
+                <th>Source</th>
+                <th>Active</th>
+                <th>Expires</th>
+                <th>Created</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="blockRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- RULES -->
+    <section class="sentinel-panel" id="panel-rules">
+      <div class="section-title">
+        <h2>Custom flagging rules</h2>
+        <span class="muted small" id="ruleCount">—</span>
+      </div>
+      <p class="muted small" style="margin-top:0">
+        Safe condition builder only — no raw SQL. Matches create findings and review cases.
+        Auto-block is off by default (OpSec: human-in-the-loop).
+      </p>
+      <div class="card" style="margin-bottom:1rem">
+        <h3 style="margin-top:0">Create rule</h3>
+        <div class="filter-bar">
+          <div class="field">
+            <label>Name</label>
+            <input type="text" id="ruleName" placeholder="401 burst from IP" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label>Severity</label>
+            <select id="ruleSev">
+              <option value="critical">critical</option>
+              <option value="high" selected>high</option>
+              <option value="medium">medium</option>
+              <option value="low">low</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Source</label>
+            <select id="ruleSource">
+              <option value="api" selected>api</option>
+              <option value="login">login</option>
+              <option value="either">either</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Group by</label>
+            <select id="ruleGroup">
+              <option value="ip" selected>ip</option>
+              <option value="identity">identity</option>
+              <option value="path">path</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Min count</label>
+            <input type="number" id="ruleMin" value="5" min="1" max="10000" />
+          </div>
+          <div class="field">
+            <label>Window (min)</label>
+            <input type="number" id="ruleWindow" value="60" min="1" max="10080" />
+          </div>
+          <div class="field">
+            <label>Status code (api)</label>
+            <input type="number" id="ruleStatus" placeholder="401" />
+          </div>
+          <div class="field">
+            <label>Login outcome</label>
+            <select id="ruleOutcome">
+              <option value="">—</option>
+              <option value="failure">failure</option>
+              <option value="success">success</option>
+            </select>
+          </div>
+          <div class="field grow">
+            <label>Path contains (optional)</label>
+            <input type="text" id="rulePath" placeholder="/api/users" autocomplete="off" />
+          </div>
+        </div>
+        <div class="filter-bar">
+          <label class="check-inline">
+            <input type="checkbox" id="ruleAutoBlock" /> Auto-block IP (24h) when matched
+          </label>
+          <button type="button" class="btn btn-primary btn-sm" id="btnCreateRule">Create rule</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table class="sentinel-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Sev</th>
+                <th>Enabled</th>
+                <th>Condition</th>
+                <th>Actions</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="ruleRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Root-only, audited forensic evidence drawer -->
+    <div class="intel-drawer evidence-drawer" id="evidenceDrawer" hidden>
+      <div class="intel-drawer-panel evidence-drawer-panel" role="dialog" aria-modal="true" aria-labelledby="evidenceTitle">
+        <div class="intel-drawer-head">
+          <div>
+            <h3 id="evidenceTitle">HTTP forensic evidence</h3>
+            <div class="muted small mono" id="evidenceRequestId">-</div>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnEvidenceClose">Close</button>
+        </div>
+        <div id="evidenceGate">
+          <p class="evidence-notice">Evidence is redacted, encrypted at rest, integrity verified before display, and retained for a limited period. Every reveal is audited.</p>
+          <label class="evidence-reason">Investigation reason
+            <textarea id="evidenceReason" rows="3" maxlength="512" placeholder="Incident, threat hypothesis, or troubleshooting purpose"></textarea>
+          </label>
+          <button type="button" class="btn btn-primary" id="btnEvidenceReveal">Verify and reveal</button>
+        </div>
+        <div id="evidenceContent" hidden>
+          <div class="evidence-summary" id="evidenceSummary"></div>
+          <div class="evidence-tabs" role="tablist">
+            <button type="button" class="active" data-evidence-tab="overview">Overview</button>
+            <button type="button" data-evidence-tab="requestHeaders">Request headers</button>
+            <button type="button" data-evidence-tab="requestPayload">Request payload</button>
+            <button type="button" data-evidence-tab="responseHeaders">Response headers</button>
+            <button type="button" data-evidence-tab="responsePayload">Response payload</button>
+            <button type="button" data-evidence-tab="integrity">Integrity</button>
+          </div>
+          <div class="evidence-toolbar">
+            <span class="muted small">Displayed content is already redacted.</span>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnEvidenceCopy">Copy view</button>
+          </div>
+          <pre class="evidence-json" id="evidenceJson"></pre>
+          <div class="inline-actions evidence-pivots">
+            <button type="button" class="btn btn-secondary btn-sm" id="btnEvidencePivotIp">Investigate IP</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnEvidencePivotPath">Investigate path</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Intel drawer -->
+    <div class="intel-drawer" id="intelDrawer" hidden>
+      <div class="intel-drawer-panel">
+        <div class="intel-drawer-head">
+          <h3 id="intelTitle">IP intelligence</h3>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnIntelClose">Close</button>
+        </div>
+        <div id="intelBody" class="muted">—</div>
+      </div>
+    </div>
+  </main>
+
+  <dialog id="findingDispositionDialog" class="finding-disposition-dialog"><form method="dialog"><div class="section-title"><h3>Resolve active finding</h3><button value="cancel" aria-label="Close">×</button></div><input type="hidden" id="findingDispositionId" /><label>Action<select id="findingDispositionType"><option value="known_benign">Known and benign</option><option value="acknowledged">Acknowledge and continue monitoring</option><option value="remediated">Remediated</option></select></label><label>Reason<textarea id="findingDispositionReason" rows="3" maxlength="1000" placeholder="Why this behavior is safe or how it was remediated"></textarea></label><div class="finding-condition-grid"><label>Duration (days)<input id="findingDispositionDays" type="number" min="1" max="365" value="30" /></label><label>Maximum expected count<input id="findingDispositionMax" type="number" min="1" /></label><label>Status codes<input id="findingDispositionStatuses" placeholder="409" /></label><label>Allowed source IPs<input id="findingDispositionIps" placeholder="Current IP only by default" /></label></div><p class="muted small">The finding automatically returns if its API key, path, status, source IP, volume, or expiration conditions change.</p><div class="inline-actions"><button value="cancel" class="btn btn-secondary btn-sm">Cancel</button><button type="button" class="btn btn-primary btn-sm" id="btnFindingDispositionSave">Save governed action</button></div></form></dialog>
+  <script src="/js/sentinel-console.js"></script>
+</body>
+</html>

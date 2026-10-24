@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.example.invalid/schemas/hawk-automation-import.schema.json",
+  "title": "HAWK automation import base schema",
+  "description": "Base contract. Download Live CRM Schema from HAWK to include the selected connection's current objects, fields, custom-field IDs, picklist values, and runtime paths.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "flows"],
+  "properties": {
+    "format": { "const": "hawk-automation-1" },
+    "generatedFor": { "type": "object" },
+    "flows": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "required": ["name", "graph"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 191 },
+          "description": { "type": "string", "maxLength": 1000 },
+          "integrationId": { "type": ["string", "null"] },
+          "graph": {
+            "type": "object",
+            "required": ["schemaVersion", "startNodeId", "nodes"],
+            "properties": {
+              "schemaVersion": { "const": 1 },
+              "startNodeId": { "type": "string" },
+              "nodes": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 100,
+                "items": {
+                  "type": "object",
+                  "required": ["id", "type", "name", "config", "position"],
+                  "properties": {
+                    "id": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$" },
+                    "type": { "enum": ["trigger", "condition", "action", "end"] },
+                    "action": { "enum": [
+                      "ghl.update_contact", "ghl.upsert_contact", "ghl.add_tags", "ghl.remove_tags",
+                      "ghl.create_note", "ghl.create_task", "ghl.create_opportunity", "ghl.update_opportunity",
+                      "ghl.send_message", "ghl.create_appointment", "ghl.create_object_record",
+                      "ghl.update_object_record", "data.set", "code.run"
+                    ] },
+                    "config": { "type": "object" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

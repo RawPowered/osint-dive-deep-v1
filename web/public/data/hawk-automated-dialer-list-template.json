@@ -1,0 +1,140 @@
+{
+  "format": "hawk-automation-1",
+  "generatedFor": {
+    "locationId": "REPLACE_WITH_LOCATION_ID",
+    "liveSchemaGeneratedAt": "2026-07-14T01:15:37.029Z",
+    "purpose": "Maintain a GoHighLevel Smart List tag only after OWL verifies queueable lifecycle, DNC, phone-channel, configured-calendar, marketing-hours, and attempt-limit eligibility. GHL assigns the operator at the Manual Actions stage.",
+    "requiredSetup": [
+      "Select the granted GoHighLevel Private Integration when importing.",
+      "Enable the signed contact.updated webhook or polling adapter before activation.",
+      "Configure at least one calendar for every OWL service pool that may enter this flow.",
+      "Build the GoHighLevel Smart List from tag hawk-dialer-ready."
+    ]
+  },
+  "flows": [
+    {
+      "name": "OWL-verified automated dialer list",
+      "description": "Fail-closed pre-queue eligibility check. Eligible queueable leads receive the hawk-dialer-ready tag before GHL Manual Actions assignment; every excluded or unverifiable lead has the tag removed and its live Dialer Status field updated with the reason.",
+      "integrationId": null,
+      "graph": {
+        "schemaVersion": 1,
+        "startNodeId": "trigger",
+        "nodes": [
+          {
+            "id": "trigger",
+            "type": "trigger",
+            "name": "Contact changed",
+            "config": {
+              "event": "contact.updated"
+            },
+            "nextNodeId": "evaluate_eligibility",
+            "position": { "x": 420, "y": 40 }
+          },
+          {
+            "id": "evaluate_eligibility",
+            "type": "action",
+            "action": "divedeep.evaluate_dialer_eligibility",
+            "name": "Evaluate dialer eligibility",
+            "config": {
+              "contactId": "{{trigger.contactId}}",
+              "requireAssignment": false
+            },
+            "nextNodeId": "eligible_check",
+            "position": { "x": 420, "y": 190 }
+          },
+          {
+            "id": "eligible_check",
+            "type": "condition",
+            "name": "OWL approved for dialer",
+            "config": {
+              "field": "steps.evaluate_eligibility.response.eligible",
+              "operator": "equals",
+              "value": true
+            },
+            "routes": [
+              { "label": "Eligible", "when": true, "targetNodeId": "mark_ready" },
+              { "label": "Excluded", "when": false, "targetNodeId": "remove_ready_tag" }
+            ],
+            "position": { "x": 420, "y": 340 }
+          },
+          {
+            "id": "mark_ready",
+            "type": "action",
+            "action": "ghl.update_contact",
+            "name": "Set Dialer Status ready",
+            "config": {
+              "contactId": "{{trigger.contactId}}",
+              "fields": {
+                "customFields": [
+                  {
+                    "id": "VsXb7HofKxm6F5sr7edH",
+                    "field_value": "READY - OWL VERIFIED"
+                  }
+                ]
+              }
+            },
+            "nextNodeId": "add_ready_tag",
+            "position": { "x": 210, "y": 500 }
+          },
+          {
+            "id": "add_ready_tag",
+            "type": "action",
+            "action": "ghl.add_tags",
+            "name": "Add dialer-ready tag",
+            "config": {
+              "contactId": "{{trigger.contactId}}",
+              "tags": ["hawk-dialer-ready"]
+            },
+            "nextNodeId": "eligible_end",
+            "position": { "x": 210, "y": 650 }
+          },
+          {
+            "id": "eligible_end",
+            "type": "end",
+            "name": "Eligible for dialer list",
+            "config": {},
+            "position": { "x": 210, "y": 800 }
+          },
+          {
+            "id": "remove_ready_tag",
+            "type": "action",
+            "action": "ghl.remove_tags",
+            "name": "Remove dialer-ready tag",
+            "config": {
+              "contactId": "{{trigger.contactId}}",
+              "tags": ["hawk-dialer-ready"]
+            },
+            "nextNodeId": "mark_excluded",
+            "position": { "x": 630, "y": 500 }
+          },
+          {
+            "id": "mark_excluded",
+            "type": "action",
+            "action": "ghl.update_contact",
+            "name": "Record exclusion reason",
+            "config": {
+              "contactId": "{{trigger.contactId}}",
+              "fields": {
+                "customFields": [
+                  {
+                    "id": "VsXb7HofKxm6F5sr7edH",
+                    "field_value": "BLOCKED - {{steps.evaluate_eligibility.response.reason}}"
+                  }
+                ]
+              }
+            },
+            "nextNodeId": "excluded_end",
+            "position": { "x": 630, "y": 650 }
+          },
+          {
+            "id": "excluded_end",
+            "type": "end",
+            "name": "Excluded from dialer list",
+            "config": {},
+            "position": { "x": 630, "y": 800 }
+          }
+        ]
+      }
+    }
+  ]
+}

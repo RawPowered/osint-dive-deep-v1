@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Install · DiveDeep</title>
+  <link rel="stylesheet" href="/css/app.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand brand-divedeep" href="/"><span class="brand-divedeep-logo" aria-hidden="true"></span><span class="visually-hidden">DiveDeep</span></a>
+    <nav class="topbar-nav"><span class="muted">Installer</span></nav>
+  </header>
+
+  <main class="container container-sm">
+    <h1>Install DiveDeep</h1>
+    <p class="muted">Verify MySQL, generate a private root owner, and permanently lock setup.</p>
+
+    <div class="steps">
+      <span class="step-pill active" data-step="1">1. Database</span>
+      <span class="step-pill" data-step="2">2. Secure setup</span>
+      <span class="step-pill" data-step="3">3. Launch</span>
+    </div>
+
+    <div id="alert" hidden></div>
+
+    <!-- Step 1 -->
+    <div class="card" id="step1">
+      <h2>MySQL connection</h2>
+      <label for="host">Host</label>
+      <input id="host" type="text" value="127.0.0.1" autocomplete="off" />
+
+      <label for="port">Port</label>
+      <input id="port" type="number" value="3306" />
+
+      <label for="user">User</label>
+      <input id="user" type="text" autocomplete="off" />
+
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="new-password" />
+
+      <label for="database">Database name</label>
+      <input id="database" type="text" placeholder="divedeep_api" autocomplete="off" />
+
+      <label class="checkbox-row">
+        <input id="createDatabase" type="checkbox" checked />
+        Create database if it does not exist
+      </label>
+
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+        <button type="button" class="btn btn-secondary" id="btnTest">Test connection</button>
+        <button type="button" class="btn btn-primary" id="btnNext1" disabled>Continue</button>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="card" id="step2" hidden>
+      <h2>Secure owner bootstrap</h2>
+      <p class="muted small">DiveDeep will generate an obfuscated root-owner username and a strong password from an ephemeral 256-bit seed. The seed is erased immediately and is never stored or returned.</p>
+
+      <div class="alert alert-warning">The owner credentials and private launch URL are revealed once. Have a password manager ready before installing.</div>
+
+      <label class="checkbox-row">
+        <input id="receiptReady" type="checkbox" />
+        I am ready to save the one-time launch receipt
+      </label>
+
+      <label class="checkbox-row">
+        <input id="createFirstApiKey" type="checkbox" checked />
+        Create a first Dialer API key after install
+      </label>
+
+      <label for="firstKeyName">First key name</label>
+      <input id="firstKeyName" type="text" value="Default Dialer Key" />
+
+      <hr style="margin:1.5rem 0;border:0;border-top:1px solid var(--border)" />
+      <h2>Customer website connection</h2>
+      <p class="muted small">Install the Node/API package first. Use the public customer-site URL and this API URL. For cookie security, use sibling HTTPS subdomains such as <code>https://demo.example.com</code> and <code>https://api.demo.example.com</code>.</p>
+
+      <label for="publicOrigin">Customer website URL</label>
+      <input id="publicOrigin" type="url" placeholder="https://demo.example.com" autocomplete="url" required />
+
+      <label for="apiOrigin">API URL</label>
+      <input id="apiOrigin" type="url" autocomplete="url" required />
+
+      <label for="privateStorageDir">Private encrypted file directory</label>
+      <input id="privateStorageDir" type="text" placeholder="Defaults to a protected storage folder beside this application" autocomplete="off" />
+
+      <hr style="margin:1.5rem 0;border:0;border-top:1px solid var(--border)" />
+      <h2>External instance identity</h2>
+      <p class="muted small">Optional overrides. Leave fields blank to generate unique, non-product identifiers for this installation.</p>
+
+      <label for="apiDisplayName">API display name</label>
+      <input id="apiDisplayName" type="text" value="Private API" maxlength="80" />
+
+      <label for="publicApiBasePath">Public API base path</label>
+      <input id="publicApiBasePath" type="text" placeholder="Generated automatically, or /your-private-path" autocomplete="off" />
+
+      <label for="webhookBasePath">Webhook base path</label>
+      <input id="webhookBasePath" type="text" placeholder="Generated automatically" autocomplete="off" />
+
+      <label for="healthPath">Health-check path</label>
+      <input id="healthPath" type="text" placeholder="Generated automatically" autocomplete="off" />
+
+      <label for="apiKeyPrefix">API key prefix</label>
+      <input id="apiKeyPrefix" type="text" placeholder="Generated automatically, or your custom prefix" maxlength="16" autocomplete="off" />
+
+      <label for="automationNamespace">Automation action namespace</label>
+      <input id="automationNamespace" type="text" placeholder="Generated automatically, or your custom namespace" maxlength="24" autocomplete="off" />
+
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+        <button type="button" class="btn btn-secondary" id="btnBack2">Back</button>
+        <button type="button" class="btn btn-primary" id="btnInstall">Install</button>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="card" id="step3" hidden>
+      <h2>Installation verified</h2>
+      <p class="muted">Database, schema, root-owner creation, and root login were verified. Save this receipt now.</p>
+      <div class="alert alert-warning">This page is the only disclosure of the generated owner credentials and private admin URL.</div>
+      <div id="verificationChecks" class="secret-box" style="margin-bottom:1rem"></div>
+      <label>Admin login URL (bookmark this)</label>
+      <div class="secret-box" id="adminUrlValue"></div>
+      <label>Root-owner username</label>
+      <div class="secret-box" id="adminUsernameValue"></div>
+      <label>Root-owner password</label>
+      <div class="secret-box" id="adminPasswordValue"></div>
+      <button type="button" class="btn btn-secondary btn-sm" id="btnCopyReceipt">Copy launch receipt</button>
+      <div id="frontendReveal" hidden style="margin-top:1.25rem">
+        <h3>Customer website handoff</h3>
+        <p class="muted small">Download this non-secret configuration file, then upload it into the root of the separate customer website folder, replacing its placeholder <code>divedeep-runtime.js</code>.</p>
+        <label>Customer website URL</label>
+        <div class="secret-box" id="publicOriginValue"></div>
+        <label>API URL</label>
+        <div class="secret-box" id="apiOriginValue"></div>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnDownloadFrontendConfig">Download divedeep-runtime.js</button>
+      </div>
+      <div id="instanceIdentityReveal" hidden style="margin-top:1.25rem">
+        <label>Public API base URL</label>
+        <div class="secret-box" id="apiBaseUrlValue"></div>
+        <label>Webhook base URL</label>
+        <div class="secret-box" id="webhookBaseUrlValue"></div>
+        <label>Health-check URL</label>
+        <div class="secret-box" id="healthUrlValue"></div>
+        <label>Automation namespace</label>
+        <div class="secret-box" id="automationNamespaceValue"></div>
+      </div>
+      <div id="keyReveal" hidden style="margin-top:1.25rem">
+        <div class="alert alert-warning">Copy this API key now. It will not be shown again.</div>
+        <div class="secret-box" id="secretValue"></div>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnCopy">Copy key</button>
+      </div>
+      <h3 style="margin-top:1.25rem">Launch instructions</h3>
+      <ol class="muted small">
+        <li>Save the URL, username, password, and optional API key in a password manager.</li>
+        <li>Use “Erase receipt &amp; launch” to remove the values from this page and open the private login.</li>
+        <li>For later launches, run <code>npm start</code> from the application directory.</li>
+      </ol>
+      <p style="margin-top:1.25rem"><button type="button" class="btn btn-primary" id="btnGoAdmin">Erase receipt &amp; launch</button></p>
+    </div>
+  </main>
+
+  <script>
+    const alertEl = document.getElementById('alert');
+    let connectionProof = '';
+    let launchPath = '';
+    let frontendRuntimeConfig = '';
+    function showAlert(type, msg) {
+      alertEl.hidden = false;
+      alertEl.className = 'alert alert-' + type;
+      alertEl.textContent = msg;
+    }
+    function clearAlert() {
+      alertEl.hidden = true;
+      alertEl.textContent = '';
+    }
+
+    function setStep(n) {
+      document.getElementById('step1').hidden = n !== 1;
+      document.getElementById('step2').hidden = n !== 2;
+      document.getElementById('step3').hidden = n !== 3;
+      document.querySelectorAll('.step-pill').forEach((el) => {
+        const s = Number(el.dataset.step);
+        el.classList.toggle('active', s === n);
+        el.classList.toggle('done', s < n);
+      });
+    }
+
+    fetch('/install/status')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.installed && !d.allowReinstall) {
+          document.body.innerHTML = '<main class="container"><p class="muted">Not found</p></main>';
+        }
+      })
+      .catch(() => {});
+
+    document.getElementById('apiOrigin').value = location.origin;
+
+    ['host', 'port', 'user', 'password', 'database', 'createDatabase'].forEach((id) => {
+      document.getElementById(id).addEventListener('input', () => {
+        connectionProof = '';
+        document.getElementById('btnNext1').disabled = true;
+      });
+      document.getElementById(id).addEventListener('change', () => {
+        connectionProof = '';
+        document.getElementById('btnNext1').disabled = true;
+      });
+    });
+
+    document.getElementById('btnTest').onclick = async () => {
+      clearAlert();
+      const body = {
+        host: document.getElementById('host').value.trim(),
+        port: Number(document.getElementById('port').value),
+        user: document.getElementById('user').value.trim(),
+        password: document.getElementById('password').value,
+        database: document.getElementById('database').value.trim(),
+        createDatabase: document.getElementById('createDatabase').checked,
+      };
+      try {
+        const res = await fetch('/install/test-db', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          showAlert('error', data.error || 'Connection failed');
+          document.getElementById('btnNext1').disabled = true;
+          return;
+        }
+        connectionProof = data.connectionProof || '';
+        if (!connectionProof) {
+          showAlert('error', 'The server did not issue a secure connection proof');
+          document.getElementById('btnNext1').disabled = true;
+          return;
+        }
+        showAlert('success', data.message || 'Connection successful');
+        document.getElementById('btnNext1').disabled = false;
+      } catch (e) {
+        showAlert('error', e.message);
+      }
+    };
+
+    document.getElementById('btnNext1').onclick = () => {
+      clearAlert();
+      setStep(2);
+    };
+    document.getElementById('btnBack2').onclick = () => {
+      clearAlert();
+      setStep(1);
+    };
+
+    document.getElementById('btnInstall').onclick = async () => {
+      clearAlert();
+      if (!connectionProof) {
+        showAlert('error', 'Return to the database step and verify the connection again');
+        return;
+      }
+      if (!document.getElementById('receiptReady').checked) {
+        showAlert('error', 'Confirm that you are ready to save the one-time launch receipt');
+        return;
+      }
+      const btn = document.getElementById('btnInstall');
+      btn.disabled = true;
+      btn.textContent = 'Installing…';
+
+      const body = {
+        host: document.getElementById('host').value.trim(),
+        port: Number(document.getElementById('port').value),
+        user: document.getElementById('user').value.trim(),
+        password: document.getElementById('password').value,
+        database: document.getElementById('database').value.trim(),
+        createDatabase: document.getElementById('createDatabase').checked,
+        connectionProof,
+        createFirstApiKey: document.getElementById('createFirstApiKey').checked,
+        firstKeyName: document.getElementById('firstKeyName').value.trim() || 'Default Dialer Key',
+        publicOrigin: document.getElementById('publicOrigin').value.trim(),
+        apiOrigin: document.getElementById('apiOrigin').value.trim(),
+        privateStorageDir: document.getElementById('privateStorageDir').value.trim() || undefined,
+        instanceIdentity: {
+          apiDisplayName: document.getElementById('apiDisplayName').value.trim() || 'Private API',
+          publicApiBasePath: document.getElementById('publicApiBasePath').value.trim() || undefined,
+          webhookBasePath: document.getElementById('webhookBasePath').value.trim() || undefined,
+          healthPath: document.getElementById('healthPath').value.trim() || undefined,
+          apiKeyPrefix: document.getElementById('apiKeyPrefix').value.trim() || undefined,
+          automationNamespace: document.getElementById('automationNamespace').value.trim() || undefined,
+        },
+      };
+
+      try {
+        const res = await fetch('/install/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          showAlert('error', data.error || 'Install failed');
+          btn.disabled = false;
+          btn.textContent = 'Install';
+          return;
+        }
+        clearAlert();
+        setStep(3);
+        launchPath = data.adminLoginUrl || (data.adminBasePath + '/login');
+        const fullAdmin = location.origin + launchPath;
+        document.getElementById('adminUrlValue').textContent = fullAdmin;
+        document.getElementById('adminUsernameValue').textContent = data.admin?.username || '';
+        document.getElementById('adminPasswordValue').textContent = data.admin?.password || '';
+        const checks = data.checks || {};
+        document.getElementById('verificationChecks').textContent = [
+          checks.databaseConnection && '✓ Database connection verified',
+          checks.schemaCreated && '✓ Schema created',
+          checks.rootOwnerCreated && checks.rootOwnerLoginVerified && '✓ Obfuscated root owner created and login verified',
+          checks.installerLocked && '✓ Installer permanently locked',
+          checks.bootstrapSeedPersisted === false && '✓ Bootstrap seed erased without persistence',
+        ].filter(Boolean).join('\n');
+        if (data.instance) {
+          document.getElementById('instanceIdentityReveal').hidden = false;
+          document.getElementById('apiBaseUrlValue').textContent = location.origin + data.instance.publicApiBasePath;
+          document.getElementById('webhookBaseUrlValue').textContent = location.origin + data.instance.webhookBasePath;
+          document.getElementById('healthUrlValue').textContent = location.origin + data.instance.healthPath;
+          document.getElementById('automationNamespaceValue').textContent = data.instance.automationNamespace;
+        }
+        if (data.frontend?.runtimeConfig) {
+          document.getElementById('frontendReveal').hidden = false;
+          document.getElementById('publicOriginValue').textContent = data.frontend.publicOrigin || '';
+          document.getElementById('apiOriginValue').textContent = data.frontend.apiOrigin || '';
+          frontendRuntimeConfig = data.frontend.runtimeConfig;
+        }
+        if (data.apiKey && data.apiKey.secret) {
+          document.getElementById('keyReveal').hidden = false;
+          document.getElementById('secretValue').textContent = data.apiKey.secret;
+        }
+        document.getElementById('password').value = '';
+        connectionProof = '';
+        body.password = '';
+        body.connectionProof = '';
+        if (data.admin) data.admin.password = '';
+        if (data.apiKey) data.apiKey.secret = '';
+      } catch (e) {
+        showAlert('error', e.message);
+        btn.disabled = false;
+        btn.textContent = 'Install';
+      }
+    };
+
+    document.getElementById('btnCopy').onclick = async () => {
+      const text = document.getElementById('secretValue').textContent;
+      try {
+        await navigator.clipboard.writeText(text);
+        showAlert('success', 'API key copied to clipboard');
+      } catch {
+        showAlert('warning', 'Could not copy automatically — select the key manually');
+      }
+    };
+
+    document.getElementById('btnCopyReceipt').onclick = async () => {
+      const apiKey = document.getElementById('secretValue').textContent;
+      const text = [
+        'DiveDeep one-time launch receipt',
+        `Admin URL: ${document.getElementById('adminUrlValue').textContent}`,
+        `Username: ${document.getElementById('adminUsernameValue').textContent}`,
+        `Password: ${document.getElementById('adminPasswordValue').textContent}`,
+        `Customer website: ${document.getElementById('publicOriginValue').textContent}`,
+        `API URL: ${document.getElementById('apiOriginValue').textContent}`,
+        apiKey ? `API key: ${apiKey}` : '',
+        'Later launch command: npm start',
+      ].filter(Boolean).join('\n');
+      try {
+        await navigator.clipboard.writeText(text);
+        showAlert('success', 'Launch receipt copied. Save it directly into a password manager.');
+      } catch {
+        showAlert('warning', 'Could not copy automatically. Save each value manually.');
+      }
+    };
+
+    document.getElementById('btnDownloadFrontendConfig').onclick = () => {
+      if (!frontendRuntimeConfig) return showAlert('error', 'Frontend configuration is unavailable. Do not leave this receipt page until it is downloaded.');
+      const blob = new Blob([frontendRuntimeConfig], { type: 'text/javascript' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'divedeep-runtime.js';
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showAlert('success', 'Downloaded divedeep-runtime.js. Upload it to the customer website root before testing sign-up.');
+    };
+
+    document.getElementById('btnGoAdmin').onclick = async () => {
+      if (!launchPath) return;
+      ['adminUrlValue', 'adminUsernameValue', 'adminPasswordValue', 'secretValue',
+        'apiBaseUrlValue', 'webhookBaseUrlValue', 'healthUrlValue', 'automationNamespaceValue',
+        'publicOriginValue', 'apiOriginValue']
+        .forEach((id) => { document.getElementById(id).textContent = ''; });
+      frontendRuntimeConfig = '';
+      try { await navigator.clipboard.writeText(''); } catch { /* clipboard access is best effort */ }
+      location.replace(launchPath);
+    };
+  </script>
+</body>
+</html>

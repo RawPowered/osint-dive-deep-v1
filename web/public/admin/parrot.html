@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PARROT Python Bridge</title>
+  <link rel="stylesheet" href="/css/app.css" />
+  <link rel="stylesheet" href="/css/parrot.css?v=20260715-2" />
+  <link rel="stylesheet" href="/css/parrot-studio.css?v=20260715-3" />
+</head>
+<body class="parrot-page">
+  <aside class="parrot-sidebar">
+    <a class="parrot-brand" id="navHome" href="#"><span class="parrot-mark">P</span><span><strong>PARROT</strong><small>Python Bridge</small></span></a>
+    <nav class="parrot-suite" aria-label="DiveDeep suite">
+      <a id="navOwl" href="#"><i>O</i><span>OWL<small>Operations</small></span></a>
+      <a id="navEagle" href="#"><i>E</i><span>EAGLE<small>Analytics</small></span></a>
+      <a id="navSong" href="#"><i>S</i><span>SONG<small>Scripts</small></span></a>
+      <a id="navHawk" href="#"><i>H</i><span>HAWK<small>Automation</small></span></a>
+      <a class="active" href="#"><i>P</i><span>PARROT<small>Python Bridge</small></span></a>
+      <a id="navSentinel" href="#"><i>◆</i><span>SENTINEL<small>Monitoring</small></span></a>
+    </nav>
+    <div class="parrot-boundary"><strong>Governed Python only</strong><small>Draft source is restricted, versioned, hash-pinned, and explicitly deployed before live automation.</small></div>
+  </aside>
+
+  <div class="parrot-app">
+    <header class="parrot-topbar">
+      <div><strong>PARROT</strong><span>Python Service Bridge</span></div>
+      <nav><a id="navDocs" href="#">Docs</a><a id="logout" href="#">Sign out</a></nav>
+    </header>
+
+    <main class="parrot-main">
+      <section class="parrot-commandbar">
+        <div><span class="eyebrow">Execution context</span><h1>Registered Python Operations</h1><p>Governed transformations for HAWK, EAGLE, and OWL</p></div>
+        <div class="parrot-scope">
+          <label>Portfolio<select id="apiKey"></select></label>
+          <label>Database<select id="dataSource"></select></label>
+          <label>Location<select id="location"></select></label>
+        </div>
+        <button type="button" class="parrot-button secondary" id="refreshButton">Refresh</button>
+      </section>
+
+      <div id="parrotAlert" class="parrot-alert" hidden></div>
+
+      <nav class="parrot-tabs" aria-label="PARROT workspace">
+        <button type="button" class="active" id="consoleTab">Run Console</button>
+        <button type="button" id="studioTab">Script Studio</button>
+      </nav>
+
+      <section class="parrot-kpis" data-parrot-view="console">
+        <article><span>Bridge status</span><strong id="healthStatus">Checking</strong><small id="healthDetail">Waiting for PARROT</small></article>
+        <article><span>Registered scripts</span><strong id="scriptCount">0</strong><small>Versioned and allowlisted</small></article>
+        <article><span>Completed runs</span><strong id="completedCount">0</strong><small>Selected workspace</small></article>
+        <article><span>Failed runs</span><strong id="failedCount">0</strong><small>Traceable in Sentinel</small></article>
+      </section>
+
+      <section class="parrot-workspace" data-parrot-view="console">
+        <aside class="parrot-catalog">
+          <header><span class="eyebrow">Registry</span><h2>Python scripts</h2><input id="scriptSearch" type="search" placeholder="Search scripts" /></header>
+          <div id="scriptList" class="parrot-script-list"></div>
+        </aside>
+
+        <section class="parrot-run-panel">
+          <header><span class="eyebrow">Run composer</span><h2 id="scriptTitle">Select a script</h2><p id="scriptDescription">Choose a registered handler from the catalog.</p></header>
+          <div class="parrot-script-meta" id="scriptMeta"></div>
+          <label>Mode<select id="runMode"><option value="dry_run">Dry run</option><option value="live">Live</option></select></label>
+          <label>Idempotency key<input id="idempotencyKey" maxlength="191" placeholder="Optional for a one-off dry run" /></label>
+          <label>JSON inputs<textarea id="runInputs" rows="14" spellcheck="false">{}</textarea></label>
+          <div class="parrot-actions"><button type="button" class="parrot-button primary" id="runButton" disabled>Run selected script</button></div>
+          <div class="parrot-result" id="runResult"><span>Run output will appear here.</span></div>
+        </section>
+
+        <aside class="parrot-evidence">
+          <header><span class="eyebrow">Contract</span><h2>Input schema</h2></header>
+          <pre id="inputSchema">{}</pre>
+          <header><span class="eyebrow">Sentinel</span><h2>Trace policy</h2></header>
+          <p>Every request carries one request ID through Node, PARROT, the durable run ledger, and Sentinel.</p>
+        </aside>
+      </section>
+
+      <section class="parrot-history" data-parrot-view="console">
+        <header><div><span class="eyebrow">Execution ledger</span><h2>Recent runs</h2></div><select id="statusFilter"><option value="">All statuses</option><option value="completed">Completed</option><option value="failed">Failed</option><option value="running">Running</option></select></header>
+        <div class="parrot-table-wrap"><table><thead><tr><th>Created</th><th>Script</th><th>Source</th><th>Mode</th><th>Status</th><th>Duration</th><th>Request ID</th></tr></thead><tbody id="runRows"></tbody></table></div>
+      </section>
+
+      <section class="parrot-studio" id="studioWorkspace" data-parrot-view="studio" hidden>
+        <nav class="studio-portability" aria-label="PARROT portable script tools">
+          <div><span class="eyebrow">AI authoring kit</span><strong>Portable Python packages</strong><small>Generate, validate, export, and safely re-import draft scripts.</small></div>
+          <a href="/data/parrot-script-ai-rules.md" target="_blank" rel="noopener">AI Rules</a>
+          <button type="button" id="downloadParrotCrmFields">Export CRM Fields</button>
+          <a href="/data/parrot-script-template.json" target="_blank" rel="noopener">Sample Python Script</a>
+          <button type="button" id="importStudioJson">Import / Re-import</button>
+          <button type="button" id="exportStudioJson" disabled>Export JSON</button>
+        </nav>
+        <aside class="studio-library">
+          <header><span class="eyebrow">Version registry</span><h2>Studio scripts</h2><button type="button" class="parrot-button primary" id="newStudioScript">+ New script</button></header>
+          <div id="studioScriptList" class="studio-script-list"></div>
+        </aside>
+        <section class="studio-editor">
+          <header><div><span class="eyebrow">Python authoring</span><h2 id="studioTitle">New managed script</h2><p>Define <code>run(inputs, context)</code>. Drafts can be validated and dry-run before deployment.</p></div><span id="studioStatus" class="studio-status draft">Draft</span></header>
+          <div class="studio-meta-grid">
+            <label>Name<input id="studioName" maxlength="191" placeholder="Company reconnaissance" /></label>
+            <label>Script ID<input id="studioSlug" maxlength="96" placeholder="custom.company-recon" /></label>
+          </div>
+          <label>Description<textarea id="studioDescription" rows="2" maxlength="1000" placeholder="What this script observes and returns"></textarea></label>
+          <div class="studio-capabilities">
+            <strong>Capabilities</strong>
+            <label><input id="capabilityHttp" type="checkbox" value="network.http" /> HTTPS reconnaissance</label>
+            <label><input id="capabilityDns" type="checkbox" value="network.dns" /> DNS lookup</label>
+            <small>Network helpers also require matching hosts in <code>PARROT_RECON_ALLOWED_HOSTS</code>.</small>
+          </div>
+          <label class="studio-source-label">Python source<textarea id="studioSource" rows="22" spellcheck="false"></textarea></label>
+          <div class="studio-source-footer"><span id="studioSourceStats">0 lines · 0 bytes</span><span>Filesystem, environment, subprocesses, imports, and private attributes are unavailable.</span></div>
+          <details><summary>Input contract</summary><label>JSON Schema<textarea id="studioInputSchema" rows="7" spellcheck="false">{"type":"object","properties":{}}</textarea></label></details>
+          <label>Version note<input id="studioChangeNote" maxlength="1000" placeholder="What changed in this version" /></label>
+          <div class="studio-actions">
+            <button type="button" class="parrot-button secondary" id="validateStudioScript">Validate</button>
+            <button type="button" class="parrot-button secondary" id="saveStudioScript">Save draft</button>
+            <button type="button" class="parrot-button primary" id="dryRunStudioScript">Save &amp; dry-run</button>
+            <button type="button" class="parrot-button deploy" id="deployStudioScript">Deploy version</button>
+            <button type="button" class="parrot-button danger" id="retireStudioScript">Retire</button>
+          </div>
+        </section>
+        <aside class="studio-evidence">
+          <header><span class="eyebrow">Validation</span><h2>Policy report</h2></header>
+          <pre id="studioValidation">Validate the draft to inspect its source hash and policy findings.</pre>
+          <header><span class="eyebrow">Dry-run</span><h2>Test inputs</h2></header>
+          <textarea id="studioDryInputs" rows="8" spellcheck="false">{}</textarea>
+          <pre id="studioDryResult">Dry-run output will appear here.</pre>
+          <header><span class="eyebrow">Available helpers</span><h2>Recon SDK</h2></header>
+          <code>http_get(url, timeout=5)</code>
+          <code>dns_lookup(host)</code>
+          <code>sha256(value)</code>
+          <code>json_encode(value)</code>
+          <code>json_decode(text)</code>
+          <code>url_parse(url)</code>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="studioImportDialog" class="studio-import-dialog">
+    <form method="dialog">
+      <header><div><span class="eyebrow">Portable Python package</span><h2>Import PARROT JSON</h2></div><button value="cancel" aria-label="Close">×</button></header>
+      <p>Preview validates every script through the live PARROT runtime. Import and re-import create draft versions only.</p>
+      <nav>
+        <a href="/data/parrot-script-template.json" target="_blank" rel="noopener">Sample Python Script</a>
+        <a href="/data/parrot-script-import.schema.json" target="_blank" rel="noopener">Base Schema</a>
+        <a href="/data/parrot-script-ai-rules.md" target="_blank" rel="noopener">AI Rules</a>
+      </nav>
+      <label>Choose JSON file<input id="studioImportFile" type="file" accept="application/json,.json" /></label>
+      <label>Or paste package<textarea id="studioImportJson" rows="16" spellcheck="false"></textarea></label>
+      <label>Conflict policy<select id="studioImportPolicy"><option value="skip">Skip matching script IDs</option><option value="clone">Create a copy</option><option value="replace_draft">Re-import as the latest draft</option></select></label>
+      <div id="studioImportPreview" class="studio-import-preview">Choose or paste a package, then preview it.</div>
+      <footer><button value="cancel" class="parrot-button secondary">Cancel</button><button type="button" id="previewStudioImport" class="parrot-button secondary">Preview</button><button type="button" id="applyStudioImport" class="parrot-button primary" disabled>Import drafts</button></footer>
+    </form>
+  </dialog>
+  <script src="/js/parrot-console.js?v=20260715-3"></script>
+</body>
+</html>

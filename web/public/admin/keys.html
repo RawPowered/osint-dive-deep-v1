@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>API Keys</title>
+  <link rel="stylesheet" href="/css/app.css" />
+</head>
+<body>
+  <header class="topbar">
+    <span class="brand">Control panel</span>
+    <nav class="topbar-nav">
+      <a id="navDash" href="#">Dashboard</a>
+      <a id="navDocs" href="#">Docs</a>
+      <a id="navConn" href="#">SQL</a>
+      <a id="navSentinel" href="#">Sentinel</a>
+      <a href="#" id="logout">Sign out</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <div class="admin-header">
+      <div>
+        <h1>API keys</h1>
+        <p class="muted">Secrets are shown only once at creation.</p>
+      </div>
+    </div>
+
+    <div id="alert" hidden></div>
+
+    <div class="card">
+      <h2>Create key</h2>
+      <label for="name">Name</label>
+      <input id="name" type="text" placeholder="Production Dialer" />
+      <button type="button" class="btn btn-primary" id="btnCreate">Generate API key</button>
+    </div>
+
+    <div class="card" id="reveal" hidden>
+      <h3>New key secret</h3>
+      <div class="alert alert-warning">Copy this now. It will not be shown again.</div>
+      <div class="secret-box" id="secret"></div>
+      <button type="button" class="btn btn-secondary btn-sm" id="btnCopy">Copy</button>
+    </div>
+
+    <div class="card">
+      <h2>Issued keys</h2>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Prefix</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Last used</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <tr><td colspan="6" class="muted">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const base = location.pathname.replace(/\/keys\/?$/, '') || '';
+
+    document.getElementById('navDash').href = base;
+    document.getElementById('navDocs').href = base + '/docs';
+    document.getElementById('navConn').href = base + '/connections';
+    document.getElementById('navSentinel').href = base + '/sentinel';
+
+    const alertEl = document.getElementById('alert');
+    function showAlert(type, msg) {
+      alertEl.hidden = false;
+      alertEl.className = 'alert alert-' + type;
+      alertEl.textContent = msg;
+    }
+
+    async function ensureAuth() {
+      const me = await fetch(base + '/me', { headers: { Accept: 'application/json' } });
+      if (!me.ok) {
+        window.location.href = base + '/login?next=' + encodeURIComponent(base + '/keys');
+        return false;
+      }
+      return true;
+    }
+
+    function fmt(dt) {
+      if (!dt) return '—';
+      try { return new Date(dt).toLocaleString(); } catch { return dt; }
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    async function loadKeys() {
+      const res = await fetch(base + '/api/keys', { headers: { Accept: 'application/json' } });
+      if (!res.ok) {
+        showAlert('error', 'Could not load keys');
+        return;
+      }
+      const data = await res.json();
+      const tbody = document.getElementById('tbody');
+      if (!data.keys || !data.keys.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="muted">No keys yet</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.keys.map((k) => {
+        const revoked = Boolean(k.revoked_at);
+        return `<tr>
+          <td>${escapeHtml(k.name)}</td>
+          <td><code>${escapeHtml(k.key_prefix)}…</code></td>
+          <td>${revoked
+            ? '<span class="badge badge-revoked">Revoked</span>'
+            : '<span class="badge badge-ok">Active</span>'}</td>
+          <td>${fmt(k.created_at)}</td>
+          <td>${fmt(k.last_used_at)}</td>
+          <td>${revoked ? '' : `<button class="btn btn-danger btn-sm" data-revoke="${k.id}">Revoke</button>`}</td>
+        </tr>`;
+      }).join('');
+
+      tbody.querySelectorAll('[data-revoke]').forEach((btn) => {
+        btn.onclick = () => revoke(btn.dataset.revoke);
+      });
+    }
+
+    async function createKey() {
+      const name = document.getElementById('name').value.trim();
+      if (!name) {
+        showAlert('error', 'Name is required');
+        return;
+      }
+      const res = await fetch(base + '/api/keys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showAlert('error', data.error || 'Create failed');
+        return;
+      }
+      document.getElementById('reveal').hidden = false;
+      document.getElementById('secret').textContent = data.key.secret;
+      document.getElementById('name').value = '';
+      showAlert('success', 'Key created');
+      loadKeys();
+    }
+
+    async function revoke(id) {
+      if (!confirm('Revoke this API key? Clients using it will stop working.')) return;
+      const res = await fetch(base + '/api/keys/' + encodeURIComponent(id) + '/revoke', {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showAlert('error', data.error || 'Revoke failed');
+        return;
+      }
+      showAlert('success', 'Key revoked');
+      loadKeys();
+    }
+
+    document.getElementById('btnCreate').onclick = createKey;
+    document.getElementById('btnCopy').onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(document.getElementById('secret').textContent);
+        showAlert('success', 'Copied');
+      } catch {
+        showAlert('warning', 'Copy manually from the box above');
+      }
+    };
+    document.getElementById('logout').onclick = async (e) => {
+      e.preventDefault();
+      await fetch(base + '/logout', { method: 'POST' });
+      window.location.href = base + '/login';
+    };
+
+    (async () => {
+      if (await ensureAuth()) loadKeys();
+    })();
+  </script>
+</body>
+</html>

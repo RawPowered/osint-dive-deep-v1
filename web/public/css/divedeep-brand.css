@@ -1,0 +1,83 @@
+:root {
+  color-scheme: light dark;
+
+  --flock-obsidian: #020817;
+  --flock-midnight: #06172b;
+  --flock-navy: #082b5b;
+  --flock-signal-blue: #087eeb;
+  --flock-sync-blue: #0b63f6;
+  --flock-electric-cyan: #00c8ff;
+  --flock-ice-silver: #e8f0f7;
+  --flock-steel-silver: #aebed0;
+  --flock-cloud: #f5f8fc;
+  --flock-slate: #62758a;
+
+  --flock-success: #2fc28c;
+  --flock-warning: #f2a546;
+  --flock-critical: #ef5b5b;
+
+  --flock-gradient-midnight: linear-gradient(90deg, #020817 0%, #06172b 55%, #0b2a4a 100%);
+  --flock-gradient-sync: linear-gradient(90deg, #0057ff 0%, #087eeb 42%, #00c8ff 100%);
+  --flock-gradient-cyan: linear-gradient(90deg, #00c8ff 0%, #0b63f6 100%);
+  --flock-gradient-silver: linear-gradient(90deg, #ffffff 0%, #dde8f2 35%, #9eb1c5 70%, #f7fbff 100%);
+  --flock-gradient-halo: radial-gradient(circle at 25% 50%, #00c8ff 0%, #0b63f6 30%, #020817 100%);
+
+  --flock-font-display: "Exo 2", "Inter", Arial, sans-serif;
+  --flock-font-body: "Inter", Arial, sans-serif;
+  --flock-space-1: 8px;
+  --flock-space-2: 16px;
+  --flock-space-3: 24px;
+  --flock-space-4: 32px;
+  --flock-space-6: 48px;
+  --flock-space-8: 64px;
+  --flock-radius-card: 16px;
+  --flock-radius-control: 10px;
+  --flock-border-light: #d5e0ea;
+  --flock-border-dark: #173a62;
+
+  --flock-surface-dark: var(--flock-obsidian);
+  --flock-surface-dark-raised: var(--flock-midnight);
+  --flock-surface-light: var(--flock-cloud);
+  --flock-text-on-dark: #ffffff;
+  --flock-text-on-dark-muted: var(--flock-steel-silver);
+  --flock-text-on-light: var(--flock-midnight);
+  --flock-text-on-light-muted: var(--flock-slate);
+  --flock-action: var(--flock-signal-blue);
+  --flock-action-selected: var(--flock-sync-blue);
+  --flock-highlight: var(--flock-electric-cyan);
+}
+
+.flock-display-title {
+  font-family: var(--flock-font-display);
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.flock-eyebrow {
+  font-family: var(--flock-font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.flock-brand-lockup {
+  display: block;
+  height: auto;
+  max-width: 100%;
+}
+
+.flock-brand-lockup--horizontal {
+  min-width: 180px;
+}
+
+.flock-brand-emblem {
+  display: block;
+  height: auto;
+  min-width: 24px;
+}
+
+
+/* Public edition: neutral text identity; no private artwork. */
+.fid-brand-logo {background: none; color: inherit; font-size: 1rem; font-weight: 800; display: flex; align-items: center; white-space: nowrap;}

@@ -1,0 +1,197 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.osint-dive-deep.invalid/template.schema.json",
+  "title": "OSINT Query Studio Hunt Template",
+  "description": "Portable discovery, filtering, visual matching, extraction, and fetch configuration for OSINT Query Studio version 5.",
+  "type": "object",
+  "required": ["schema_version", "name", "matrix", "visual"],
+  "properties": {
+    "schema_version": {
+      "const": "osint-query-studio-template-v2"
+    },
+    "template_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9._-]+$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "tags": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "author": {"type": "string"},
+        "compatible_app_versions": {"type": "string"},
+        "created_at": {"type": "string"},
+        "updated_at": {"type": "string"},
+        "objective": {"type": "string"},
+        "notes": {"type": ["string", "array", "object"]},
+        "source": {"type": "string"},
+        "license": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "matrix": {
+      "$ref": "#/$defs/matrix"
+    },
+    "visual": {
+      "$ref": "#/$defs/visual"
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "multiline": {
+      "oneOf": [
+        {"type": "string"},
+        {"type": "array", "items": {"type": "string"}}
+      ]
+    },
+    "matrix": {
+      "type": "object",
+      "required": ["templates"],
+      "properties": {
+        "bases": {"$ref": "#/$defs/multiline"},
+        "variants": {"$ref": "#/$defs/multiline"},
+        "geographies": {"$ref": "#/$defs/multiline"},
+        "excludes": {"$ref": "#/$defs/multiline"},
+        "sites": {"$ref": "#/$defs/multiline"},
+        "title_terms": {"$ref": "#/$defs/multiline"},
+        "url_terms": {"$ref": "#/$defs/multiline"},
+        "filetypes": {"$ref": "#/$defs/multiline"},
+        "templates": {"$ref": "#/$defs/multiline"},
+        "max_queries": {"type": "integer", "minimum": 1, "maximum": 25000},
+        "candidate_excluded_domains": {"$ref": "#/$defs/multiline"},
+        "candidate_excluded_url_terms": {"$ref": "#/$defs/multiline"},
+        "candidate_excluded_title_terms": {"$ref": "#/$defs/multiline"},
+        "candidate_excluded_snippet_terms": {"$ref": "#/$defs/multiline"},
+        "candidate_required_url_terms": {"$ref": "#/$defs/multiline"}
+      },
+      "additionalProperties": false
+    },
+    "matching": {
+      "type": "object",
+      "properties": {
+        "within_group": {"enum": ["AND", "OR"]},
+        "between_groups": {"enum": ["AND", "OR"]},
+        "minimum_score": {"type": "number", "minimum": 0, "maximum": 100}
+      },
+      "additionalProperties": false
+    },
+    "prefilter": {
+      "type": "object",
+      "properties": {
+        "excluded_domains": {"$ref": "#/$defs/multiline"},
+        "excluded_url_terms": {"$ref": "#/$defs/multiline"},
+        "excluded_title_terms": {"$ref": "#/$defs/multiline"},
+        "excluded_snippet_terms": {"$ref": "#/$defs/multiline"},
+        "required_url_terms": {"$ref": "#/$defs/multiline"}
+      },
+      "additionalProperties": false
+    },
+    "rule": {
+      "type": "object",
+      "required": ["Group", "Section", "Operator"],
+      "properties": {
+        "Group": {"type": "string", "minLength": 1},
+        "Group logic": {"enum": ["", "AND", "OR"]},
+        "Section": {
+          "enum": [
+            "URL",
+            "Search title",
+            "Search snippet",
+            "Page title",
+            "Meta description",
+            "Head HTML",
+            "Visible header",
+            "Body text",
+            "Visible footer",
+            "All scripts",
+            "Footer scripts",
+            "Full HTML"
+          ]
+        },
+        "Operator": {
+          "enum": [
+            "contains",
+            "does not contain",
+            "equals",
+            "starts with",
+            "ends with",
+            "regex",
+            "exists",
+            "does not exist"
+          ]
+        },
+        "Value": {"type": "string"},
+        "Case sensitive": {"type": "boolean"},
+        "Required": {"type": "boolean"},
+        "Weight": {"type": "number", "minimum": 0, "maximum": 100}
+      },
+      "additionalProperties": false
+    },
+    "extractor": {
+      "type": "object",
+      "required": ["Column name", "Method", "Source", "Pattern or selector"],
+      "properties": {
+        "Column name": {"type": "string", "minLength": 1},
+        "Method": {"enum": ["Regex", "CSS text", "CSS attribute", "JSON-LD key"]},
+        "Source": {
+          "enum": [
+            "Full HTML",
+            "Page text",
+            "Head HTML",
+            "Visible header",
+            "Visible footer",
+            "All scripts",
+            "Footer scripts"
+          ]
+        },
+        "Pattern or selector": {"type": "string", "minLength": 1},
+        "Attribute": {"type": "string"},
+        "Multiple": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "fetch": {
+      "type": "object",
+      "properties": {
+        "workers": {"type": "integer", "minimum": 1, "maximum": 16},
+        "timeout": {"type": "integer", "minimum": 3, "maximum": 120},
+        "verify_tls": {"type": "boolean"},
+        "follow_redirects": {"type": "boolean"},
+        "max_bytes": {"type": "integer", "minimum": 250000, "maximum": 10000000},
+        "include_nonmatches": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "visual": {
+      "type": "object",
+      "properties": {
+        "matching": {"$ref": "#/$defs/matching"},
+        "prefilter": {"$ref": "#/$defs/prefilter"},
+        "rules": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/rule"}
+        },
+        "extractors": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/extractor"}
+        },
+        "selected_fields": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "fetch": {"$ref": "#/$defs/fetch"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

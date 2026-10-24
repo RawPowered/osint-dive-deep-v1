@@ -1,0 +1,71 @@
+{
+  "format": "hawk-automation-1",
+  "generatedFor": {
+    "locationId": "REPLACE_WITH_LOCATION_ID",
+    "note": "Use HAWK's Live CRM Schema download for the current field IDs and allowed values."
+  },
+  "flows": [
+    {
+      "name": "New lead qualification",
+      "description": "Route a new lead by source, update CRM fields, and mark it processed.",
+      "integrationId": null,
+      "graph": {
+        "schemaVersion": 1,
+        "startNodeId": "trigger",
+        "nodes": [
+          {
+            "id": "trigger",
+            "type": "trigger",
+            "name": "Contact created",
+            "config": { "event": "contact.created" },
+            "nextNodeId": "source_check",
+            "position": { "x": 380, "y": 40 }
+          },
+          {
+            "id": "source_check",
+            "type": "condition",
+            "name": "Paid lead source",
+            "config": { "field": "trigger.source", "operator": "in", "value": ["Facebook", "Google"] },
+            "routes": [
+              { "label": "Yes", "when": true, "targetNodeId": "add_tag" },
+              { "label": "No", "when": false, "targetNodeId": "end" }
+            ],
+            "position": { "x": 380, "y": 190 }
+          },
+          {
+            "id": "add_tag",
+            "type": "action",
+            "action": "ghl.add_tags",
+            "name": "Mark processed",
+            "config": { "contactId": "{{trigger.contactId}}", "tags": ["hawk-processed"] },
+            "nextNodeId": "create_task",
+            "position": { "x": 380, "y": 350 }
+          },
+          {
+            "id": "create_task",
+            "type": "action",
+            "action": "ghl.create_task",
+            "name": "Create qualification task",
+            "config": {
+              "contactId": "{{trigger.contactId}}",
+              "title": "Qualify {{trigger.firstName}} {{trigger.lastName}}",
+              "body": "Review source {{trigger.source}} and complete first outreach.",
+              "assignedTo": "{{trigger.assignedTo}}",
+              "dueDate": "{{trigger.dateAdded}}",
+              "completed": false
+            },
+            "nextNodeId": "end",
+            "position": { "x": 380, "y": 500 }
+          },
+          {
+            "id": "end",
+            "type": "end",
+            "name": "Complete",
+            "config": {},
+            "position": { "x": 380, "y": 650 }
+          }
+        ]
+      }
+    }
+  ]
+}

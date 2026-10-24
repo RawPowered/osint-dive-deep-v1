@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.example.invalid/schemas/parrot-script-import.schema.json",
+  "title": "PARROT managed Python import",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "scripts"],
+  "properties": {
+    "format": { "const": "parrot-script-1" },
+    "generatedAt": { "type": "string" },
+    "generatedFor": { "type": "object" },
+    "scripts": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "items": { "$ref": "#/$defs/script" }
+    }
+  },
+  "$defs": {
+    "script": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "slug", "source", "capabilities", "inputSchema"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 191 },
+        "slug": { "type": "string", "pattern": "^custom\\.[a-z][a-z0-9_.-]{1,88}$" },
+        "description": { "type": "string", "maxLength": 1000 },
+        "source": { "type": "string", "minLength": 1, "maxLength": 65536 },
+        "capabilities": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "enum": ["network.http", "network.dns"] }
+        },
+        "inputSchema": { "type": "object" },
+        "changeNote": { "type": "string", "maxLength": 1000 }
+      }
+    }
+  }
+}
+

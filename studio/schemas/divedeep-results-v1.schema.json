@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://divedeep.example.invalid/schemas/divedeep-results-v1.schema.json",
+  "title": "DiveDeep DiveDeep Recon Results",
+  "type": "object",
+  "required": ["schemaVersion", "packetType", "product", "generatedAt", "source", "findings"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "packetType": { "const": "divedeep.recon-results" },
+    "product": { "const": "DiveDeep" },
+    "generatedAt": { "type": "string" },
+    "source": {
+      "type": "object",
+      "required": ["customerId", "profileId", "diveDeepPacketSha256"],
+      "properties": {
+        "customerId": { "type": "string", "minLength": 1 },
+        "profileId": { "type": "string", "minLength": 1 },
+        "diveDeepPacketSha256": { "type": "string", "pattern": "^[A-Fa-f0-9]{64}$" }
+      }
+    },
+    "summary": { "type": "object" },
+    "findings": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "required": ["findingKey", "sourceName", "listingUrl", "matchConfidence", "contentCategory", "status"],
+        "properties": {
+          "findingKey": { "type": "string", "minLength": 1, "maxLength": 128 },
+          "sourceName": { "type": "string", "minLength": 1, "maxLength": 255 },
+          "listingUrl": { "type": "string", "format": "uri", "maxLength": 2048 },
+          "matchConfidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "contentCategory": { "type": "string", "maxLength": 64 },
+          "status": { "enum": ["review", "confirmed", "preserved", "ignored", "false_positive", "removed", "reappeared", "still_present"] },
+          "evidence": { "type": "array", "maxItems": 50 },
+          "removal": { "type": "object" },
+          "verification": { "type": "object" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DiveDeep receiver</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>DiveDeep</h1>
+        <p>Structured page receiver</p>
+      </div>
+      <span id="receiverStatus" class="status neutral">Connecting</span>
+    </header>
+
+    <section id="message" class="message" hidden></section>
+
+    <label for="captureMode">Capture purpose</label>
+    <select id="captureMode">
+      <option value="owner-verification">Owner name + address</option>
+      <option value="language-evidence">Public-profile language</option>
+    </select>
+
+    <section id="rowPanel" class="panel" hidden>
+      <div class="eyebrow">Matched input row</div>
+      <strong id="expectedName"></strong>
+      <span id="expectedAddress"></span>
+      <div class="score-row">
+        <span>Name <b id="nameScore">0%</b></span>
+        <span>Address <b id="addressScore">0%</b></span>
+      </div>
+      <div id="rowState" class="status neutral"></div>
+    </section>
+
+    <section id="scanPanel" class="panel" hidden>
+      <div class="eyebrow">Current page scan</div>
+      <strong id="candidateName"></strong>
+      <span id="candidateAddress"></span>
+      <span id="languageResult"></span>
+      <span id="scanTime"></span>
+    </section>
+
+    <section id="manualPanel" class="panel" hidden>
+      <div class="eyebrow">Manual-entry source</div>
+      <label for="manualName">Visible record name</label>
+      <input id="manualName" type="text" autocomplete="off">
+      <label for="manualAddress">Visible property address</label>
+      <input id="manualAddress" type="text" autocomplete="off">
+      <button id="manualMatchButton" type="button" class="secondary">Match entered fields to queue</button>
+      <span>Current source policy disables automatic DOM scanning on this domain.</span>
+    </section>
+
+    <section id="businessPanel" class="message warning" hidden>
+      <strong>Organization likely</strong>
+      <span>This row should use a business registry instead of a people directory.</span>
+      <button id="openSunbiz" type="button" class="secondary">Open Florida Sunbiz</button>
+    </section>
+
+    <label id="replaceLabel" class="check" hidden>
+      <input id="replaceExisting" type="checkbox">
+      Replace the already-filled row
+    </label>
+
+    <label class="check">
+      <input id="rescanBeforeSubmit" type="checkbox" checked>
+      Re-scan immediately before submission
+    </label>
+
+    <div class="actions">
+      <button id="confirmButton" type="button" class="primary" disabled>Confirm and send</button>
+      <button id="signalButton" type="button" class="secondary" disabled>Wait for Studio signal</button>
+    </div>
+    <button id="rescanButton" type="button" class="quiet">Scan current page again</button>
+    <a href="options.html" target="_blank" rel="noreferrer">Receiver settings</a>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>

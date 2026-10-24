@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DiveDeep receiver settings</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main>
+    <header><div><h1>Receiver settings</h1><p>Loopback connection only</p></div></header>
+    <label for="receiverUrl">Receiver URL</label>
+    <input id="receiverUrl" type="url" value="http://127.0.0.1:8765" autocomplete="off">
+    <label for="receiverToken">Receiver token</label>
+    <input id="receiverToken" type="password" autocomplete="off">
+    <label class="check"><input id="revealToken" type="checkbox">Reveal token</label>
+    <div class="actions">
+      <button id="saveButton" type="button" class="primary">Save</button>
+      <button id="testButton" type="button" class="secondary">Test receiver</button>
+    </div>
+    <section id="message" class="message" hidden></section>
+  </main>
+  <script src="options.js"></script>
+</body>
+</html>

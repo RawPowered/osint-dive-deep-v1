@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Sign in to DiveDeep</title>
+  <link rel="stylesheet" href="/css/divedeep.css" />
+</head>
+<body class="divedeep-body">
+  <main class="fid-auth-page">
+    <section class="fid-auth-wrap">
+      <aside class="fid-auth-side">
+        <a class="fid-brand" href="/"><span class="fid-brand-logo">OSINT Dive Deep</span><span class="fid-sr-only">OSINT Dive Deep v1</span></a>
+        <h1>Your privacy record, in one place.</h1>
+        <p>Review what was found, which requests were prepared or sent, what has been confirmed removed, and what remains online.</p>
+      </aside>
+      <div class="fid-auth-main">
+        <h2>Customer sign in</h2>
+        <p>Access your protected profile and privacy activity.</p>
+        <form id="loginForm" class="fid-form-grid" autocomplete="on">
+          <label class="fid-field full">
+            <span class="fid-label">Email address</span>
+            <input class="fid-input" type="email" name="email" required autocomplete="email" />
+          </label>
+          <label class="fid-field full">
+            <span class="fid-label">Password</span>
+            <input class="fid-input" type="password" name="password" required autocomplete="current-password" />
+          </label>
+          <div class="fid-form-error full" id="formError" role="alert"></div>
+          <button class="fid-btn fid-btn-primary fid-btn-block full" type="submit">Sign in</button>
+        </form>
+        <div class="fid-auth-note">Need an account? <a href="/divedeep/signup">Join the pilot</a></div>
+      </div>
+    </section>
+  </main>
+  <script src="/divedeep-runtime.js?v=20260723-2"></script>
+  <script src="/js/divedeep-auth.js?v=20260723-2"></script>
+</body>
+</html>

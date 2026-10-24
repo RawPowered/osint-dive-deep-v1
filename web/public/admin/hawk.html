@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>HAWK Automation Center</title>
+  <link rel="stylesheet" href="/css/app.css" />
+  <link rel="stylesheet" href="/css/hawk.css?v=20260714-4" />
+</head>
+<body class="hawk-page">
+  <aside class="hawk-sidebar">
+    <a class="hawk-brand" id="navHome" href="#">
+      <span class="hawk-mark" aria-hidden="true">➤</span>
+      <span><strong>HAWK</strong><small>Automation Center</small></span>
+    </a>
+    <nav class="suite-nav" aria-label="DiveDeep suite">
+      <a id="navOwl" href="#"><span class="suite-icon owl">◉</span><span>OWL<small>Intelligence</small></span></a>
+      <a id="navEagle" href="#"><span class="suite-icon eagle">▥</span><span>EAGLE<small>Analytics</small></span></a>
+      <a id="navSong" href="#"><span class="suite-icon song">↟</span><span>SONG<small>Data Platform</small></span></a>
+      <a id="navParrot" href="#"><span class="suite-icon parrot">P</span><span>PARROT<small>Python Bridge</small></span></a>
+      <a id="navSentinel" href="#"><span class="suite-icon sentinel">◆</span><span>SENTINEL<small>Monitoring</small></span></a>
+      <a class="active" href="#"><span class="suite-icon hawk">➤</span><span>HAWK<small>Automation</small></span></a>
+    </nav>
+    <nav class="hawk-section-nav" aria-label="HAWK sections">
+      <button type="button" data-view="overview"><span>⌂</span> Overview</button>
+      <button type="button" class="active" data-view="flows"><span>↪</span> Flows</button>
+      <button type="button" data-view="executions"><span>▧</span> Executions</button>
+      <button type="button" data-view="connections"><span>⌁</span> Connections</button>
+      <button type="button" data-view="data"><span>◫</span> Data Explorer</button>
+    </nav>
+    <div class="hawk-plan-card">
+      <strong>HAWK Plan</strong><small>Private Integration</small>
+      <span id="planConnection">No connection selected</span>
+    </div>
+  </aside>
+
+  <div class="hawk-app">
+    <header class="hawk-topbar">
+      <div class="hawk-wordmark"><strong>HAWK</strong><span>Automation Center</span></div>
+      <div class="hawk-top-actions">
+        <span class="sentinel-health"><i>◆</i><span>Sentinel Status<small>HAWK surface monitored</small></span></span>
+        <a id="navDocs" href="#" title="Documentation">?</a>
+        <a id="logout" href="#">Sign out</a>
+      </div>
+    </header>
+
+    <main class="hawk-main">
+      <section class="hawk-commandbar">
+        <div class="hawk-flow-title">
+          <div class="hawk-title-line">
+            <select id="flowPicker" aria-label="Select automation"><option value="">Select a flow</option></select>
+            <button type="button" id="flowLibraryButton" class="flow-library-button" title="Open flow library">Library</button>
+            <span id="flowStatus" class="flow-status draft">Draft</span>
+            <span id="dirtyState" class="dirty-state" hidden>Unsaved</span>
+          </div>
+          <input id="flowDescription" type="text" maxlength="1000" placeholder="What this automation accomplishes" aria-label="Flow description" />
+        </div>
+        <div class="hawk-scope">
+          <label>Portfolio<select id="apiKey"></select></label>
+          <label>Database<select id="dataSource"></select></label>
+          <label>Location<select id="location"></select></label>
+          <label>Connection<select id="connection"></select></label>
+        </div>
+        <div class="hawk-command-actions">
+          <button type="button" class="hawk-button ghost" id="newFlowButton">+ New</button>
+          <button type="button" class="hawk-button ghost" id="refreshCatalogButton">Refresh CRM fields</button>
+          <button type="button" class="hawk-button ghost" id="importButton">Import / Re-import</button>
+          <button type="button" class="hawk-button ghost" id="exportButton">Export JSON</button>
+          <button type="button" class="hawk-button ghost" id="flowCodeButton">Flow Code</button>
+          <button type="button" class="hawk-button ghost" id="validateButton">Validate</button>
+          <button type="button" class="hawk-button ghost" id="testButton">↻ Test flow</button>
+          <button type="button" class="hawk-button ghost" id="stateButton" disabled>Activate</button>
+          <button type="button" class="hawk-button primary" id="publishButton">Save &amp; Publish</button>
+        </div>
+      </section>
+
+      <div id="hawkAlert" class="hawk-alert" hidden></div>
+
+      <section class="hawk-workspace">
+        <aside class="hawk-palette">
+          <div class="palette-search"><span>⌕</span><input id="stepSearch" type="search" placeholder="Search triggers and actions" /></div>
+          <div class="palette-tabs">
+            <button type="button" class="active" data-palette="triggers">Triggers</button>
+            <button type="button" data-palette="actions">Actions</button>
+          </div>
+          <div class="palette-pane active" data-palette-pane="triggers">
+            <span class="palette-label">Triggers</span>
+            <div id="triggerPalette" class="dynamic-palette-list"></div>
+          </div>
+          <div class="palette-pane" data-palette-pane="actions">
+            <span class="palette-label">Logic</span>
+            <button type="button" class="palette-item" data-add-type="condition"><i class="purple">◇</i><span>Condition<small>Branch on record data</small></span></button>
+            <div id="actionPalette" class="dynamic-palette-list"></div>
+            <button type="button" class="palette-item" data-add-type="end"><i class="red">■</i><span>End Flow<small>Complete this path</small></span></button>
+          </div>
+          <div class="palette-footer">
+            <button type="button" id="fitCanvas">⌗</button><button type="button" id="zoomOut">−</button>
+            <output id="zoomValue">100%</output><button type="button" id="zoomIn">+</button>
+          </div>
+        </aside>
+
+        <section class="hawk-canvas-wrap">
+          <div class="workspace-viewbar" aria-label="Workspace layout controls">
+            <button id="togglePaletteButton" type="button">Hide step library</button>
+            <button id="toggleInspectorButton" type="button">Expand editor</button>
+          </div>
+          <div id="canvasViewport" class="hawk-canvas-viewport">
+            <div id="canvasSurface" class="hawk-canvas-surface">
+              <svg id="edgeLayer" width="5000" height="5000" aria-hidden="true"></svg>
+              <div id="nodeLayer"></div>
+            </div>
+            <div id="canvasEmpty" class="canvas-empty">Create or select a flow to begin.</div>
+          </div>
+          <div class="canvas-hint"><span>Drag cards to arrange</span><span>Test runs never call GoHighLevel</span></div>
+        </section>
+
+        <aside class="hawk-inspector">
+          <div class="inspector-head">
+            <span id="inspectorIcon" class="inspector-icon">◇</span>
+            <div><span>Step configuration</span><strong id="inspectorTitle">Select a step</strong><small id="inspectorSubtitle">Choose a card on the canvas</small></div>
+            <button type="button" id="deleteNode" title="Delete selected step" disabled>×</button>
+          </div>
+          <div class="inspector-tabs">
+            <button type="button" class="active" data-inspector-tab="setup">Setup</button>
+            <button type="button" data-inspector-tab="data">Data</button>
+            <button type="button" data-inspector-tab="test">Test</button>
+          </div>
+          <form id="nodeForm" class="inspector-panel active" data-inspector-panel="setup">
+            <div id="nodeEmpty" class="inspector-empty">Select a step to configure its trigger, condition, or action.</div>
+            <div id="nodeFields" hidden>
+              <label>Step name<input id="nodeName" type="text" maxlength="191" /></label>
+              <label>Step type<select id="nodeType"></select></label>
+              <div id="triggerFields" hidden>
+                <label>Event<select id="triggerEvent"></select></label>
+                <div id="triggerCapabilityNote" class="capability-note"></div>
+                <label id="triggerTextFilterLabel"><span id="triggerFilterText">Tag / filter</span><input id="triggerFilter" type="text" placeholder="new-lead" /></label>
+                <label id="triggerFieldFilterLabel" hidden>CRM field<button type="button" class="field-picker-button" id="triggerFieldButton">Select a live CRM field</button></label>
+                <section id="webhookTriggerFields" class="webhook-trigger-card" hidden>
+                  <header><div><strong>Webhook delivery</strong><span id="webhookEndpointStatus">No endpoint</span></div><i id="webhookStatusDot" aria-hidden="true"></i></header>
+                  <p id="webhookTriggerHelp">Generate a flow-scoped endpoint, then send the contact event to it from a GoHighLevel workflow.</p>
+                  <label>Endpoint URL<div class="webhook-copy-row"><input id="webhookUrl" type="text" readonly placeholder="Generate an endpoint first" /><button id="copyWebhookUrl" type="button" disabled>Copy</button></div></label>
+                  <div id="webhookSecretPanel" class="webhook-secret-panel" hidden>
+                    <strong>Copy this secret now</strong><span>It is encrypted at rest and will not be shown again.</span>
+                    <div class="webhook-copy-row"><input id="webhookSecret" type="text" readonly /><button id="copyWebhookSecret" type="button">Copy</button></div>
+                  </div>
+                  <div class="webhook-actions"><button id="provisionWebhookButton" type="button">Generate endpoint</button><button id="rotateWebhookButton" type="button" hidden>Rotate secret</button><button id="disableWebhookButton" type="button" class="danger" hidden>Disable</button></div>
+                  <details><summary>GoHighLevel setup</summary><ol><li>Create a workflow using the matching trigger, such as Contact Tag Added.</li><li>Add a Custom Webhook action using POST and the endpoint above.</li><li>Add header <code>Authorization: Bearer &lt;secret&gt;</code>.</li><li>Send contact ID, location ID, tags, and any fields the HAWK flow needs.</li></ol><p>Advanced senders may instead sign <code>timestamp.rawBody</code> with HMAC-SHA-256 using <code>X-HAWK-Timestamp</code> and <code>X-HAWK-Signature</code>.</p></details>
+                </section>
+              </div>
+              <div id="conditionFields" hidden>
+                <label>Runtime field<button type="button" class="field-picker-button" id="conditionFieldButton">Select a live CRM field</button><input id="conditionField" type="hidden" /></label>
+                <label>Operator<select id="conditionOperator"></select></label>
+                <label>Compare value<input id="conditionValue" type="text" list="conditionAllowedValues" placeholder="Facebook, Google" /></label>
+                <datalist id="conditionAllowedValues"></datalist>
+                <div id="conditionValueHints" class="value-hints" hidden></div>
+                <div class="route-grid">
+                  <label>Yes route<select id="conditionYes"></select></label>
+                  <label>No route<select id="conditionNo"></select></label>
+                </div>
+              </div>
+              <div id="actionFields" hidden>
+                <label>Action<select id="nodeAction"></select></label>
+                <div id="guidedActionEditor" class="guided-action-editor">
+                  <div id="contactActionFields" hidden>
+                    <label>Contact ID source<button type="button" class="field-picker-button" id="contactIdFieldButton">Contact ID</button></label>
+                  </div>
+                  <div id="updateContactFields" hidden>
+                    <div class="mapping-head"><span>Field mappings</span><button type="button" id="addMappingButton">+ Add field</button></div>
+                    <div id="mappingRows" class="mapping-rows"></div>
+                  </div>
+                  <div id="tagActionFields" hidden><label>Tags (comma separated)<input id="actionTags" type="text" placeholder="lead-processed" /></label></div>
+                  <div id="dataActionFields" hidden>
+                    <label>Data key<input id="dataKey" type="text" maxlength="64" placeholder="result" /></label>
+                    <label>Value source<button type="button" class="field-picker-button" id="dataValueFieldButton">Select a runtime field</button></label>
+                  </div>
+                  <div id="codeActionFields" hidden>
+                    <div class="code-warning" id="codeWarning">Custom code runs only in the isolated HAWK runner. It receives mapped inputs, never PIT credentials, SQL, or host access.</div>
+                    <div class="code-toolbar">
+                      <label>Language<select id="codeLanguage"><option value="javascript">JavaScript</option><option value="python">Python</option></select></label>
+                      <span id="codeRunnerBadge" class="status-pill">Runner status</span>
+                      <button id="expandCodeEditorButton" type="button">Focus code</button>
+                    </div>
+                    <div class="mapping-head"><span>Mapped inputs</span><button type="button" id="addCodeInputButton">+ Add input</button></div>
+                    <div id="codeInputRows" class="code-input-rows"></div>
+                    <label class="code-source-label">Code<textarea id="codeSource" rows="13" spellcheck="false"></textarea></label>
+                    <div class="code-editor-status"><span id="codeStats">0 lines · 0 bytes</span><span id="codeHint">Return a value or assign it to <code>output</code>.</span></div>
+                  </div>
+                  <div id="catalogActionFields" class="catalog-action-fields" hidden></div>
+                  <section id="webhookSamplePanel" class="webhook-sample-panel" hidden>
+                    <header><div><strong>Send mapping sample</strong><span>Post one live sample so GoHighLevel can build its inbound-webhook mapping reference.</span></div><span class="live-badge">External call</span></header>
+                    <label>Sample JSON body<textarea id="webhookSampleBody" rows="9" spellcheck="false"></textarea></label>
+                    <div class="webhook-sample-actions"><button id="refreshWebhookSampleButton" type="button">Reset sample</button><button id="sendWebhookSampleButton" type="button" class="send">Send sample now</button></div>
+                    <output id="webhookSampleStatus" class="webhook-sample-status">No sample sent.</output>
+                  </section>
+                </div>
+                <details class="advanced-json"><summary>Advanced JSON configuration</summary><label>Action configuration<textarea id="nodeConfig" rows="9" spellcheck="false"></textarea></label></details>
+                <p class="field-help">Use live field pickers for CRM values. Advanced JSON remains available for imported and expert-authored flows.</p>
+              </div>
+              <label id="nextField">Next step<select id="nextNode"></select></label>
+            </div>
+          </form>
+          <div class="inspector-panel" data-inspector-panel="data">
+            <div class="data-callout"><strong>Runtime data</strong><p>Trigger data and prior step outputs are resolved only while an execution runs. Secret-bearing fields are redacted before storage.</p></div>
+            <div class="catalog-summary"><strong id="catalogSummary">Loading CRM fields…</strong><button type="button" id="browseCatalogButton">Browse fields</button></div>
+            <div class="runtime-toolbar">
+              <input id="runtimeSearch" type="search" placeholder="Search variables and fields" />
+              <select id="runtimeObjectFilter" aria-label="Filter runtime fields by CRM object"><option value="">All objects</option></select>
+            </div>
+            <div class="runtime-browser">
+              <section><header><strong>Trigger &amp; CRM fields</strong><span>Use inserts the variable into this step.</span></header><div id="runtimeFieldList" class="runtime-variable-list"></div></section>
+              <section><header><strong>Previous step outputs</strong><span>Available after the referenced step succeeds.</span></header><div id="runtimeStepList" class="runtime-variable-list"></div></section>
+            </div>
+            <details class="runtime-technical"><summary>Technical step preview</summary><pre id="nodeDataPreview">{}</pre></details>
+          </div>
+          <div class="inspector-panel" data-inspector-panel="test">
+            <div class="data-callout"><strong>Safe test</strong><p>Runs the current draft through every reachable step without making upstream changes.</p></div>
+            <div id="testInputSummary" class="test-input-summary">No sample input prepared.</div>
+            <button type="button" class="hawk-button primary wide" id="testStepButton">Run draft test</button>
+          </div>
+          <div class="inspector-footer"><span>◆</span><span>This flow uses a server-side Private Integration Token. Credentials are never sent here.</span></div>
+        </aside>
+      </section>
+
+      <section class="execution-console">
+        <div class="execution-list-pane">
+          <header>
+            <div><span>Execution history</span><nav class="execution-filters"><button class="active" data-status="">All</button><button data-status="successful">Successful</button><button data-status="failed">Failed</button><button data-status="running">In progress</button></nav></div>
+            <div class="execution-header-actions"><button type="button" id="refreshExecutions">↻ Refresh</button><button type="button" id="toggleExecutionConsole">Collapse</button></div>
+          </header>
+          <div class="execution-table-wrap">
+            <table>
+              <thead><tr><th>Execution ID</th><th>Status</th><th>Triggered</th><th>Duration</th><th>Steps</th><th>Mode</th></tr></thead>
+              <tbody id="executionRows"><tr><td colspan="6" class="empty-row">No executions yet.</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <aside class="execution-detail">
+          <nav><button class="active" data-execution-tab="details">Details</button><button data-execution-tab="steps">Step log</button><button data-execution-tab="data">Data</button><button data-execution-tab="replay">Replay</button></nav>
+          <div class="execution-panel active" data-execution-panel="details"><div id="executionSummary" class="execution-empty">Select an execution to inspect it.</div></div>
+          <div class="execution-panel" data-execution-panel="steps"><div id="executionSteps" class="execution-empty">No execution selected.</div></div>
+          <div class="execution-panel" data-execution-panel="data"><pre id="executionData">{}</pre></div>
+          <div class="execution-panel" data-execution-panel="replay">
+            <div class="replay-card"><strong>Replay this execution</strong><p>Re-execute the published flow with the same redacted input. Safe replay is dry-run by default.</p><button type="button" class="hawk-button primary" id="replayButton" disabled>↻ Replay safely</button></div>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="newFlowDialog" class="hawk-dialog">
+    <form method="dialog" id="newFlowForm">
+      <header><div><span>New automation</span><h2>Create a HAWK flow</h2></div><button value="cancel" aria-label="Close">×</button></header>
+      <label>Name<input id="newFlowName" type="text" maxlength="191" required placeholder="New lead routing" /></label>
+      <label>Description<textarea id="newFlowDescription" rows="3" maxlength="1000" placeholder="Describe the outcome of this automation"></textarea></label>
+      <div class="dialog-grid"><label>Folder<select id="newFlowFolder"><option value="">Unfiled</option></select></label><label>Color<input id="newFlowColor" type="color" value="#2f85de" /></label></div>
+      <label>GoHighLevel connection<select id="newFlowConnection"></select></label>
+      <footer><button value="cancel" class="hawk-button ghost">Cancel</button><button value="default" class="hawk-button primary">Create flow</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="testDialog" class="hawk-dialog test-dialog">
+    <form method="dialog">
+      <header><div><span>Dry-run execution</span><h2>Test flow input</h2></div><button value="cancel" aria-label="Close">×</button></header>
+      <p class="dialog-copy">Provide representative trigger data. HAWK will record every step but will not call GoHighLevel.</p>
+      <div class="dialog-mode-tabs" role="tablist" aria-label="Test input mode"><button type="button" class="active" data-test-input-mode="guided">Guided input</button><button type="button" data-test-input-mode="json">JSON</button></div>
+      <section id="guidedTestPanel" class="guided-test-panel">
+        <section class="test-record-browser">
+          <header><div><strong>Test with a real record</strong><span>Search synchronized data or the selected live CRM connection. Nothing is modified.</span></div><span id="testRecordSelection">No record selected</span></header>
+          <div class="test-record-search"><select id="testRecordSource" aria-label="Record type"></select><input id="testRecordSearch" type="search" placeholder="Search name, email, phone, ID…" /><button type="button" id="searchTestRecordsButton" class="hawk-button ghost">Search</button></div>
+          <div id="testRecordResults" class="test-record-results"><div class="test-record-empty">Choose a record type and search to load real test data.</div></div>
+        </section>
+        <div class="mapping-head"><span>Trigger values</span><button id="addTestInputButton" type="button">+ Add value</button></div>
+        <div id="testInputRows" class="test-input-rows"></div>
+        <details class="runtime-technical"><summary>Generated JSON</summary><pre id="testInputPreview">{}</pre></details>
+      </section>
+      <section id="jsonTestPanel" hidden>
+      <label>Trigger JSON<textarea id="testInput" rows="12" spellcheck="false">{
+  "contactId": "contact_demo_001",
+  "firstName": "Jordan",
+  "lastName": "Lee",
+  "email": "jordan@example.com",
+  "source": "Facebook",
+  "tags": ["new-lead"]
+}</textarea></label>
+      </section>
+      <footer><button value="cancel" class="hawk-button ghost">Cancel</button><button type="button" id="runTestButton" class="hawk-button primary">Run safe test</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="fieldPickerDialog" class="hawk-dialog field-picker-dialog">
+    <form method="dialog">
+      <header><div><span>Live CRM data</span><h2>Select a field</h2></div><button value="cancel" aria-label="Close">×</button></header>
+      <div class="field-picker-tools"><input id="fieldSearch" type="search" placeholder="Search fields, objects, IDs…" /><select id="fieldObjectFilter"><option value="">All objects</option></select></div>
+      <div id="fieldPickerList" class="field-picker-list"></div>
+      <footer><span id="fieldPickerCount"></span><button value="cancel" class="hawk-button ghost">Cancel</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="importDialog" class="hawk-dialog import-dialog">
+    <form method="dialog">
+      <header><div><span>Portable automation package</span><h2>Import HAWK JSON</h2></div><button value="cancel" aria-label="Close">×</button></header>
+      <p class="dialog-copy">Preview validates graph structure and every live CRM field reference. Import creates drafts only.</p>
+      <nav class="import-assets">
+        <a href="/data/hawk-automation-template.json" target="_blank">Sample file</a>
+        <a href="/data/hawk-automation-import.schema.json" target="_blank">Base schema</a>
+        <a href="/data/hawk-automation-ai-rules.md" target="_blank">AI rules</a>
+        <a href="/data/hawk-power-dialer-webhook-pack.json?v=20260714-3" download="hawk-power-dialer-webhook-pack.json">Power Dialer pack</a>
+        <a href="/data/ghl-single-manual-call-webhook.md" target="_blank">Single Manual Call setup</a>
+        <a href="/data/ghl-power-dialer-ai-workflow-spec.json" target="_blank">GHL AI JSON</a>
+        <a href="/data/ghl-power-dialer-workflow-prompts.md" target="_blank">GHL prompts (.md)</a>
+        <button type="button" id="downloadLiveSchema">Live CRM schema</button>
+      </nav>
+      <label>Choose JSON file<input id="importFile" type="file" accept="application/json,.json" /></label>
+      <label>Or paste package<textarea id="importJson" rows="14" spellcheck="false"></textarea></label>
+      <div class="dialog-grid"><label>Import into folder<select id="importFolder"><option value="">Unfiled</option></select></label><label>Flow color<input id="importColor" type="color" value="#2f85de" /></label></div>
+      <label>Conflict policy<select id="importConflictPolicy"><option value="skip">Skip matching names</option><option value="clone">Create a named copy</option><option value="replace_draft">Re-import and update matching draft</option></select></label>
+      <div id="importPreview" class="import-preview">Choose or paste a package, then preview it.</div>
+      <footer><button value="cancel" class="hawk-button ghost">Cancel</button><button type="button" id="previewImportButton" class="hawk-button ghost">Preview</button><button type="button" id="applyImportButton" class="hawk-button primary" disabled>Import drafts</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="flowCodeDialog" class="hawk-dialog flow-code-dialog">
+    <form method="dialog">
+      <header><div><span>Code-based flow management</span><h2>Flow Code</h2></div><button value="cancel" aria-label="Close">×</button></header>
+      <div class="flow-code-toolbar">
+        <div><strong id="flowCodeName">No flow selected</strong><span id="flowCodeMeta">Draft source</span></div>
+        <button type="button" id="copyFlowCodeButton">Copy</button>
+        <button type="button" id="downloadFlowCodeButton">Download</button>
+      </div>
+      <p class="dialog-copy">Edit the portable single-flow package. Validation uses the current live CRM schema. Saving updates the draft only; publishing remains a separate controlled action.</p>
+      <label class="flow-code-source">Automation JSON<textarea id="flowCodeSource" rows="28" spellcheck="false" aria-label="Flow JSON source"></textarea></label>
+      <div id="flowCodeStatus" class="flow-code-status">Open a flow to inspect its source.</div>
+      <details class="runtime-technical">
+        <summary>Authenticated API</summary>
+        <pre>GET /api/hawk/flows/{flowId}/export?apiKeyId={id}&amp;locationId={id}&amp;dataSourceSlug={slug}
+
+PUT /api/hawk/flows/{flowId}/source
+{
+  "apiKeyId": "...",
+  "locationId": "...",
+  "dataSourceSlug": "...",
+  "expectedRevision": 1,
+  "automationPackage": { "format": "hawk-automation-1", "flows": [ ... ] }
+}</pre>
+        <p>These endpoints use the signed-in administrator session and the same portfolio, database, location, and connection scope as the editor.</p>
+      </details>
+      <footer><button value="cancel" class="hawk-button ghost">Close</button><button type="button" id="formatFlowCodeButton" class="hawk-button ghost">Format JSON</button><button type="button" id="validateFlowCodeButton" class="hawk-button ghost">Validate</button><button type="button" id="saveFlowCodeButton" class="hawk-button primary">Save Draft from Code</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="flowLibraryDialog" class="hawk-dialog flow-library-dialog">
+    <form method="dialog">
+      <header><div><span>Automation organization</span><h2>Flow library</h2></div><button value="cancel" aria-label="Close">×</button></header>
+      <div class="flow-library-tools"><input id="flowLibrarySearch" type="search" placeholder="Search flows and descriptions…" /><label class="archive-toggle"><input id="showArchivedFlows" type="checkbox" /> Show archived</label><button type="button" id="createFolderButton" class="hawk-button ghost">+ Folder</button></div>
+      <div class="flow-library-layout">
+        <nav id="flowFolderList" class="flow-folder-list" aria-label="Flow folders"></nav>
+        <section id="flowLibraryList" class="flow-library-list"></section>
+      </div>
+      <footer><span id="flowLibraryCount" class="library-count"></span><button value="cancel" class="hawk-button ghost">Close</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="folderDialog" class="hawk-dialog folder-dialog">
+    <form method="dialog" id="folderForm">
+      <header><div><span>Flow collection</span><h2 id="folderDialogTitle">Create folder</h2></div><button value="cancel" aria-label="Close">×</button></header>
+      <input id="folderId" type="hidden" />
+      <label>Title<input id="folderName" type="text" maxlength="191" required placeholder="Call center automations" /></label>
+      <label>Description<textarea id="folderDescription" rows="2" maxlength="500" placeholder="What belongs in this folder"></textarea></label>
+      <label>Color<input id="folderColor" type="color" value="#2f85de" /></label>
+      <footer><button type="button" id="deleteFolderButton" class="hawk-button danger" hidden>Delete folder</button><span class="dialog-spacer"></span><button value="cancel" class="hawk-button ghost">Cancel</button><button value="default" class="hawk-button primary">Save folder</button></footer>
+    </form>
+  </dialog>
+
+  <script src="/js/hawk-center.js?v=20260714-4" defer></script>
+</body>
+</html>

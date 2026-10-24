@@ -1,0 +1,4 @@
+requests==2.34.2
+beautifulsoup4==4.15.0
+ddgs==9.14.4
+Pillow==12.3.0

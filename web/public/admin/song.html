@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>SONG</title>
+  <link rel="stylesheet" href="/css/app.css" />
+  <link rel="stylesheet" href="/css/song.css" />
+</head>
+<body class="song-page">
+  <header class="topbar song-topbar">
+    <a class="brand" href="#">SONG</a>
+    <nav class="topbar-nav">
+      <a id="navHome" href="#">Dashboard</a>
+      <a id="navOwl" href="#">OWL</a>
+      <a id="navEagle" href="#">EAGLE</a>
+      <a id="navHawk" href="#">HAWK</a>
+      <a id="navParrot" href="#">PARROT</a>
+      <a id="navCrm" href="#">CRM</a>
+      <a id="navDocs" href="#">Docs</a>
+      <a id="logout" href="#">Sign out</a>
+    </nav>
+  </header>
+
+  <main class="song-shell">
+    <header class="song-commandbar">
+      <div class="song-heading">
+        <span class="song-kicker">Script Orchestration and Navigation Graph</span>
+        <div class="song-title-row">
+          <h1 id="scriptTitle">SONG</h1>
+          <span id="scriptStatus" class="song-status draft">No script selected</span>
+          <span id="dirtyState" class="song-dirty" hidden>Unsaved</span>
+        </div>
+        <p id="scriptMeta">Select a script or create a new flow.</p>
+      </div>
+      <div class="song-context">
+        <label>API portfolio<select id="apiKey"></select></label>
+        <label>Location<select id="location"></select></label>
+      </div>
+      <div class="song-primary-actions">
+        <button type="button" class="btn btn-secondary" id="validateButton">Validate</button>
+        <button type="button" class="btn btn-secondary" id="testButton">Test flow</button>
+        <button type="button" class="btn btn-secondary" id="saveButton">Save</button>
+        <button type="button" class="btn song-publish" id="publishButton">Publish</button>
+        <select id="scriptActions" aria-label="Script actions" title="Script actions">
+          <option value="">Actions</option>
+          <option value="clone">Clone script</option>
+          <option value="archive">Archive script</option>
+          <option value="import_vibe">Import Vibe scripts</option>
+        </select>
+      </div>
+    </header>
+
+    <div id="alert" class="song-alert" hidden></div>
+    <div id="validationPanel" class="song-validation" hidden></div>
+
+    <section class="song-workspace">
+      <aside class="song-library" aria-label="Script library">
+        <div class="song-panel-head">
+          <div><span class="song-label">Library</span><strong>Call scripts</strong></div>
+          <button type="button" class="song-icon-button" id="newScriptButton" title="New script" aria-label="New script">+</button>
+        </div>
+        <div class="song-library-controls">
+          <input id="scriptSearch" type="search" placeholder="Search scripts" aria-label="Search scripts" />
+          <select id="serviceFilter" aria-label="Filter by service"><option value="">All services</option></select>
+          <select id="languageFilter" aria-label="Filter by language"><option value="">All languages</option></select>
+        </div>
+        <div id="scriptList" class="song-script-list"></div>
+      </aside>
+
+      <section class="song-designer">
+        <div class="song-canvas-toolbar">
+          <div class="song-add-control">
+            <select id="newNodeType" aria-label="Node type">
+              <option value="prompt">Prompt</option>
+              <option value="question">Question</option>
+              <option value="qualification">Qualification</option>
+              <option value="value">Needs / Value</option>
+              <option value="objection">Objection</option>
+              <option value="action">Action</option>
+              <option value="appointment">Appointment</option>
+              <option value="voicemail">Voicemail</option>
+              <option value="disposition">Disposition</option>
+              <option value="confirmation">Confirmation</option>
+              <option value="end">End</option>
+            </select>
+            <button type="button" class="btn btn-secondary btn-sm" id="addNodeButton">+ Add step</button>
+          </div>
+          <div class="song-canvas-tools">
+            <button type="button" class="song-icon-button" id="zoomOut" title="Zoom out" aria-label="Zoom out">-</button>
+            <output id="zoomValue">100%</output>
+            <button type="button" class="song-icon-button" id="zoomIn" title="Zoom in" aria-label="Zoom in">+</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="fitCanvas">Fit</button>
+          </div>
+        </div>
+        <div id="canvasViewport" class="song-canvas-viewport">
+          <div id="canvasSurface" class="song-canvas-surface">
+            <svg id="edgeLayer" class="song-edge-layer" width="5000" height="5000" aria-hidden="true"></svg>
+            <div id="nodeLayer" class="song-node-layer"></div>
+          </div>
+          <div id="canvasEmpty" class="song-canvas-empty">Select a script to begin.</div>
+        </div>
+
+        <section class="song-live-preview" aria-label="Live script preview">
+          <div class="song-preview-head">
+            <div><span class="song-label">Agent view</span><strong>Live script preview</strong></div>
+            <span id="previewStep">No step selected</span>
+          </div>
+          <div id="previewContent" class="song-preview-content">
+            Select a node to preview the agent experience.
+          </div>
+        </section>
+      </section>
+
+      <aside class="song-properties" aria-label="Script properties">
+        <div class="song-property-tabs" role="tablist">
+          <button type="button" class="active" data-tab="node">Step</button>
+          <button type="button" data-tab="variables">Variables</button>
+          <button type="button" data-tab="versions">Versions</button>
+          <button type="button" data-tab="analytics">Statistics</button>
+        </div>
+
+        <div class="song-property-panel active" data-panel="node">
+          <div id="noNodeProperties" class="song-property-empty">Select a step on the canvas.</div>
+          <form id="nodeForm" hidden>
+            <div class="song-selected-node">
+              <span id="nodeTypeBadge">Prompt</span>
+              <strong id="nodePropertyTitle">Step</strong>
+              <button type="button" class="song-text-button danger" id="deleteNodeButton">Delete</button>
+            </div>
+            <label>Title<input type="text" id="nodeTitle" maxlength="191" /></label>
+            <label>Step type<select id="nodeType"></select></label>
+            <label>Current objective<input type="text" id="nodeGoal" maxlength="500" /></label>
+            <label>Agent prompt<textarea id="nodePrompt" maxlength="8000" rows="7"></textarea></label>
+            <div class="song-inline-actions">
+              <button type="button" class="btn btn-secondary btn-sm" id="insertVariable">+ Variable</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="setStartButton">Set as start</button>
+            </div>
+            <label>Agent guidance<textarea id="nodeHelper" maxlength="2000" rows="3"></textarea></label>
+            <div class="song-toggle-grid">
+              <label><input type="checkbox" id="nodeRequired" /> Required step</label>
+              <label><input type="checkbox" id="nodeAnalytics" /> Track analytics</label>
+            </div>
+            <label>On-enter action<select id="nodeAction"></select></label>
+            <label>Action configuration<textarea id="nodeActionConfig" rows="3" placeholder='{"status":"scheduled"}'></textarea></label>
+            <div class="song-section-title"><strong>Branching logic</strong><button type="button" id="addBranchButton">+ Add branch</button></div>
+            <div id="branchList" class="song-branch-list"></div>
+          </form>
+        </div>
+
+        <div class="song-property-panel" data-panel="variables">
+          <div class="song-section-title"><strong>Script settings</strong></div>
+          <label>Name<input type="text" id="scriptName" maxlength="191" /></label>
+          <label>Service pool<select id="scriptService"></select></label>
+          <label>Language<input type="text" id="scriptLanguage" list="songLanguageOptions" maxlength="35" placeholder="en-US" /></label>
+          <button type="button" class="btn btn-secondary song-language-apply" id="applyScriptLanguage" hidden>Apply language to published script</button>
+          <label>Description<textarea id="scriptDescription" rows="3" maxlength="1000"></textarea></label>
+          <div class="song-section-title"><strong>Script variables</strong><button type="button" id="addVariableButton">+ Add</button></div>
+          <p class="song-panel-copy">Only allowlisted lead and operator values can enter the runtime script.</p>
+          <div id="variableList" class="song-variable-list"></div>
+        </div>
+
+        <div class="song-property-panel" data-panel="versions">
+          <div class="song-section-title"><strong>Published versions</strong><button type="button" id="refreshVersions">Refresh</button></div>
+          <div id="versionList" class="song-version-list"></div>
+        </div>
+
+        <div class="song-property-panel" data-panel="analytics">
+          <div class="song-section-title"><strong>Flow performance</strong><button type="button" id="refreshAnalytics">Refresh</button></div>
+          <div id="analyticsSummary" class="song-analytics-summary"></div>
+          <div id="analyticsRows" class="song-analytics-rows"></div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <dialog id="newScriptDialog" class="song-dialog">
+    <form method="dialog" id="newScriptForm">
+      <header><h2>New call script</h2><button value="cancel" aria-label="Close">x</button></header>
+      <label>Name<input id="newScriptName" type="text" maxlength="191" required /></label>
+      <label>Service pool<select id="newScriptService" required></select></label>
+      <label>Language<input id="newScriptLanguage" type="text" list="songLanguageOptions" maxlength="35" value="en-US" required /></label>
+      <label>Description<textarea id="newScriptDescription" rows="3" maxlength="1000"></textarea></label>
+      <footer><button value="cancel" class="btn btn-secondary">Cancel</button><button type="submit" value="default" class="btn song-publish">Create script</button></footer>
+    </form>
+  </dialog>
+
+  <datalist id="songLanguageOptions">
+    <option value="en-US">English (United States)</option>
+    <option value="es-US">Spanish (United States)</option>
+    <option value="fr-CA">French (Canada)</option>
+    <option value="pt-BR">Portuguese (Brazil)</option>
+    <option value="vi-US">Vietnamese (United States)</option>
+    <option value="zh-Hans-US">Chinese, Simplified (United States)</option>
+  </datalist>
+
+  <dialog id="testFlowDialog" class="song-dialog song-test-dialog">
+    <form method="dialog">
+      <header><div><span class="song-label">Test mode</span><h2 id="testTitle">Script preview</h2></div><button value="cancel" aria-label="Close">x</button></header>
+      <div id="testProgress" class="song-test-progress"></div>
+      <div id="testPrompt" class="song-test-prompt"></div>
+      <div id="testBranches" class="song-test-branches"></div>
+      <footer><button type="button" class="btn btn-secondary" id="restartTest">Restart</button><button value="cancel" class="btn btn-secondary">Close</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="variablePickerDialog" class="song-dialog song-variable-dialog">
+    <form method="dialog">
+      <header>
+        <div><span class="song-label">Field catalog</span><h2 id="variablePickerTitle">Insert variable</h2></div>
+        <button value="cancel" aria-label="Close">x</button>
+      </header>
+      <div class="song-variable-picker-controls">
+        <label>Search fields<input id="variableSearch" type="search" placeholder="Name, source, or field type" autocomplete="off" /></label>
+        <label>Category<select id="variableGroup"><option value="">All categories</option></select></label>
+      </div>
+      <div class="song-variable-picker-summary" id="variablePickerSummary"></div>
+      <div class="song-variable-picker-list" id="variablePickerList"></div>
+      <footer>
+        <button type="button" class="btn btn-secondary" id="manageVariablesButton">Manage variables</button>
+        <button value="cancel" class="btn btn-secondary">Close</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <dialog id="vibeImportDialog" class="song-dialog song-import-dialog">
+    <form method="dialog">
+      <header><div><span class="song-label">Legacy migration</span><h2>Import Vibe scripts</h2></div><button value="cancel" aria-label="Close">x</button></header>
+      <div class="song-import-body">
+        <p>Paste the exported Vibe service configuration. Preview validates every generated SONG flow before anything is written.</p>
+        <details class="song-template-guide" open>
+          <summary>AI template rules</summary>
+          <ul>
+            <li>Return JSON only with a non-empty <code>services</code> array.</li>
+            <li>Every stage is an object with string <code>text</code>, <code>type</code>, and an <code>answers</code> array.</li>
+            <li>Set <code>languageCode</code> to a BCP 47 tag such as <code>en-US</code> or <code>es-US</code>.</li>
+            <li>Never put an object or array in <code>text</code>, <code>response</code>, or <code>helperText</code>.</li>
+            <li>Use only documented actions and placeholders; preview before applying.</li>
+          </ul>
+          <div class="song-template-downloads">
+            <button type="button" class="btn btn-secondary" id="loadVibeSample">Load sample</button>
+            <a class="btn btn-secondary" href="/data/song-vibe-template.json" download>Sample JSON</a>
+            <a class="btn btn-secondary" href="/data/song-vibe-import.schema.json" download>JSON Schema</a>
+            <a class="btn btn-secondary" href="/data/song-vibe-ai-template-guide.md" download>AI rules</a>
+          </div>
+        </details>
+        <label>Conflict handling<select id="vibeConflictPolicy">
+          <option value="skip">Skip matching scripts</option>
+          <option value="clone">Create an additional copy</option>
+          <option value="replace_draft">Replace matching draft only</option>
+        </select></label>
+        <label>Vibe service JSON<textarea id="vibeImportJson" rows="14" spellcheck="false" placeholder='{"templateVersion":"song-vibe-1","services":[{"serviceType":"Roofing","mainScript":{},"concerns":[],"outcomes":[]}]}'></textarea></label>
+        <div id="vibeImportPreview" class="song-import-preview" hidden></div>
+      </div>
+      <footer>
+        <button value="cancel" class="btn btn-secondary">Cancel</button>
+        <button type="button" class="btn btn-secondary" id="previewVibeImport">Preview</button>
+        <button type="button" class="btn song-publish" id="applyVibeImport" disabled>Apply import</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <script src="/js/song-designer.js" defer></script>
+</body>
+</html>

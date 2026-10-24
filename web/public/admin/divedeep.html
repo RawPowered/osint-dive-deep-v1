@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>DiveDeep Operations</title>
+  <link rel="stylesheet" href="/css/divedeep-admin.css" />
+</head>
+<body class="fida-body">
+  <aside class="fida-sidebar" id="sidebar">
+    <a class="fida-brand" id="controlPanelLink" href="#" aria-label="DiveDeep administration home">
+      <span class="fida-brand-mark" aria-hidden="true"></span>
+      <span><strong>DiveDeep</strong><small>ADMIN</small></span>
+    </a>
+
+    <nav class="fida-nav" aria-label="DiveDeep administration">
+      <button class="fida-nav-item active" data-view="overview"><span>⌂</span>Overview</button>
+      <button class="fida-nav-item" data-view="customers"><span>◎</span>Customers</button>
+      <button class="fida-nav-item" data-view="work-queue"><span>☷</span>Work Queue</button>
+      <button class="fida-nav-item" data-view="privacy-workflow"><span>◇</span>Privacy Workflow</button>
+      <button class="fida-nav-item" data-view="recon-jobs"><span>▶</span>Recon Jobs</button>
+      <button class="fida-nav-item root-only" data-view="worker-pools"><span>◉</span>Worker Pools</button>
+      <button class="fida-nav-item root-only" data-view="catalog"><span>◫</span>Source Catalog</button>
+      <button class="fida-nav-item" data-view="findings"><span>⌕</span>Findings</button>
+      <button class="fida-nav-item" data-view="evidence"><span>▧</span>Evidence Review</button>
+      <button class="fida-nav-item" data-view="cases"><span>▣</span>Removal Cases</button>
+      <button class="fida-nav-item" data-view="monitoring"><span>◌</span>Monitoring</button>
+      <button class="fida-nav-item" data-view="retention"><span>⌛</span>Retention</button>
+      <button class="fida-nav-item root-only" data-view="packages"><span>◈</span>Packages</button>
+      <button class="fida-nav-item root-only" data-view="integrations"><span>⚙</span>Integrations</button>
+      <button class="fida-nav-item root-only" data-view="pilot-codes"><span>★</span>Pilot Codes</button>
+      <button class="fida-nav-item root-only" data-view="audit"><span>◇</span>Audit Log</button>
+    </nav>
+
+    <div class="fida-sidebar-card">
+      <small>OPERATING MODE</small>
+      <strong>API-owned privacy operations</strong>
+      <p>Versioned sources, pools, packages, evidence, and customer workflows.</p>
+    </div>
+
+    <button class="fida-nav-item fida-sidebar-bottom" id="collapseSidebar"><span>←</span>Collapse</button>
+  </aside>
+
+  <div class="fida-app">
+    <header class="fida-topbar">
+      <button class="fida-mobile-menu" id="mobileMenu" aria-label="Open navigation">☰</button>
+      <label class="fida-search">
+        <span aria-hidden="true">⌕</span>
+        <input id="globalSearch" type="search" placeholder="Search customers, emails, domains, usernames…" autocomplete="off" />
+        <kbd>⌘ K</kbd>
+      </label>
+      <div class="fida-top-actions">
+        <details class="fida-recovery-menu root-only">
+          <summary>Recovery tools</summary>
+          <div>
+            <button class="fida-btn" id="exportSelected" disabled><span>⇧</span>Manual Export</button>
+            <button class="fida-btn" id="exportImageBundle" disabled><span>▧</span>Image Recon Bundle</button>
+            <button class="fida-btn" id="importBundle" disabled><span>⇩</span>Import Evidence Bundle</button>
+            <button class="fida-plain-btn" id="importResults" disabled title="Legacy single JSON packet">Legacy JSON</button>
+          </div>
+        </details>
+        <input id="divedeepResultsFile" type="file" accept="application/json,.json" hidden />
+        <button class="fida-icon-btn" id="refreshDashboard" title="Refresh dashboard" aria-label="Refresh dashboard">↻</button>
+        <div class="fida-admin-menu">
+          <span class="fida-avatar" id="adminInitials">AD</span>
+          <span><strong id="who">Loading…</strong><small id="adminRole">Administrator</small></span>
+          <button class="fida-plain-btn" id="logout">Sign out</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="fida-main">
+      <section id="overviewView" class="fida-view active" aria-labelledby="overviewTitle">
+        <div class="fida-page-heading">
+          <div><p class="fida-kicker">Privacy operations control plane</p><h1 id="overviewTitle">Service operations overview</h1></div>
+          <span class="fida-live-indicator"><i></i>API-owned orchestration</span>
+        </div>
+
+        <div class="fida-metrics" id="metrics">
+          <article class="fida-metric"><span class="blue">◎</span><div><small>Active Customers</small><strong>—</strong><em>Current accounts</em></div></article>
+          <article class="fida-metric"><span class="green">▶</span><div><small>Ready to Run</small><strong>—</strong><em>All workflow gates passed</em></div></article>
+          <article class="fida-metric"><span class="purple">◉</span><div><small>Active Jobs</small><strong>—</strong><em>Cloud Run executions</em></div></article>
+          <article class="fida-metric"><span class="amber">▧</span><div><small>Review Required</small><strong>—</strong><em>Human or customer validation</em></div></article>
+          <article class="fida-metric"><span class="teal">⌛</span><div><small>Retention Due</small><strong>—</strong><em>Within 24 hours</em></div></article>
+          <article class="fida-metric"><span class="red">!</span><div><small>Failed / Blocked</small><strong>—</strong><em>Needs operator attention</em></div></article>
+        </div>
+
+        <div class="fida-workspace" id="workspace">
+          <div class="fida-workspace-main">
+            <section class="fida-panel" id="queuePanel">
+              <header class="fida-panel-head"><div><h2>Customer workflow snapshot</h2><p>Enrollment, authorization, intake, recon, review, removal, and monitoring status.</p></div><span class="fida-count" id="customerCount">0</span></header>
+              <div class="fida-queue-tabs" id="queueTabs">
+                <button class="active" data-workflow="">All <b>0</b></button>
+                <button data-workflow="intake_ready">Intake Ready <b>0</b></button>
+                <button data-workflow="awaiting_dispatch">Ready to Run <b>0</b></button>
+                <button data-workflow="researching">Running <b>0</b></button>
+                <button data-workflow="awaiting_review">Needs Review <b>0</b></button>
+                <button data-workflow="monitoring">Monitoring <b>0</b></button>
+                <button data-workflow="blocked">Blocked <b>0</b></button>
+              </div>
+              <div class="fida-table-wrap">
+                <table class="fida-table">
+                  <thead><tr><th>Customer</th><th>Plan</th><th>Status</th><th>Last activity</th><th>Profiles</th><th></th></tr></thead>
+                  <tbody id="customerRows"><tr><td colspan="6"><div class="fida-empty">Loading customer queue…</div></td></tr></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="fida-panel" id="pipelinePanel">
+              <header class="fida-panel-head"><div><h2>Removal Request Pipeline</h2><p>Human-operated request and verification states.</p></div></header>
+              <div class="fida-pipeline" id="pipeline"></div>
+            </section>
+
+            <section class="fida-panel">
+              <header class="fida-panel-head"><div><h2>Research Packet Overview</h2><p>Authorized, version-pinned packets prepared from the current package and source catalog.</p></div></header>
+              <div class="fida-export-stats" id="exportStats"></div>
+            </section>
+          </div>
+
+          <aside class="fida-detail" id="customerDetail">
+            <div class="fida-detail-empty"><span>◎</span><h2>Select a customer</h2><p>Review identity data, evidence, removal cases, and the authorization-backed activity history.</p></div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="customersView" class="fida-view">
+        <div class="fida-page-heading"><div><p class="fida-kicker">Customer service ledger</p><h1>Customers</h1><p>See who has been helped, the package in force, the current workflow gate, and the next required action.</p></div><button class="fida-btn" id="refreshCustomersView">Refresh</button></div>
+        <div id="customersOperationsGrid" class="fida-operations-grid"><div class="fida-empty">Loading customers…</div></div>
+      </section>
+
+      <section id="workQueueView" class="fida-view">
+        <div class="fida-page-heading"><div><p class="fida-kicker">Operational queues</p><h1>Work Queue</h1><p>Move customers through intake, capacity assignment, active recon, review, disposition, removal, and monitoring.</p></div><button class="fida-btn" id="refreshWorkQueue">Refresh</button></div>
+        <div id="workQueueLanes" class="fida-work-lanes"><div class="fida-empty">Loading workflow lanes…</div></div>
+      </section>
+
+      <section id="privacyWorkflowView" class="fida-view">
+        <div class="fida-page-heading"><div><p class="fida-kicker">Complete workflow gate</p><h1>Privacy Workflow</h1><p>One governed lifecycle from customer enrollment through recon, review, removal delivery, monitoring, and explicit closure.</p></div><button class="fida-btn" id="refreshPrivacyWorkflow">Refresh</button></div>
+        <div class="fida-security-banner"><span>◇</span><div><strong>Every transition is evaluated, attributable, and reversible before closure</strong><p>Package scope, authorization, evidence, customer validation, delivery attempts, and monitoring commitments remain pinned to the API-owned workflow record.</p></div></div>
+        <div id="privacyWorkflowMetrics" class="fida-metrics fida-metrics-compact"><article class="fida-metric"><div><small>Loading workflow operations</small><strong>—</strong></div></article></div>
+        <div class="fida-workflow-layout">
+          <section class="fida-panel"><header class="fida-panel-head"><div><h2>Customer workflow cycles</h2><p>Current stage, open work, customer actions, delivery state, and monitoring coverage.</p></div></header><div id="privacyWorkflowGrid" class="fida-operations-grid"><div class="fida-empty">Loading privacy workflows…</div></div></section>
+          <aside class="fida-panel fida-workflow-inspector"><header class="fida-panel-head"><div><h2>Gate inspector</h2><p>Select a workflow to see the complete gate chain and operator actions.</p></div></header><div id="privacyWorkflowDetail"><div class="fida-empty">Select a customer workflow.</div></div></aside>
+        </div>
+      </section>
+
+      <section id="reconJobsView" class="fida-view">
+        <div class="fida-page-heading"><div><p class="fida-kicker">Disposable compute</p><h1>Recon Jobs</h1><p>API-owned jobs dispatched as one-off Google Cloud Run Job executions. Workers receive opaque job references and return results to the API.</p></div><button class="fida-btn" id="refreshReconJobs">Refresh</button></div>
+        <div class="fida-security-banner"><span>▶</span><div><strong>Cloud Run Jobs, not a persistent DiveDeep server</strong><p>Each execution starts, processes one authorized job, returns progress and results, clears temporary data, and exits. Each execution registers with a one-time token, leases one job, streams checkpoints and candidates, confirms cleanup, and exits.</p></div></div>
+        <section class="fida-panel"><div class="fida-table-wrap"><table class="fida-table"><thead><tr><th>Customer</th><th>Package</th><th>Status</th><th>Pool</th><th>Progress</th><th>Updated</th><th></th></tr></thead><tbody id="reconJobRows"><tr><td colspan="7"><div class="fida-empty">Loading recon jobs…</div></td></tr></tbody></table></div></section>
+      </section>
+
+      <section id="workerPoolsView" class="fida-view">
+        <div class="fida-page-heading"><div><p class="fida-kicker">Root owner only</p><h1>Worker Pools</h1><p>Versioned Google Cloud Run Job templates for disposable DiveDeep capacity.</p></div><div><button class="fida-btn" id="refreshWorkerPools">Refresh</button><button class="fida-btn fida-btn-primary" id="addWorkerPool">Add Pool</button></div></div>
+        <div class="fida-security-banner"><span>G</span><div><strong>Single-use executions</strong><p>Pool versions pin project, region, Cloud Run Job name, capabilities, limits, and package compatibility. Published versions are immutable.</p></div></div>
+        <div id="workerRuntimeMetrics" class="fida-metrics fida-metrics-compact"><article class="fida-metric"><div><small>Loading worker runtime</small><strong>—</strong></div></article></div>
+        <div id="workerPoolGrid" class="fida-catalog-grid"><div class="fida-empty">Loading worker pools…</div></div>
+        <section class="fida-panel"><header class="fida-panel-head"><div><h2>Ephemeral worker instances</h2><p>Registration, active leases, heartbeats, cleanup acknowledgements, and lost-worker recovery.</p></div><button class="fida-btn fida-btn-small root-only" id="runWorkerLeaseSweep">Recover expired leases</button></header><div id="workerInstanceGrid" class="fida-operations-grid"><div class="fida-empty">Loading worker instances…</div></div></section>
+      </section>
+
+      <section id="findingsView" class="fida-view">
+        <div class="fida-page-heading"><div><p class="fida-kicker">Human-reviewed findings</p><h1>Findings</h1><p>Candidate records requiring identity, source, preservation, or removal decisions.</p></div><button class="fida-btn" id="refreshFindings">Refresh</button></div>
+        <div id="findingReviewGrid" class="fida-operations-grid"><div class="fida-empty">Loading findings…</div></div>
+      </section>
+
+      <section id="evidenceView" class="fida-view">
+        <div class="fida-page-heading"><div><p class="fida-kicker">Analysis and validation</p><h1>Evidence Review</h1><p>Blurred candidate imagery, reviewer confirmation, and carefully controlled customer-validation requests.</p></div><button class="fida-btn" id="refreshEvidenceReview">Refresh</button></div>
+        <div id="evidenceReviewGrid" class="fida-operations-grid"><div class="fida-empty">Loading evidence review…</div></div>
+      </section>
+
+      <section id="casesView" class="fida-view">
+        <div class="fida-page-heading"><div><p class="fida-kicker">Removal operations</p><h1>Removal Cases</h1><p>Prepared, approved, sent, acknowledged, customer-action, completed, denied, and failed requests.</p></div><button class="fida-btn" id="refreshCasesView">Refresh</button></div>
+        <div id="caseOperationsGrid" class="fida-operations-grid"><div class="fida-empty">Loading removal cases…</div></div>
+      </section>
+
+      <section id="monitoringView" class="fida-view">
+        <div class="fida-page-heading"><div><p class="fida-kicker">Verification and reappearance</p><h1>Monitoring</h1><p>Known URL checks, removal-response deadlines, verification results, and future rescans.</p></div><button class="fida-btn" id="refreshMonitoring">Refresh</button></div>
+        <div id="monitoringGrid" class="fida-operations-grid"><div class="fida-empty">Loading monitoring queue…</div></div>
+      </section>
+
+      <section id="retentionView" class="fida-view">
+        <div class="fida-page-heading"><div><p class="fida-kicker">Data minimization</p><h1>Retention &amp; Artifacts</h1><p>Private object storage, integrity verification, review deadlines, retention holds, and confirmed deletion.</p></div><div><button class="fida-btn" id="refreshRetention">Refresh</button><button class="fida-btn fida-btn-danger root-only" id="runRetentionSweep">Run due deletions</button></div></div>
+        <div class="fida-security-banner"><span>▤</span><div><strong>The API retains workflow state, not exposed file paths</strong><p>Workers receive short-lived upload authorization. Objects remain private, are checksum-verified before review, and are deleted by application policy with storage lifecycle rules as a safety net.</p></div></div>
+        <div id="retentionMetrics" class="fida-metrics fida-metrics-compact"><article class="fida-metric"><div><small>Loading retention status</small><strong>—</strong></div></article></div>
+        <div id="retentionGrid" class="fida-operations-grid"><div class="fida-empty">Loading artifact retention queue…</div></div>
+      </section>
+
+      <section id="catalogView" class="fida-view">
+        <div class="fida-page-heading">
+          <div><p class="fida-kicker">Shared platform vocabulary</p><h1>Source Catalog</h1><p>Define websites, APIs, categories, topics, capabilities, declarations, versioned pools, and package coverage without hard-coding DiveDeep.</p></div>
+          <button class="fida-btn" id="refreshCatalog">Refresh</button>
+        </div>
+        <div class="fida-security-banner"><span>◫</span><div><strong>Published versions are immutable</strong><p>Source metadata is schema validated. Pools, source sets, and package versions are published as snapshots so active work can remain pinned to the configuration that authorized it.</p></div></div>
+        <div class="fida-metrics fida-catalog-metrics" id="catalogMetrics">
+          <article class="fida-metric"><span class="blue">◎</span><div><small>Active Sources</small><strong id="catalogMetricResources">—</strong><em>Catalog resources</em></div></article>
+          <article class="fida-metric"><span class="teal">⌁</span><div><small>Unique Domains</small><strong id="catalogMetricDomains">—</strong><em>Configured coverage</em></div></article>
+          <article class="fida-metric"><span class="purple">◫</span><div><small>Active Pools</small><strong id="catalogMetricPools">—</strong><em>Category and topic pools</em></div></article>
+          <article class="fida-metric"><span class="green">▦</span><div><small>Source Sets</small><strong id="catalogMetricSourceSets">—</strong><em>Published package inputs</em></div></article>
+          <article class="fida-metric"><span class="amber">◈</span><div><small>Package Versions</small><strong id="catalogMetricPackages">—</strong><em>Published snapshots</em></div></article>
+        </div>
+        <div class="fida-catalog-tabs" id="catalogTabs" role="tablist" aria-label="Source catalog sections">
+          <button class="active" data-catalog-tab="resources">Sources</button>
+          <button data-catalog-tab="pools">Pools</button>
+          <button data-catalog-tab="sourceSets">Source Sets</button>
+          <button data-catalog-tab="schemas">Metadata Schemas</button>
+          <button data-catalog-tab="packages">Package Coverage</button>
+          <button data-catalog-tab="imageAnalysis">Image Analysis</button>
+        </div>
+
+        <section class="fida-catalog-pane active" data-catalog-pane="resources">
+          <section class="fida-panel">
+            <header class="fida-panel-head"><div><h2>Websites, platforms, APIs, and endpoints</h2><p>Flexible source records with typed metadata, capabilities, declarations, limits, removal methods, and monitoring support.</p></div><button class="fida-btn fida-btn-primary root-only" id="addCatalogResource">Add source</button></header>
+            <div class="fida-catalog-filters"><input class="fida-input" id="catalogResourceSearch" type="search" placeholder="Search name, domain, category, or topic"/><select class="fida-select" id="catalogResourceStatus"><option value="">All statuses</option><option value="active">Active</option><option value="draft">Draft</option><option value="paused">Paused</option><option value="retired">Retired</option></select><select class="fida-select" id="catalogResourceSensitivity"><option value="">All sensitivity</option><option value="standard">Standard</option><option value="sensitive">Sensitive</option><option value="restricted">Restricted</option></select></div>
+            <div class="fida-table-wrap"><table class="fida-table"><thead><tr><th>Source</th><th>Type</th><th>Classification</th><th>Schema</th><th>Status</th><th></th></tr></thead><tbody id="catalogResourceRows"><tr><td colspan="6"><div class="fida-empty">Loading source catalog…</div></td></tr></tbody></table></div>
+          </section>
+        </section>
+
+        <section class="fida-catalog-pane" data-catalog-pane="pools">
+          <section class="fida-panel"><header class="fida-panel-head"><div><h2>Namespaced pools</h2><p>Pool membership is versioned. Existing OWL lead-routing pools remain separate and unchanged.</p></div><button class="fida-btn fida-btn-primary root-only" id="addCatalogPool">Add pool</button></header><div id="catalogPoolGrid" class="fida-catalog-grid"><div class="fida-empty">Loading pools…</div></div></section>
+        </section>
+
+        <section class="fida-catalog-pane" data-catalog-pane="sourceSets">
+          <section class="fida-panel"><header class="fida-panel-head"><div><h2>DiveDeep source sets</h2><p>Published source-set versions combine pool versions and explicit source exceptions.</p></div><button class="fida-btn fida-btn-primary root-only" id="addSourceSet">Add source set</button></header><div id="catalogSourceSetGrid" class="fida-catalog-grid"><div class="fida-empty">Loading source sets…</div></div></section>
+        </section>
+
+        <section class="fida-catalog-pane" data-catalog-pane="schemas">
+          <section class="fida-panel"><header class="fida-panel-head"><div><h2>Metadata schema registry</h2><p>Published JSON Schema definitions validate flexible metadata while preserving predictable structure.</p></div><button class="fida-btn fida-btn-primary root-only" id="addMetadataSchema">Add schema version</button></header><div id="catalogSchemaGrid" class="fida-catalog-grid"><div class="fida-empty">Loading schemas…</div></div></section>
+        </section>
+
+        <section class="fida-catalog-pane" data-catalog-pane="packages">
+          <section class="fida-panel"><header class="fida-panel-head"><div><h2>Package coverage snapshots</h2><p>Each package version points to one published source-set version and carries execution, review, and retention policy metadata.</p></div></header><div id="catalogPackageGrid" class="fida-catalog-grid"><div class="fida-empty">Loading package versions…</div></div></section>
+        </section>
+
+        <section class="fida-catalog-pane" data-catalog-pane="imageAnalysis">
+          <div class="fida-security-banner"><span>AI</span><div><strong>Assisted analysis, never automatic identity proof</strong><p>Amazon Rekognition scores support human review. Blurred thumbnail streams and customer-validation escalation are modeled now so the customer experience can feel active without exposing unreviewed imagery.</p></div></div>
+          <section class="fida-panel">
+            <header class="fida-panel-head"><div><h2>Image-analysis profiles</h2><p>Versioned operations, thresholds, limits, review rules, retention, and package-ready presentation behavior.</p></div><a class="fida-btn" href="#" data-open-integrations-view>Configure Rekognition</a></header>
+            <div id="imageAnalysisGrid" class="fida-catalog-grid"><div class="fida-empty">Loading image-analysis profiles…</div></div>
+          </section>
+          <section class="fida-panel" style="margin-top:18px">
+            <header class="fida-panel-head"><div><h2>Prepared customer analysis wall</h2><p id="imagePresentationContract">Blurred preview stream · human validation required</p></div></header>
+            <div class="fida-analysis-wall" aria-label="Blurred image-analysis presentation preview">
+              <div class="fida-analysis-thumbs" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+              <div class="fida-analysis-status"><small>Analysis and validation</small><strong>Candidate imagery is being compared and reviewed</strong><p>Only reviewer-confirmed matches or carefully selected customer-validation requests can move beyond the protected review wall.</p><div class="fida-analysis-progress"><i></i></div></div>
+            </div>
+          </section>
+        </section>
+      </section>
+
+      <section id="integrationsView" class="fida-view">
+        <div class="fida-page-heading">
+          <div><p class="fida-kicker">Root owner only</p><h1>Secure Integrations</h1><p>Credentials are encrypted at rest and never returned after saving.</p></div>
+          <button class="fida-btn" id="refreshIntegrations">Refresh</button>
+        </div>
+        <div class="fida-security-banner"><span>▰</span><div><strong>Protected credential vault</strong><p>Secrets are omitted from responses, administrative forensic bodies, browser storage, and audit-event details.</p></div></div>
+        <div class="fida-integration-grid" id="integrationGrid"><div class="fida-empty">Loading integrations…</div></div>
+      </section>
+
+      <section id="packagesView" class="fida-view">
+        <div class="fida-page-heading"><div><p class="fida-kicker">Root owner only</p><h1>Packages &amp; billing mapping</h1><p>Control the four DiveDeep offerings, public pricing, availability, and optional Stripe Price IDs.</p></div><button class="fida-btn" id="refreshPackages">Refresh</button></div>
+        <div class="fida-security-banner"><span>◈</span><div><strong>Stripe-ready package controls</strong><p>Changing a price updates future signup pricing. Stripe checkout and webhook billing enforcement remain a separate release.</p></div></div>
+        <div class="fida-integration-grid" id="packageGrid"><div class="fida-empty">Loading packages…</div></div>
+      </section>
+
+      <section id="pilotCodesView" class="fida-view">
+        <div class="fida-page-heading"><div><p class="fida-kicker">Root owner only</p><h1>Pilot &amp; developer codes</h1><p>Create discounted access, limited-use pilot invites, and 100% free developer test codes.</p></div><button class="fida-btn" id="refreshPilotCodes">Refresh</button></div>
+        <section class="fida-panel"><header class="fida-panel-head"><div><h2>Create code</h2><p>The full code is displayed once after creation; the database stores only a blind index.</p></div></header>
+          <form id="pilotCodeForm" class="fida-admin-form">
+            <label class="fida-field"><span>Internal label</span><input class="fida-input" name="label" required maxlength="160" placeholder="Developer acceptance test" /></label>
+            <label class="fida-field"><span>Custom code (optional)</span><input class="fida-input" name="code" maxlength="64" placeholder="FID-DEV-TEST" /></label>
+            <label class="fida-field"><span>Package</span><select class="fida-select" name="packageId" id="pilotPackage"><option value="">Any active package</option></select></label>
+            <label class="fida-field"><span>Discount percent</span><input class="fida-input" name="discountPercent" type="number" min="0" max="100" step="0.01" value="100" required /></label>
+            <label class="fida-field"><span>Maximum redemptions</span><input class="fida-input" name="maxRedemptions" type="number" min="1" step="1" value="1" /></label>
+            <label class="fida-field"><span>Expires at (optional)</span><input class="fida-input" name="expiresAt" type="datetime-local" /></label>
+            <label class="fida-check full"><input type="checkbox" name="developerTest" checked /> Developer test code — must remain 100% free.</label>
+            <button class="fida-btn fida-btn-primary full" type="submit">Create pilot code</button>
+          </form>
+        </section>
+        <section class="fida-panel" style="margin-top:18px"><header class="fida-panel-head"><div><h2>Issued codes</h2><p>Codes can be disabled immediately; their full values are never retrievable.</p></div></header><div id="pilotCodeList" class="fida-audit-list"><div class="fida-empty">Loading pilot codes…</div></div></section>
+      </section>
+
+      <section id="auditView" class="fida-view">
+        <div class="fida-page-heading"><div><p class="fida-kicker">Root owner only</p><h1>Integration Audit Log</h1><p>Credential values are never written to this ledger.</p></div></div>
+        <section class="fida-panel"><div class="fida-audit-list" id="integrationAudit"><div class="fida-empty">Loading audit history…</div></div></section>
+      </section>
+    </main>
+  </div>
+
+  <div class="fida-modal-backdrop" id="resultImportModal" hidden>
+    <section class="fida-modal fida-import-modal" role="dialog" aria-modal="true" aria-labelledby="resultImportTitle">
+      <header><div><p class="fida-kicker">Private staged import</p><h2 id="resultImportTitle">DiveDeep Evidence Bundle</h2></div><button class="fida-icon-btn" data-close-import-modal aria-label="Close">×</button></header>
+      <div class="fida-import-security"><strong>Upload the DiveDeep ZIP directly, choose its extracted folder, or drop either one here.</strong><span>The archive is verified before upload. After upload reaches 100%, the encrypted server-side job continues safely through refreshes, sign-outs, and browser closure.</span></div>
+      <div class="fida-import-drop" id="resultBundleDrop" tabindex="0">
+        <strong>Drop a DiveDeep ZIP or evidence-package folder here</strong>
+        <span>You may also choose the ZIP, folder, or all package files manually.</span>
+        <div><button class="fida-btn fida-btn-primary" id="chooseResultFolder" type="button">Choose Folder</button><button class="fida-btn" id="chooseResultFiles" type="button">Choose ZIP / Files</button></div>
+      </div>
+      <input id="resultBundleFolder" type="file" multiple webkitdirectory directory hidden />
+      <input id="resultBundleFiles" type="file" multiple accept="application/zip,application/x-zip-compressed,application/json,image/jpeg,image/png,image/webp,.zip,.json,.jpg,.jpeg,.png,.webp" hidden />
+      <div id="resultBundleSummary" class="fida-import-summary"><div class="fida-empty">No bundle selected.</div></div>
+      <div id="resultImportProgress"></div>
+      <div id="resultBundleQueue" class="fida-import-queue"></div>
+      <div class="fida-modal-actions">
+        <button type="button" class="fida-btn" data-close-import-modal>Close</button>
+        <button type="button" class="fida-btn" id="validateResultBundle" disabled>Validate</button>
+        <button type="button" class="fida-btn fida-btn-primary" id="startResultImport" disabled>Upload &amp; Run in Background</button>
+        <button type="button" class="fida-btn fida-btn-success" id="publishResultBatch" hidden>Publish Approved Findings</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="fida-modal-backdrop" id="catalogModal" hidden>
+    <section class="fida-modal fida-catalog-modal" role="dialog" aria-modal="true" aria-labelledby="catalogModalTitle">
+      <header><div><p class="fida-kicker" id="catalogModalKicker">Source catalog</p><h2 id="catalogModalTitle">Edit catalog</h2></div><button class="fida-icon-btn" data-close-catalog-modal aria-label="Close">×</button></header>
+      <form id="catalogForm">
+        <input type="hidden" name="mode" />
+        <input type="hidden" name="entityId" />
+        <input type="hidden" name="parentId" />
+        <div id="catalogFormFields" class="fida-form-grid fida-catalog-form-grid"></div>
+        <div class="fida-modal-actions"><button type="button" class="fida-btn" data-close-catalog-modal>Cancel</button><button type="submit" class="fida-btn fida-btn-primary" id="saveCatalogForm">Save</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="fida-modal-backdrop" id="workerPoolModal" hidden>
+    <section class="fida-modal fida-catalog-modal" role="dialog" aria-modal="true" aria-labelledby="workerPoolModalTitle">
+      <header><div><p class="fida-kicker">Disposable compute</p><h2 id="workerPoolModalTitle">Configure worker pool</h2></div><button class="fida-icon-btn" data-close-worker-pool-modal aria-label="Close">×</button></header>
+      <form id="workerPoolForm">
+        <input type="hidden" name="mode" value="pool" />
+        <input type="hidden" name="poolId" />
+        <input type="hidden" name="versionId" />
+        <div class="fida-form-grid">
+          <label class="fida-field"><span>Pool name</span><input class="fida-input" name="name" required placeholder="Cloud Run DiveDeep" /></label>
+          <label class="fida-field"><span>Slug</span><input class="fida-input" name="slug" required placeholder="cloud-run-primary" /></label>
+          <label class="fida-field full"><span>Description</span><textarea class="fida-textarea" name="description" rows="3"></textarea></label>
+          <label class="fida-field"><span>Google project ID</span><input class="fida-input" name="projectId" placeholder="divedeep-prod" /></label>
+          <label class="fida-field"><span>Region</span><input class="fida-input" name="region" value="us-east1" /></label>
+          <label class="fida-field"><span>Cloud Run Job name</span><input class="fida-input" name="jobName" value="divedeep-divedeep" /></label>
+          <label class="fida-field"><span>DiveDeep worker version</span><input class="fida-input" name="workerVersion" value="5.29.0" /></label>
+          <label class="fida-field"><span>Worker protocol</span><input class="fida-input" name="workerProtocolVersion" value="1" readonly /></label>
+          <label class="fida-field"><span>Task timeout seconds</span><input class="fida-input" name="taskTimeoutSeconds" type="number" min="60" max="604800" value="1800" /></label>
+          <label class="fida-field"><span>Maximum retries</span><input class="fida-input" name="maxRetries" type="number" min="0" max="0" value="0" readonly /></label>
+          <label class="fida-field"><span>Concurrent executions</span><input class="fida-input" name="maximumConcurrentExecutions" type="number" min="1" max="100" value="2" /></label>
+          <label class="fida-check full"><input type="checkbox" name="imageAnalysis" checked /> Supports image analysis</label>
+          <label class="fida-check full"><input type="checkbox" name="sensitiveSources" checked /> Supports sensitive-source packages</label>
+          <label class="fida-check full"><input type="checkbox" name="dispatchEnabled" /> Permit live dispatch after worker protocol readiness</label>
+          <label class="fida-check full"><input type="checkbox" name="publish" /> Publish this version immediately</label>
+        </div>
+        <div class="fida-modal-actions"><button type="button" class="fida-btn" data-close-worker-pool-modal>Cancel</button><button type="submit" class="fida-btn fida-btn-primary">Save worker pool</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="fida-modal-backdrop" id="integrationModal" hidden>
+    <section class="fida-modal" role="dialog" aria-modal="true" aria-labelledby="integrationModalTitle">
+      <header><div><p class="fida-kicker">Encrypted settings</p><h2 id="integrationModalTitle">Configure integration</h2></div><button class="fida-icon-btn" data-close-modal aria-label="Close">×</button></header>
+      <form id="integrationForm">
+        <input type="hidden" name="provider" />
+        <div id="integrationFields" class="fida-form-grid"></div>
+        <label class="fida-switch"><input type="checkbox" name="enabled" /><span></span><div><strong>Enable integration</strong><small>Only enable after required credentials have been saved.</small></div></label>
+        <div class="fida-modal-actions"><button type="button" class="fida-btn" data-close-modal>Cancel</button><button type="submit" class="fida-btn fida-btn-primary">Save encrypted settings</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div id="adminToast" class="fida-toast" role="status" aria-live="polite"></div>
+  <script src="/js/divedeep-zip.js?v=20260724-175"></script>
+  <script>
+    // Compatibility guard for any stale admin bundle retained by an upstream cache.
+    window.formatDate = window.formatDate || function (value) {
+      if (!value) return '—';
+      var parsed = new Date(value);
+      if (Number.isNaN(parsed.getTime())) return '—';
+      try {
+        return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(parsed);
+      } catch (_error) {
+        return parsed.toLocaleString();
+      }
+    };
+  </script>
+  <script src="/js/divedeep-admin-v1.13.0.js"></script>
+</body>
+</html>

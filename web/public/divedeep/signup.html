@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Request DiveDeep private pilot access</title>
+  <link rel="stylesheet" href="/css/divedeep.css" />
+</head>
+<body class="divedeep-body">
+  <main class="fid-auth-page">
+    <section class="fid-auth-wrap">
+      <aside class="fid-auth-side">
+        <a class="fid-brand" href="/"><span class="fid-brand-logo">OSINT Dive Deep</span><span class="fid-sr-only">OSINT Dive Deep v1</span></a>
+        <h1>One protected identity. One controlled privacy record.</h1>
+        <p>Your authorized identifiers, owned profiles, visibility rules, and eligible reference images create the governed profile used for discovery, review, removal delivery, and monitoring.</p>
+        <div class="fid-proof">
+          <span>Controlled private pilot</span>
+          <span>Encrypted at rest</span>
+          <span>Customer-controlled decisions</span>
+        </div>
+      </aside>
+      <div class="fid-auth-main">
+        <h2>Request private pilot access</h2>
+        <p>Choose the coverage boundary that fits your situation. Account creation does not begin discovery: authorization, profile intake, package snapshot, and any required consent gates must be completed first.</p>
+        <a id="facebookSignup" class="fid-btn fid-btn-secondary fid-btn-block" hidden>Continue with Facebook</a>
+        <div class="fid-auth-note" style="margin:12px 0">or create your account with email</div>
+        <form id="signupForm" class="fid-form-grid" autocomplete="on">
+          <label class="fid-field">
+            <span class="fid-label">First name</span>
+            <input class="fid-input" name="firstName" maxlength="120" required autocomplete="given-name" />
+          </label>
+          <label class="fid-field">
+            <span class="fid-label">Last name</span>
+            <input class="fid-input" name="lastName" maxlength="120" required autocomplete="family-name" />
+          </label>
+          <label class="fid-field full">
+            <span class="fid-label">Email address</span>
+            <input class="fid-input" type="email" name="email" maxlength="320" required autocomplete="email" />
+          </label>
+          <label class="fid-field full">
+            <span class="fid-label">Password</span>
+            <input class="fid-input" type="password" name="password" minlength="12" maxlength="200" required autocomplete="new-password" />
+            <span class="fid-help">Use at least 12 characters. This account will contain privacy-sensitive status information.</span>
+          </label>
+          <label class="fid-field full">
+            <span class="fid-label">Protection plan</span>
+            <select class="fid-select" name="planTier" id="planTier">
+              <option value="standard">Basic Privacy · Operator configured</option>
+              <option value="deep">Advanced Discovery · Operator configured</option>
+              <option value="sensitive">18+ Adult Site Scrubbing · Operator configured</option>
+              <option value="image">Advanced Image Scrubbing · Operator configured</option>
+            </select>
+          </label>
+          <label class="fid-field full" id="inviteField">
+            <span class="fid-label">Pilot or discount code</span>
+            <input class="fid-input" name="pilotCode" maxlength="200" autocomplete="one-time-code" />
+          </label>
+          <div id="sensitiveConsent" class="fid-sensitive-consent"><div class="fid-sensitive-heading"><strong>Restricted plan requirements</strong><span>These confirmations are required only for eligible 18+ sensitive-source or image plans.</span></div>
+            <label class="fid-check"><input type="checkbox" name="age18Affirmed" /> <span>I confirm that I am at least 18 years old and this protected profile belongs to me.</span></label>
+            <label class="fid-check"><input type="checkbox" name="sensitiveContentConsent" /> <span>I authorize restricted review of adult or explicit-content websites and related removal-case preparation. Evidence will be hidden by default and manually reviewed.</span></label>
+          </div>
+          <label class="fid-check full"><input type="checkbox" name="noticeAcknowledged" required /> <span>I reviewed the <a href="/divedeep/notice-at-collection" target="_blank" rel="noopener">Notice at Collection</a> describing the account, technical, and protected-profile information DiveDeep may collect.</span></label>
+          <label class="fid-check full"><input type="checkbox" name="termsAccepted" required /> <span>I accept the <a href="/divedeep/terms" target="_blank" rel="noopener">Terms</a> and acknowledge the <a href="/divedeep/privacy" target="_blank" rel="noopener">Privacy Policy</a>.</span></label>
+          <div class="fid-signup-next full"><strong>Next: formal authorization and protected-profile intake</strong><span>No discovery or removal work begins from account creation alone. You will sign a separate Limited Authorization and complete the required workflow gates after signing in.</span></div>
+          <div class="fid-form-error full" id="formError" role="alert"></div>
+          <button class="fid-btn fid-btn-primary fid-btn-block full" type="submit">Create my pilot account</button>
+        </form>
+        <div class="fid-auth-note"><a href="/divedeep/legal">Review legal and responsible-data policies</a></div>
+        <div class="fid-auth-note">Already enrolled? <a href="/divedeep/login">Sign in</a></div>
+      </div>
+    </section>
+  </main>
+  <script src="/divedeep-runtime.js?v=20260726-positioning-1"></script>
+  <script src="/js/divedeep-auth.js?v=20260726-positioning-1"></script>
+</body>
+</html>

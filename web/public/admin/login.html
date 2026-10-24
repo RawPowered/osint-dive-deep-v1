@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Sign in</title>
+  <link rel="stylesheet" href="/css/app.css" />
+</head>
+<body>
+  <header class="topbar">
+    <span class="brand">Control panel</span>
+  </header>
+
+  <main class="container container-sm">
+    <h1>Sign in</h1>
+    <p class="muted">Restricted access · password and Google verification required</p>
+
+    <div id="alert" hidden></div>
+
+    <div class="card">
+      <label for="username">Username</label>
+      <input id="username" type="text" autocomplete="username" />
+
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" />
+
+      <button type="button" class="btn btn-primary" id="btnLogin" style="width:100%">Sign in</button>
+      <p class="muted small">After your password is verified, you will continue to the Google account assigned to your administrator profile.</p>
+    </div>
+  </main>
+
+  <script>
+    const base = location.pathname.replace(/\/login\/?$/, '') || '';
+    const params = new URLSearchParams(location.search);
+    const next = params.get('next') || base;
+
+    const alertEl = document.getElementById('alert');
+    function showError(msg) {
+      alertEl.hidden = false;
+      alertEl.className = 'alert alert-error';
+      alertEl.textContent = msg;
+    }
+
+    if (params.get('mfaError')) {
+      showError('Google verification was not completed. Sign in again and use the Google account assigned to this administrator.');
+    }
+
+    async function login() {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const button = document.getElementById('btnLogin');
+      button.disabled = true;
+      button.textContent = 'Verifying…';
+      try {
+        const res = await fetch(base + '/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ username, password, next }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          showError(data.error || 'Login failed');
+          return;
+        }
+        window.location.href = data.redirect || base;
+      } catch (e) {
+        showError('Login failed');
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Sign in';
+      }
+    }
+
+    document.getElementById('btnLogin').onclick = login;
+    document.getElementById('password').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') login();
+    });
+  </script>
+</body>
+</html>

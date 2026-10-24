@@ -1,0 +1,28 @@
+'use strict';
+const assert = require('assert/strict');
+const fs = require('fs');
+const path = require('path');
+const root = path.resolve(__dirname, '..');
+const html = fs.readFileSync(path.join(root, 'public/admin/divedeep.html'), 'utf8');
+const js = fs.readFileSync(path.join(root, 'public/js/divedeep-admin-v1.13.0.js'), 'utf8');
+const css = fs.readFileSync(path.join(root, 'public/css/divedeep-admin.css'), 'utf8');
+const routes = fs.readFileSync(path.join(root, 'src/routes/adminDiveDeep.js'), 'utf8');
+
+for (const view of ['customers','work-queue','recon-jobs','worker-pools','findings','evidence','cases','monitoring','retention']) assert.match(html, new RegExp(`data-view="${view}"`));
+for (const id of ['customersView','workQueueView','reconJobsView','workerPoolsView','findingsView','evidenceView','casesView','monitoringView','retentionView']) assert.match(html, new RegExp(`id="${id}"`));
+assert.match(html, /Cloud Run Jobs, not a persistent DiveDeep server/);
+assert.match(html, /Recovery tools/);
+assert.match(html, /divedeep-admin-v1\.13\.0\.js/);
+assert.match(js, /google_cloud_run/);
+assert.match(js, /Verify Job access/);
+assert.match(js, /loadWorkQueue/);
+assert.match(js, /loadReconJobs/);
+assert.match(js, /request_customer_validation/);
+assert.match(css, /\.fida-work-lanes/);
+assert.match(css, /\.fida-blurred-preview/);
+for (const route of ['operations/overview','work-queue','review-queue','retention-queue','monitoring-queue','case-queue','worker-pools','recon-jobs']) assert.match(routes, new RegExp(route.replace('/', '\\/')));
+const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]);
+const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
+assert.deepEqual([...new Set(duplicates)], []);
+assert.equal(/localStorage|sessionStorage/.test(js), false);
+console.log('DiveDeep Phase 2 admin UIX contract checks passed');

@@ -1,0 +1,82 @@
+{
+  "schema_version": "osint-query-studio-template-v2",
+  "template_id": "new_reusable_hunt_template",
+  "name": "New reusable hunt template",
+  "description": "An empty template for your own research scope.",
+  "metadata": {
+    "tags": [],
+    "author": "OSINT Query Studio",
+    "compatible_app_versions": "5.x"
+  },
+  "matrix": {
+    "bases": "",
+    "variants": "",
+    "geographies": "",
+    "excludes": "",
+    "sites": "",
+    "title_terms": "",
+    "url_terms": "",
+    "filetypes": "",
+    "templates": "{base}",
+    "max_queries": 2500,
+    "candidate_excluded_domains": "",
+    "candidate_excluded_url_terms": "",
+    "candidate_excluded_title_terms": "",
+    "candidate_excluded_snippet_terms": "",
+    "candidate_required_url_terms": ""
+  },
+  "visual": {
+    "matching": {
+      "within_group": "OR",
+      "between_groups": "AND",
+      "minimum_score": 0.0
+    },
+    "prefilter": {
+      "excluded_domains": "",
+      "excluded_url_terms": "",
+      "excluded_title_terms": "",
+      "excluded_snippet_terms": "",
+      "required_url_terms": ""
+    },
+    "rules": [],
+    "extractors": [],
+    "selected_fields": [
+      "input_source",
+      "search_query",
+      "search_rank",
+      "search_title",
+      "search_snippet",
+      "requested_url",
+      "final_url",
+      "domain",
+      "status_code",
+      "fetch_ok",
+      "response_time_ms",
+      "fetched_at",
+      "title",
+      "meta_description",
+      "canonical_url",
+      "h1",
+      "footer_text",
+      "script_srcs",
+      "footer_script_srcs",
+      "emails",
+      "phones",
+      "social_links",
+      "technologies",
+      "match_passed",
+      "match_score",
+      "matched_rules",
+      "failed_rules",
+      "error"
+    ],
+    "fetch": {
+      "workers": 4,
+      "timeout": 15,
+      "verify_tls": true,
+      "follow_redirects": true,
+      "max_bytes": 2500000,
+      "include_nonmatches": true
+    }
+  }
+}

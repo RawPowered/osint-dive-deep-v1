@@ -1,0 +1,30 @@
+const assert = require('assert/strict');
+const fs = require('fs');
+const path = require('path');
+const root = path.join(__dirname, '..');
+
+const privacy = fs.readFileSync(path.join(root, 'src/services/divedeepPrivacy.js'), 'utf8');
+const diveDeep = fs.readFileSync(path.join(root, 'src/services/diveDeep.js'), 'utf8');
+const imports = fs.readFileSync(path.join(root, 'src/services/diveDeepImports.js'), 'utf8');
+const routes = fs.readFileSync(path.join(root, 'src/routes/adminDiveDeep.js'), 'utf8');
+const schema = fs.readFileSync(path.join(root, 'sql/schema.sql'), 'utf8');
+
+assert.ok(schema.includes("publication_status       ENUM('staged','approved','published','rejected')"));
+assert.ok(schema.includes('CREATE TABLE IF NOT EXISTS divedeep_import_batches'));
+assert.ok(schema.includes('CREATE TABLE IF NOT EXISTS divedeep_evidence_files'));
+assert.ok(privacy.includes("publication_status=COALESCE(?,publication_status)"), 'Existing exposure publication must update atomically');
+assert.ok(privacy.includes("row.scope_type === 'profile_url' && exposure.listingUrl"), 'Profile URL policies must not evaluate a missing listing URL');
+assert.ok(/const exposureInput = \{\s*listingUrl,/.test(privacy), 'Visibility policy evaluation must receive the normalized listing URL');
+assert.ok(privacy.includes("requestedPublicationStatus || 'published'"), 'New exposure publication must be selected during insertion');
+assert.ok(diveDeep.includes("publicationStatus: 'published'"), 'Customer finding pages must query published exposures only');
+assert.ok(diveDeep.includes("publishedOnly: true"), 'Customer removal cases must be joined to published exposures only');
+assert.ok(diveDeep.includes('getCustomerFindingPage'), 'Customer evidence must be server-paged instead of loaded in one dashboard response');
+assert.ok(diveDeep.includes("if (!options.suppressEvent)"), 'Segmented imports must suppress low-level customer events');
+assert.ok(diveDeep.includes("priorPublicationStatus === 'published'"), 'Existing published findings must remain published');
+assert.ok(imports.includes("row.publication_status === 'approved'"), 'Batch publishing must default to approved findings only');
+assert.ok(imports.includes('cancelImportBatch'));
+assert.ok(imports.includes('restartClosedImportBatch'), 'Cancelled or expired imports must be restartable with the same verified manifest');
+assert.ok(imports.includes("publication_status=CASE WHEN publication_status='published' THEN 'published' ELSE 'staged' END"), 'Reused evidence must be re-staged during a restarted import');
+assert.ok(routes.includes("express.raw({ type: () => true, limit: '25mb' })"), 'Evidence uploads must always reach the raw binary parser before validation');
+assert.equal(routes.includes('multer'), false, 'Evidence uploads should not introduce multipart parsing');
+console.log('DiveDeep staged-import privacy checks passed');

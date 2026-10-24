@@ -1,0 +1,204 @@
+{
+  "format": "hawk-automation-1",
+  "generatedFor": {
+    "locationId": "xL8ddVGYVDBc4bDB1ppq",
+    "liveSchemaGeneratedAt": "2026-07-14T01:15:37.029Z",
+    "purpose": "Webhook-driven OWL eligibility, OWL-authorized HAWK dialer assignment, service-pool routing, Manual Actions queue control, outcome handling, and Call Center custom-object history.",
+    "requiredSetup": [
+      "Import with the granted GoHighLevel Private Integration selected.",
+      "Publish both flows, generate one HAWK webhook endpoint per flow, copy each one-time secret, and activate both flows.",
+      "Replace the two HAWK endpoint placeholders in the companion GoHighLevel Workflow AI build specification.",
+      "Keep one GoHighLevel Manual Actions workflow per service pool. Each workflow is triggered by its cc-pool-* tag and assigns its Manual Call to {{contact.assigned_dialer}}.",
+      "Agents must set contact custom field Call_outcome before deleting a completed Manual Call action.",
+      "Both GoHighLevel webhooks must send the named custom-data contract from the companion specification; HAWK does not depend on custom fields being present in GoHighLevel standard data.",
+      "In OWL > Dialer Users, map each user to a GoHighLevel CRM user ID and select every service pool that user may receive.",
+      "In OWL > Service Pools, configure a Default fallback dialer for every pool. HAWK uses it only if Assigned Dialer, record owner, and permitted round robin are all unavailable.",
+      "HAWK adds hawk-dialer-ready first and then exactly one cc-pool-* tag after assignment. The pool tag is the GHL workflow enrollment signal.",
+      "The GoHighLevel Manual Call action must assign to {{contact.assigned_dialer}}. HAWK writes that field before adding the pool tag."
+    ],
+    "crmAuthority": {
+      "callCenterSchemaKey": "custom_objects.dials",
+      "dialerStatusFieldId": "VsXb7HofKxm6F5sr7edH",
+      "callOutcomeFieldId": "IfwpWY8S2SPsrvefs72j",
+      "nextCallAtFieldId": "HvxGHlgSy1tdJ4PLnVGG",
+      "servicesFieldId": "uO4QvsQSGHBM4Vh48v0L",
+      "serviceTypeFieldId": "04r14svrWH36Knji7YcY",
+      "assignedDialerFieldId": "test-assigned-field"
+    }
+  },
+  "flows": [
+    {
+      "name": "Call Center - OWL Eligibility and Pool Routing",
+      "description": "Receives the authenticated call_center.eligibility webhook, asks OWL to scrub Primary Phone, Alternative Phone, and Phone 3 and promote a documented clean number when needed, retains appointment, lifecycle, and Florida attempt safeguards, resolves the service queue from live CRM tags, selects Assigned Dialer, and applies the exact GHL Manual Actions pool tag.",
+      "integrationId": null,
+      "graph": {
+        "schemaVersion": 1,
+        "startNodeId": "trigger",
+        "nodes": [
+          { "id": "trigger", "type": "trigger", "name": "Call Center recheck requested", "config": { "event": "webhook.received", "eventName": "call_center.eligibility" }, "nextNodeId": "evaluate", "position": { "x": 520, "y": 40 } },
+          { "id": "evaluate", "type": "action", "action": "divedeep.evaluate_dialer_eligibility", "name": "Scrub every phone and evaluate OWL eligibility", "config": { "contactId": "{{trigger.contactId}}", "requireAssignment": false, "enforceMarketingHours": false, "scrubAllPhones": true, "requireAlternatePhone": false }, "nextNodeId": "approved", "position": { "x": 520, "y": 180 } },
+          { "id": "approved", "type": "condition", "name": "OWL approved", "config": { "field": "steps.evaluate.response.eligible", "operator": "equals", "value": true }, "routes": [
+            { "label": "Approved", "when": true, "targetNodeId": "clear_queue_state" },
+            { "label": "Blocked", "when": false, "targetNodeId": "remove_blocked_queue_tags" }
+          ], "position": { "x": 520, "y": 320 } },
+
+          { "id": "remove_blocked_queue_tags", "type": "action", "action": "ghl.remove_tags", "name": "Remove all queue tags", "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-recheck", "hawk-dialer-ready", "cc-pool-roofing", "cc-pool-mold", "cc-pool-solar", "cc-pool-kitchen", "cc-pool-bathroom", "cc-pool-home-addition", "cc-await-retry", "cc-await-callback"] }, "nextNodeId": "record_block", "position": { "x": 850, "y": 470 } },
+          { "id": "record_block", "type": "action", "action": "ghl.update_contact", "name": "Record OWL exclusion", "config": { "contactId": "{{trigger.contactId}}", "fields": { "customFields": [
+            { "id": "VsXb7HofKxm6F5sr7edH", "field_value": "BLOCKED - {{steps.evaluate.response.reason}}" }
+          ] } }, "nextNodeId": "mark_blocked", "position": { "x": 850, "y": 610 } },
+          { "id": "mark_blocked", "type": "action", "action": "ghl.add_tags", "name": "Mark dialer blocked", "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-dial-blocked"] }, "nextNodeId": "blocked_end", "position": { "x": 850, "y": 750 } },
+          { "id": "blocked_end", "type": "end", "name": "Excluded from Power Dialer", "config": {}, "position": { "x": 850, "y": 900 } },
+
+          { "id": "clear_queue_state", "type": "action", "action": "ghl.remove_tags", "name": "Clear stale pool state", "config": { "contactId": "{{trigger.contactId}}", "tags": ["hawk-dialer-ready", "cc-dial-blocked", "cc-pool-roofing", "cc-pool-mold", "cc-pool-solar", "cc-pool-kitchen", "cc-pool-bathroom", "cc-pool-home-addition", "cc-await-retry", "cc-await-callback", "cc-scheduled", "cc-outcome-review"] }, "nextNodeId": "is_roofing", "position": { "x": 220, "y": 470 } },
+          { "id": "is_roofing", "type": "condition", "name": "Roofing service", "config": { "field": "steps.evaluate.response.servicePool", "operator": "equals", "value": "roofing" }, "routes": [
+            { "label": "Roofing", "when": true, "targetNodeId": "data_roofing" },
+            { "label": "Next", "when": false, "targetNodeId": "is_mold" }
+          ], "position": { "x": 220, "y": 760 } },
+          { "id": "is_mold", "type": "condition", "name": "Mold service", "config": { "field": "steps.evaluate.response.servicePool", "operator": "equals", "value": "mold" }, "routes": [
+            { "label": "Mold", "when": true, "targetNodeId": "data_mold" },
+            { "label": "Next", "when": false, "targetNodeId": "is_solar" }
+          ], "position": { "x": 220, "y": 910 } },
+          { "id": "is_solar", "type": "condition", "name": "Solar service", "config": { "field": "steps.evaluate.response.servicePool", "operator": "equals", "value": "solar" }, "routes": [
+            { "label": "Solar", "when": true, "targetNodeId": "data_solar" },
+            { "label": "Next", "when": false, "targetNodeId": "is_kitchen" }
+          ], "position": { "x": 220, "y": 1060 } },
+          { "id": "is_kitchen", "type": "condition", "name": "Kitchen service", "config": { "field": "steps.evaluate.response.servicePool", "operator": "equals", "value": "kitchen" }, "routes": [
+            { "label": "Kitchen", "when": true, "targetNodeId": "data_kitchen" },
+            { "label": "Next", "when": false, "targetNodeId": "is_bathroom" }
+          ], "position": { "x": 220, "y": 1210 } },
+          { "id": "is_bathroom", "type": "condition", "name": "Bathroom service", "config": { "field": "steps.evaluate.response.servicePool", "operator": "equals", "value": "bathroom" }, "routes": [
+            { "label": "Bathroom", "when": true, "targetNodeId": "data_bathroom" },
+            { "label": "Next", "when": false, "targetNodeId": "is_home_addition" }
+          ], "position": { "x": 220, "y": 1360 } },
+          { "id": "is_home_addition", "type": "condition", "name": "Home addition service", "config": { "field": "steps.evaluate.response.servicePool", "operator": "equals", "value": "home_addition" }, "routes": [
+            { "label": "Home Addition", "when": true, "targetNodeId": "data_home_addition" },
+            { "label": "Unsupported", "when": false, "targetNodeId": "unsupported_service" }
+          ], "position": { "x": 220, "y": 1510 } },
+
+          { "id": "data_roofing", "type": "action", "action": "data.set", "name": "Store Roofing pool", "config": { "key": "servicePool", "value": "roofing" }, "nextNodeId": "assign_roofing", "position": { "x": 20, "y": 1660 } },
+          { "id": "assign_roofing", "type": "action", "action": "divedeep.assign_dialer", "name": "Assign Roofing dialer", "config": { "contactId": "{{trigger.contactId}}", "servicePool": "roofing", "assignedDialerFieldId": "test-assigned-field" }, "nextNodeId": "ready_roofing", "position": { "x": 20, "y": 1790 } },
+          { "id": "ready_roofing", "type": "action", "action": "ghl.update_contact", "name": "Confirm Roofing dialer ready", "config": { "contactId": "{{trigger.contactId}}", "fields": { "customFields": [{ "id": "VsXb7HofKxm6F5sr7edH", "field_value": "READY - OWL VERIFIED" }] } }, "nextNodeId": "mark_ready_roofing", "position": { "x": 20, "y": 1855 } },
+          { "id": "mark_ready_roofing", "type": "action", "action": "ghl.add_tags", "name": "Mark Roofing ready", "config": { "contactId": "{{trigger.contactId}}", "tags": ["hawk-dialer-ready"] }, "nextNodeId": "queue_roofing", "position": { "x": 20, "y": 1930 } },
+          { "id": "queue_roofing", "type": "action", "action": "ghl.add_tags", "name": "Queue Roofing Manual Call", "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-pool-roofing"] }, "nextNodeId": "clear_recheck", "position": { "x": 20, "y": 2005 } },
+          { "id": "data_mold", "type": "action", "action": "data.set", "name": "Store Mold pool", "config": { "key": "servicePool", "value": "mold" }, "nextNodeId": "assign_mold", "position": { "x": 230, "y": 1660 } },
+          { "id": "assign_mold", "type": "action", "action": "divedeep.assign_dialer", "name": "Assign Mold dialer", "config": { "contactId": "{{trigger.contactId}}", "servicePool": "mold", "assignedDialerFieldId": "test-assigned-field" }, "nextNodeId": "ready_mold", "position": { "x": 230, "y": 1790 } },
+          { "id": "ready_mold", "type": "action", "action": "ghl.update_contact", "name": "Confirm Mold dialer ready", "config": { "contactId": "{{trigger.contactId}}", "fields": { "customFields": [{ "id": "VsXb7HofKxm6F5sr7edH", "field_value": "READY - OWL VERIFIED" }] } }, "nextNodeId": "mark_ready_mold", "position": { "x": 230, "y": 1855 } },
+          { "id": "mark_ready_mold", "type": "action", "action": "ghl.add_tags", "name": "Mark Mold ready", "config": { "contactId": "{{trigger.contactId}}", "tags": ["hawk-dialer-ready"] }, "nextNodeId": "queue_mold", "position": { "x": 230, "y": 1930 } },
+          { "id": "queue_mold", "type": "action", "action": "ghl.add_tags", "name": "Queue Mold Manual Call", "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-pool-mold"] }, "nextNodeId": "clear_recheck", "position": { "x": 230, "y": 2005 } },
+          { "id": "data_solar", "type": "action", "action": "data.set", "name": "Store Solar pool", "config": { "key": "servicePool", "value": "solar" }, "nextNodeId": "assign_solar", "position": { "x": 440, "y": 1660 } },
+          { "id": "assign_solar", "type": "action", "action": "divedeep.assign_dialer", "name": "Assign Solar dialer", "config": { "contactId": "{{trigger.contactId}}", "servicePool": "solar", "assignedDialerFieldId": "test-assigned-field" }, "nextNodeId": "ready_solar", "position": { "x": 440, "y": 1790 } },
+          { "id": "ready_solar", "type": "action", "action": "ghl.update_contact", "name": "Confirm Solar dialer ready", "config": { "contactId": "{{trigger.contactId}}", "fields": { "customFields": [{ "id": "VsXb7HofKxm6F5sr7edH", "field_value": "READY - OWL VERIFIED" }] } }, "nextNodeId": "mark_ready_solar", "position": { "x": 440, "y": 1855 } },
+          { "id": "mark_ready_solar", "type": "action", "action": "ghl.add_tags", "name": "Mark Solar ready", "config": { "contactId": "{{trigger.contactId}}", "tags": ["hawk-dialer-ready"] }, "nextNodeId": "queue_solar", "position": { "x": 440, "y": 1930 } },
+          { "id": "queue_solar", "type": "action", "action": "ghl.add_tags", "name": "Queue Solar Manual Call", "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-pool-solar"] }, "nextNodeId": "clear_recheck", "position": { "x": 440, "y": 2005 } },
+          { "id": "data_kitchen", "type": "action", "action": "data.set", "name": "Store Kitchen pool", "config": { "key": "servicePool", "value": "kitchen" }, "nextNodeId": "assign_kitchen", "position": { "x": 650, "y": 1660 } },
+          { "id": "assign_kitchen", "type": "action", "action": "divedeep.assign_dialer", "name": "Assign Kitchen dialer", "config": { "contactId": "{{trigger.contactId}}", "servicePool": "kitchen", "assignedDialerFieldId": "test-assigned-field" }, "nextNodeId": "ready_kitchen", "position": { "x": 650, "y": 1790 } },
+          { "id": "ready_kitchen", "type": "action", "action": "ghl.update_contact", "name": "Confirm Kitchen dialer ready", "config": { "contactId": "{{trigger.contactId}}", "fields": { "customFields": [{ "id": "VsXb7HofKxm6F5sr7edH", "field_value": "READY - OWL VERIFIED" }] } }, "nextNodeId": "mark_ready_kitchen", "position": { "x": 650, "y": 1855 } },
+          { "id": "mark_ready_kitchen", "type": "action", "action": "ghl.add_tags", "name": "Mark Kitchen ready", "config": { "contactId": "{{trigger.contactId}}", "tags": ["hawk-dialer-ready"] }, "nextNodeId": "queue_kitchen", "position": { "x": 650, "y": 1930 } },
+          { "id": "queue_kitchen", "type": "action", "action": "ghl.add_tags", "name": "Queue Kitchen Manual Call", "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-pool-kitchen"] }, "nextNodeId": "clear_recheck", "position": { "x": 650, "y": 2005 } },
+          { "id": "data_bathroom", "type": "action", "action": "data.set", "name": "Store Bathroom pool", "config": { "key": "servicePool", "value": "bathroom" }, "nextNodeId": "assign_bathroom", "position": { "x": 860, "y": 1660 } },
+          { "id": "assign_bathroom", "type": "action", "action": "divedeep.assign_dialer", "name": "Assign Bathroom dialer", "config": { "contactId": "{{trigger.contactId}}", "servicePool": "bathroom", "assignedDialerFieldId": "test-assigned-field" }, "nextNodeId": "ready_bathroom", "position": { "x": 860, "y": 1790 } },
+          { "id": "ready_bathroom", "type": "action", "action": "ghl.update_contact", "name": "Confirm Bathroom dialer ready", "config": { "contactId": "{{trigger.contactId}}", "fields": { "customFields": [{ "id": "VsXb7HofKxm6F5sr7edH", "field_value": "READY - OWL VERIFIED" }] } }, "nextNodeId": "mark_ready_bathroom", "position": { "x": 860, "y": 1855 } },
+          { "id": "mark_ready_bathroom", "type": "action", "action": "ghl.add_tags", "name": "Mark Bathroom ready", "config": { "contactId": "{{trigger.contactId}}", "tags": ["hawk-dialer-ready"] }, "nextNodeId": "queue_bathroom", "position": { "x": 860, "y": 1930 } },
+          { "id": "queue_bathroom", "type": "action", "action": "ghl.add_tags", "name": "Queue Bathroom Manual Call", "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-pool-bathroom"] }, "nextNodeId": "clear_recheck", "position": { "x": 860, "y": 2005 } },
+          { "id": "data_home_addition", "type": "action", "action": "data.set", "name": "Store Home Addition pool", "config": { "key": "servicePool", "value": "home_addition" }, "nextNodeId": "assign_home_addition", "position": { "x": 1070, "y": 1660 } },
+          { "id": "assign_home_addition", "type": "action", "action": "divedeep.assign_dialer", "name": "Assign Home Addition dialer", "config": { "contactId": "{{trigger.contactId}}", "servicePool": "home_addition", "assignedDialerFieldId": "test-assigned-field" }, "nextNodeId": "ready_home_addition", "position": { "x": 1070, "y": 1790 } },
+          { "id": "ready_home_addition", "type": "action", "action": "ghl.update_contact", "name": "Confirm Home Addition dialer ready", "config": { "contactId": "{{trigger.contactId}}", "fields": { "customFields": [{ "id": "VsXb7HofKxm6F5sr7edH", "field_value": "READY - OWL VERIFIED" }] } }, "nextNodeId": "mark_ready_home_addition", "position": { "x": 1070, "y": 1855 } },
+          { "id": "mark_ready_home_addition", "type": "action", "action": "ghl.add_tags", "name": "Mark Home Addition ready", "config": { "contactId": "{{trigger.contactId}}", "tags": ["hawk-dialer-ready"] }, "nextNodeId": "queue_home_addition", "position": { "x": 1070, "y": 1930 } },
+          { "id": "queue_home_addition", "type": "action", "action": "ghl.add_tags", "name": "Queue Home Addition Manual Call", "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-pool-home-addition"] }, "nextNodeId": "clear_recheck", "position": { "x": 1070, "y": 2005 } },
+
+          { "id": "clear_recheck", "type": "action", "action": "ghl.remove_tags", "name": "Consume recheck request", "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-recheck"] }, "nextNodeId": "ready_end", "position": { "x": 520, "y": 2140 } },
+          { "id": "ready_end", "type": "end", "name": "Queued for Manual Actions", "config": {}, "position": { "x": 520, "y": 2290 } },
+
+          { "id": "unsupported_service", "type": "action", "action": "ghl.update_contact", "name": "Record unsupported service", "config": { "contactId": "{{trigger.contactId}}", "fields": { "customFields": [
+            { "id": "VsXb7HofKxm6F5sr7edH", "field_value": "BLOCKED - UNSUPPORTED SERVICE POOL" }
+          ] } }, "nextNodeId": "unsupported_cleanup", "position": { "x": 1280, "y": 1660 } },
+          { "id": "unsupported_cleanup", "type": "action", "action": "ghl.remove_tags", "name": "Consume unsupported request", "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-recheck", "hawk-dialer-ready"] }, "nextNodeId": "unsupported_mark", "position": { "x": 1280, "y": 1800 } },
+          { "id": "unsupported_mark", "type": "action", "action": "ghl.add_tags", "name": "Flag pool review", "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-outcome-review"] }, "nextNodeId": "unsupported_end", "position": { "x": 1280, "y": 1940 } },
+          { "id": "unsupported_end", "type": "end", "name": "Service pool review required", "config": {}, "position": { "x": 1280, "y": 2090 } }
+        ]
+      }
+    },
+    {
+      "name": "Call Center - Manual Call Outcome Router",
+      "description": "Receives a GoHighLevel webhook after a Manual Call is completed, normalizes the contact Call_outcome field, applies retry/callback/terminal state, and creates a Call Center history record.",
+      "integrationId": null,
+      "graph": {
+        "schemaVersion": 1,
+        "startNodeId": "trigger",
+        "nodes": [
+          { "id": "trigger", "type": "trigger", "name": "Manual Call outcome received", "config": { "event": "webhook.received", "eventName": "call_center.outcome" }, "nextNodeId": "clear_queue_tags", "position": { "x": 520, "y": 40 } },
+          { "id": "clear_queue_tags", "type": "action", "action": "ghl.remove_tags", "name": "Remove active queue tags", "config": { "contactId": "{{trigger.contactId}}", "tags": ["hawk-dialer-ready", "cc-outcome-submit", "cc-pool-roofing", "cc-pool-mold", "cc-pool-solar", "cc-pool-kitchen", "cc-pool-bathroom", "cc-pool-home-addition"] }, "nextNodeId": "is_no_answer", "position": { "x": 520, "y": 180 } },
+          { "id": "is_no_answer", "type": "condition", "name": "No answer", "config": { "field": "trigger.callOutcome", "operator": "equals", "value": "no_answer" }, "routes": [
+            { "label": "No Answer", "when": true, "targetNodeId": "data_no_answer" },
+            { "label": "Next", "when": false, "targetNodeId": "is_callback" }
+          ], "position": { "x": 520, "y": 320 } },
+          { "id": "is_callback", "type": "condition", "name": "Callback", "config": { "field": "trigger.callOutcome", "operator": "equals", "value": "callback" }, "routes": [
+            { "label": "Callback", "when": true, "targetNodeId": "data_callback" },
+            { "label": "Next", "when": false, "targetNodeId": "is_scheduled" }
+          ], "position": { "x": 520, "y": 470 } },
+          { "id": "is_scheduled", "type": "condition", "name": "Appointment scheduled", "config": { "field": "trigger.callOutcome", "operator": "equals", "value": "scheduled" }, "routes": [
+            { "label": "Scheduled", "when": true, "targetNodeId": "data_scheduled" },
+            { "label": "Next", "when": false, "targetNodeId": "is_not_interested" }
+          ], "position": { "x": 520, "y": 620 } },
+          { "id": "is_not_interested", "type": "condition", "name": "Not interested", "config": { "field": "trigger.callOutcome", "operator": "equals", "value": "not_interested" }, "routes": [
+            { "label": "Not Interested", "when": true, "targetNodeId": "data_not_interested" },
+            { "label": "Next", "when": false, "targetNodeId": "is_dnc" }
+          ], "position": { "x": 520, "y": 770 } },
+          { "id": "is_dnc", "type": "condition", "name": "Do not call", "config": { "field": "trigger.callOutcome", "operator": "equals", "value": "dnc" }, "routes": [
+            { "label": "DNC", "when": true, "targetNodeId": "data_dnc" },
+            { "label": "Missing", "when": false, "targetNodeId": "data_review" }
+          ], "position": { "x": 520, "y": 920 } },
+
+          { "id": "data_no_answer", "type": "action", "action": "data.set", "name": "Store no-answer outcome", "config": { "key": "outcome", "value": "no_answer" }, "nextNodeId": "status_no_answer", "position": { "x": 20, "y": 1080 } },
+          { "id": "status_no_answer", "type": "action", "action": "ghl.update_contact", "name": "Set retry cooldown", "config": { "contactId": "{{trigger.contactId}}", "fields": { "customFields": [
+            { "id": "VsXb7HofKxm6F5sr7edH", "field_value": "COOLDOWN - NO ANSWER" }
+          ] } }, "nextNodeId": "tag_no_answer", "position": { "x": 20, "y": 1210 } },
+          { "id": "tag_no_answer", "type": "action", "action": "ghl.add_tags", "name": "Schedule automatic retry", "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-await-retry"] }, "nextNodeId": "record_outcome", "position": { "x": 20, "y": 1340 } },
+
+          { "id": "data_callback", "type": "action", "action": "data.set", "name": "Store callback outcome", "config": { "key": "outcome", "value": "callback" }, "nextNodeId": "status_callback", "position": { "x": 250, "y": 1080 } },
+          { "id": "status_callback", "type": "action", "action": "ghl.update_contact", "name": "Set callback pending", "config": { "contactId": "{{trigger.contactId}}", "fields": { "customFields": [
+            { "id": "VsXb7HofKxm6F5sr7edH", "field_value": "CALLBACK PENDING" }
+          ] } }, "nextNodeId": "tag_callback", "position": { "x": 250, "y": 1210 } },
+          { "id": "tag_callback", "type": "action", "action": "ghl.add_tags", "name": "Schedule requested callback", "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-await-callback"] }, "nextNodeId": "record_outcome", "position": { "x": 250, "y": 1340 } },
+
+          { "id": "data_scheduled", "type": "action", "action": "data.set", "name": "Store scheduled outcome", "config": { "key": "outcome", "value": "scheduled" }, "nextNodeId": "status_scheduled", "position": { "x": 480, "y": 1080 } },
+          { "id": "status_scheduled", "type": "action", "action": "ghl.update_contact", "name": "Set appointment scheduled", "config": { "contactId": "{{trigger.contactId}}", "fields": { "customFields": [
+            { "id": "VsXb7HofKxm6F5sr7edH", "field_value": "SCHEDULED - APPOINTMENT" }
+          ] } }, "nextNodeId": "tag_scheduled", "position": { "x": 480, "y": 1210 } },
+          { "id": "tag_scheduled", "type": "action", "action": "ghl.add_tags", "name": "Mark scheduled", "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-scheduled"] }, "nextNodeId": "record_outcome", "position": { "x": 480, "y": 1340 } },
+
+          { "id": "data_not_interested", "type": "action", "action": "data.set", "name": "Store not-interested outcome", "config": { "key": "outcome", "value": "not_interested" }, "nextNodeId": "status_not_interested", "position": { "x": 710, "y": 1080 } },
+          { "id": "status_not_interested", "type": "action", "action": "ghl.update_contact", "name": "Set not interested", "config": { "contactId": "{{trigger.contactId}}", "fields": { "customFields": [
+            { "id": "VsXb7HofKxm6F5sr7edH", "field_value": "CLOSED - NOT INTERESTED" }
+          ] } }, "nextNodeId": "tag_not_interested", "position": { "x": 710, "y": 1210 } },
+          { "id": "tag_not_interested", "type": "action", "action": "ghl.add_tags", "name": "Mark not interested", "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-not-interested"] }, "nextNodeId": "record_outcome", "position": { "x": 710, "y": 1340 } },
+
+          { "id": "data_dnc", "type": "action", "action": "data.set", "name": "Store DNC outcome", "config": { "key": "outcome", "value": "dnc" }, "nextNodeId": "status_dnc", "position": { "x": 940, "y": 1080 } },
+          { "id": "status_dnc", "type": "action", "action": "ghl.update_contact", "name": "Set DNC blocked", "config": { "contactId": "{{trigger.contactId}}", "fields": { "customFields": [
+            { "id": "VsXb7HofKxm6F5sr7edH", "field_value": "BLOCKED - DNC" }
+          ] } }, "nextNodeId": "tag_dnc", "position": { "x": 940, "y": 1210 } },
+          { "id": "tag_dnc", "type": "action", "action": "ghl.add_tags", "name": "Mark DNC", "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-dnc"] }, "nextNodeId": "record_outcome", "position": { "x": 940, "y": 1340 } },
+
+          { "id": "data_review", "type": "action", "action": "data.set", "name": "Store review outcome", "config": { "key": "outcome", "value": "missing_outcome" }, "nextNodeId": "status_review", "position": { "x": 1170, "y": 1080 } },
+          { "id": "status_review", "type": "action", "action": "ghl.update_contact", "name": "Flag missing call outcome", "config": { "contactId": "{{trigger.contactId}}", "fields": { "customFields": [
+            { "id": "VsXb7HofKxm6F5sr7edH", "field_value": "REVIEW - MISSING CALL OUTCOME" }
+          ] } }, "nextNodeId": "tag_review", "position": { "x": 1170, "y": 1210 } },
+          { "id": "tag_review", "type": "action", "action": "ghl.add_tags", "name": "Queue outcome review", "config": { "contactId": "{{trigger.contactId}}", "tags": ["cc-outcome-review"] }, "nextNodeId": "review_end", "position": { "x": 1170, "y": 1340 } },
+          { "id": "review_end", "type": "end", "name": "Outcome requires correction", "config": {}, "position": { "x": 1170, "y": 1510 } },
+
+          { "id": "record_outcome", "type": "action", "action": "ghl.create_object_record", "name": "Create Call Center outcome record", "config": { "schemaKey": "custom_objects.dials", "properties": {
+            "custom_objects.dials.first_name": "{{trigger.name}}",
+            "custom_objects.dials.contact_id": "{{trigger.contactId}}",
+            "custom_objects.dials.call_result": "{{data.outcome}}",
+            "custom_objects.dials.next_call_at": "{{trigger.nextCallAt}}",
+            "custom_objects.dials.service_pool": "{{trigger.servicePool}}"
+          } }, "nextNodeId": "clear_outcome", "position": { "x": 520, "y": 1510 } },
+          { "id": "clear_outcome", "type": "action", "action": "ghl.update_contact", "name": "Clear submitted outcome", "config": { "contactId": "{{trigger.contactId}}", "fields": { "customFields": [
+            { "id": "IfwpWY8S2SPsrvefs72j", "field_value": "" }
+          ] } }, "nextNodeId": "outcome_end", "position": { "x": 520, "y": 1650 } },
+          { "id": "outcome_end", "type": "end", "name": "Outcome processed", "config": {}, "position": { "x": 520, "y": 1800 } }
+        ]
+      }
+    }
+  ]
+}

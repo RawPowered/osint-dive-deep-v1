@@ -1,0 +1,23 @@
+{
+  "description": "Use one case at a time in HAWK Test Flow. Dry runs intentionally return dry_run_requires_live_authority and take the exclusion branch without making CRM or SQL changes.",
+  "cases": [
+    {
+      "name": "Known imported CRM contact",
+      "input": {
+        "contactId": "REPLACE_WITH_EXISTING_GHL_CONTACT_ID"
+      },
+      "expectedDryRun": {
+        "branch": "Excluded",
+        "reason": "dry_run_requires_live_authority",
+        "writesPerformed": false
+      },
+      "expectedLiveRequirements": [
+        "The contact maps to an OWL lead in the selected location.",
+        "The lead is in the configured Assigned lifecycle pool and has an assigned dialer user.",
+        "dncStatus is clean and phoneMarketingStatus is available.",
+        "Every configured service calendar is checked and has no active appointment.",
+        "Current marketing-hour and jurisdictional attempt rules allow the lead."
+      ]
+    }
+  ]
+}

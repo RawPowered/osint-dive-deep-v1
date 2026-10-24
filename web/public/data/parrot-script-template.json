@@ -1,0 +1,31 @@
+{
+  "format": "parrot-script-1",
+  "generatedFor": {
+    "note": "Map approved HAWK CRM fields into these inputs and add the domain to PARROT_RECON_ALLOWED_HOSTS before dry-running network helpers."
+  },
+  "scripts": [
+    {
+      "name": "Approved domain reconnaissance",
+      "slug": "custom.approved-domain-recon",
+      "description": "Resolve an approved public domain and summarize its HTTPS landing response without following redirects.",
+      "capabilities": ["network.dns", "network.http"],
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["domain"],
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Approved hostname mapped from a governed HAWK/CRM field or supplied test input."
+          },
+          "contactId": {
+            "type": "string",
+            "description": "Optional CRM contact ID mapped by HAWK for result correlation."
+          }
+        }
+      },
+      "source": "def run(inputs, context):\n    domain = str(inputs.get(\"domain\", \"\")).strip().lower()\n    if not domain:\n        raise ValueError(\"domain is required\")\n\n    addresses = dns_lookup(domain)\n    response = http_get(\"https://\" + domain, 5)\n    body = response.get(\"body\", \"\")\n\n    return {\n        \"domain\": domain,\n        \"contactId\": inputs.get(\"contactId\"),\n        \"addresses\": addresses,\n        \"http\": {\n            \"status\": response.get(\"status\"),\n            \"url\": response.get(\"url\"),\n            \"headers\": response.get(\"headers\", {}),\n            \"bodyPreview\": body[:500],\n            \"bodySha256\": sha256(body),\n        },\n        \"dryRun\": context.get(\"dryRun\"),\n    }\n",
+      "changeNote": "Starter package for approved, bounded domain reconnaissance."
+    }
+  ]
+}
