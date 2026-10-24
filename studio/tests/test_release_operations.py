@@ -47,6 +47,8 @@ class ReleaseOperationsTests(unittest.TestCase):
 
     def test_compatibility_contract(self) -> None:
         payload = compatibility_payload()
+        self.assertEqual(payload["product"], "OSINT Dive Deep v1")
+        self.assertEqual(payload["releaseVersion"], json.loads((Path(__file__).resolve().parents[1] / "RELEASE.json").read_text())["releaseVersion"])
         self.assertEqual(payload["appVersion"], "5.29.0")
         self.assertEqual(payload["apiVersion"], "1.1")
         self.assertIn("drain-mode", payload["features"])

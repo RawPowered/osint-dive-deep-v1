@@ -29,7 +29,9 @@ from .divedeep_ops import (
 )
 from .divedeep_worker import _validate_public_url
 
-WORKER_VERSION = "5.29.0"
+from . import __version__
+
+WORKER_VERSION = __version__
 WORKER_PROTOCOL_VERSION = 1
 DEFAULT_API_PATH = "/api/workers/v1"
 DEFAULT_REQUEST_TIMEOUT = 45

@@ -15,11 +15,49 @@ def example(host):
     return host in {"localhost", "127.0.0.1", "example.com", "example.net", "example.org"} or host.endswith((".example", ".invalid", ".test", ".example.com", ".example.net", ".example.org"))
 
 
+def validate_versions(root, manifest):
+    """Distinguish product releases from component compatibility versions."""
+    errors = []
+    studio = json.loads((root / "studio/RELEASE.json").read_text(encoding="utf-8"))
+    web = json.loads((root / "web/RELEASE.json").read_text(encoding="utf-8"))
+    package = json.loads((root / "web/package.json").read_text(encoding="utf-8"))
+    lock = json.loads((root / "web/package-lock.json").read_text(encoding="utf-8"))
+    matrix = json.loads((root / "web/deploy/compatibility/COMPATIBILITY_MATRIX.json").read_text(encoding="utf-8"))
+    engine_source = (root / "studio/osint_studio/__init__.py").read_text(encoding="utf-8")
+    engine = re.search(r'^__version__\s*=\s*"([^"]+)"', engine_source, re.M)
+    engine_version = engine[1] if engine else None
+    for label, actual in [("studio product", studio.get("product")), ("web product", web.get("product"))]:
+        if actual != manifest.get("product"):
+            errors.append(f"Version contract: {label} disagrees with release-manifest.json")
+    for label, actual in [("studio release", studio.get("releaseVersion")), ("web release", web.get("releaseVersion"))]:
+        if actual != manifest.get("version"):
+            errors.append(f"Version contract: {label} disagrees with product release")
+    if not re.fullmatch(r"\d+\.\d+\.\d+", manifest.get("version", "")):
+        errors.append("Version contract: product release must use major.minor.patch")
+    for label, actual in [("studio appVersion", studio.get("appVersion")), ("matrix worker tested", matrix.get("divedeepWorker", {}).get("tested"))]:
+        if not engine_version or actual != engine_version:
+            errors.append(f"Version contract: {label} disagrees with studio engine")
+    backend = package.get("version")
+    for label, actual in [("web version", web.get("version")), ("web appVersion", web.get("appVersion")), ("lock version", lock.get("version")), ("lock root version", lock.get("packages", {}).get("", {}).get("version")), ("matrix backend release", matrix.get("releaseVersion"))]:
+        if not backend or actual != backend:
+            errors.append(f"Version contract: {label} disagrees with web/package.json")
+    if matrix.get("schemaVersion") != web.get("schemaVersion"):
+        errors.append("Version contract: database schema versions disagree")
+    config = (root / "web/src/config.js").read_text(encoding="utf-8")
+    schema = re.search(r"SCHEMA_VERSION:\s*'([0-9]+)'", config)
+    if not schema or int(schema[1]) != web.get("schemaVersion"):
+        errors.append("Version contract: runtime database schema disagrees with metadata")
+    protocol = matrix.get("divedeepWorker", {}).get("protocol")
+    if protocol != f"divedeep-worker-v{studio.get('workerProtocolVersion')}":
+        errors.append("Version contract: worker protocol versions disagree")
+    return errors
+
+
 def validate(root=ROOT):
     manifest = json.loads((root / "release-manifest.json").read_text(encoding="utf-8"))
     policy = json.loads((root / "release-policy.json").read_text(encoding="utf-8"))
     approved = manifest["files"]
-    errors = []
+    errors = validate_versions(root, manifest)
     if not approved or len(approved) != len(set(approved)):
         raise ValueError("Invalid source allowlist")
     for name in approved:

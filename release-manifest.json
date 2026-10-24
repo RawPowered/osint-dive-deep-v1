@@ -1,6 +1,6 @@
 {
   "product": "OSINT Dive Deep v1",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "files": [
     ".gitattributes",
     ".github/workflows/verify.yml",
@@ -27,6 +27,7 @@
     "release-policy.json",
     "scripts/package_release.py",
     "scripts/release_check.py",
+    "scripts/test_versions.py",
     "scripts/update_integrity.py",
     "start.ps1",
     "start.sh",

@@ -1,12 +1,14 @@
 """Build allowlisted Windows/Linux source archives with published checksums."""
 from pathlib import Path
 import hashlib
+import json
 import tarfile
 import zipfile
 from release_check import ROOT, validate
 
 files = validate()
-stem = "osint-dive-deep-v1-1.0.0"
+manifest = json.loads((ROOT / "release-manifest.json").read_text(encoding="utf-8"))
+stem = f"osint-dive-deep-v1-{manifest['version']}"
 destination = ROOT / "dist"
 destination.mkdir(exist_ok=True)
 with zipfile.ZipFile(destination / f"{stem}-windows.zip", "w", zipfile.ZIP_DEFLATED) as archive:

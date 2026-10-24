@@ -45,7 +45,7 @@ def load_release_manifest() -> dict[str, Any]:
     path = release_manifest_path()
     if not path.is_file():
         return {
-            "product": "DiveDeep",
+            "product": "OSINT Dive Deep v1",
             "appVersion": __version__,
             "apiVersion": API_VERSION,
             "features": FEATURES,
@@ -60,7 +60,8 @@ def load_release_manifest() -> dict[str, Any]:
 def compatibility_payload() -> dict[str, Any]:
     manifest = load_release_manifest()
     return {
-        "product": "DiveDeep",
+        "product": manifest.get("product", "OSINT Dive Deep v1"),
+        "releaseVersion": manifest.get("releaseVersion"),
         "appVersion": __version__,
         "apiVersion": API_VERSION,
         "intakeSchemas": INTAKE_SCHEMA_VERSIONS,

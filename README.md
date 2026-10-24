@@ -103,8 +103,12 @@ npm ci
 npm test
 ```
 
-See [release verification](docs/RELEASE.md) for the source allowlist and safety checks. Component compatibility versions are retained for API/worker negotiation; the public product release is **v1.0.0**.
+See [release verification](docs/RELEASE.md) for the source allowlist and safety checks. Component compatibility versions are retained for API/worker negotiation; the public product release is **v1.0.1**.
+
+The product name is **OSINT Dive Deep v1**. Its current release **1.0.1** contains studio engine **5.29.0** and web backend **1.16.0**; those component versions serve different compatibility contracts. [Version authorities and consistency checks](docs/RELEASE.md#version-and-naming-contract).
 
 ## License
 
 [GNU GPL v3 only](LICENSE). Third-party tools retain their own licenses and terms. Use research and active tooling only within your authorization and applicable source rules.
+
+Version policy update (1.0.1): the studio now labels the product release and engine separately. Component compatibility numbers remain unchanged. Flow Fountain for CRMs is a separate product with its own release history.

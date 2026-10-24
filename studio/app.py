@@ -10,6 +10,7 @@ import pandas as pd
 import streamlit as st
 
 from osint_studio import __version__
+from osint_studio.release import load_release_manifest
 from osint_studio.case_store import CaseStore
 from osint_studio.evidence_pipeline import ResearchEvidencePipeline
 from osint_studio.executor import HISTORY_PATH, load_history, run_command
@@ -1929,7 +1930,7 @@ with st.sidebar:
             get_tools.clear()
             get_help_snapshot.clear()
             st.rerun()
-    st.caption(f"Version {__version__} · Research → Property → Market → Evidence")
+    st.caption(f"Release {load_release_manifest().get('releaseVersion', 'unknown')} · Studio engine {__version__}")
 
 if workspace == "Cases":
     render_case_workspace(CaseStore())
