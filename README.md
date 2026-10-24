@@ -10,8 +10,9 @@ An investigation workspace for people, properties, domains, and public-source ev
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL_v3-7ee7d2?style=flat-square)](LICENSE)
 [![Windows and Linux](https://img.shields.io/badge/Windows_%26_Linux-Research_Studio-8ab4ff?style=flat-square)](docs/SETUP.md)
+[![Verify complete stack](https://github.com/RawPowered/osint-dive-deep-v1/actions/workflows/verify.yml/badge.svg)](https://github.com/RawPowered/osint-dive-deep-v1/actions/workflows/verify.yml)
 
-[Get started](#start-investigating) · [Research capabilities](#investigation-workspaces) · [Complete stack](docs/ARCHITECTURE.md) · [Configuration](docs/SETUP.md)
+[Download v1](https://github.com/RawPowered/osint-dive-deep-v1/releases/latest) · [Get started](#start-investigating) · [Complete stack](docs/ARCHITECTURE.md) · [Configuration](docs/SETUP.md)
 
 </div>
 

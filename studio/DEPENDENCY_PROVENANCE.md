@@ -1,5 +1,7 @@
 # DiveDeep dependency provenance
 
+Historical upstream selection record from the supplied engine source. The public v1 release retains these compatibility pins and checks the worker container build in CI; the dated selection notes below are not claims about today's latest versions.
+
 Verified: 2026-07-28
 
 This record covers the direct dependencies installed in the Google Cloud Run worker image. Stable releases were selected; development and prerelease artifacts were excluded.

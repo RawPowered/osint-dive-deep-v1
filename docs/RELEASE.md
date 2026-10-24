@@ -15,4 +15,4 @@ python scripts/package_release.py
 
 The Windows ZIP and Linux tar.gz contain the same complete source stack and platform launchers. They are source distributions; dependencies are installed during setup. The cloud worker is a Linux container. Verify downloaded archives against `SHA256SUMS.txt`.
 
-The studio component has a generated `RELEASE.json` and file checksum inventory used by maintenance and cloud build tooling. If its source changes, refresh its checksums before creating a release.
+The studio component has a generated `RELEASE.json` and file checksum inventory used by maintenance and cloud build tooling. If its source changes, run `python scripts/update_integrity.py` to refresh checksums for already-allowlisted studio files before creating a release.
