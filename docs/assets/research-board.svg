@@ -1,11 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="390" viewBox="0 0 1280 390" role="img" aria-labelledby="title desc">
-<title id="title">OSINT Dive Deep research workflow</title><desc id="desc">Geographic capture, web discovery, technology rules, and evidence review.</desc>
-<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#081321"/><stop offset="1" stop-color="#12384a"/></linearGradient><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#8bb8cc" stroke-opacity=".07"/></pattern></defs>
-<rect width="1280" height="390" rx="22" fill="url(#bg)"/><rect width="1280" height="390" rx="22" fill="url(#grid)"/>
-<g font-family="Segoe UI,Arial,sans-serif"><text x="46" y="52" fill="#7ee7d2" font-size="15" letter-spacing="3">FOUR WAYS TO INSPECT THE BUILD</text><text x="46" y="90" fill="#f1f6fa" font-size="30" font-weight="700">From research scope to reviewed evidence</text>
-<g fill="#102637" stroke="#7ee7d2" stroke-opacity=".28"><rect x="46" y="120" width="285" height="215" rx="16"/><rect x="347" y="120" width="285" height="215" rx="16"/><rect x="648" y="120" width="285" height="215" rx="16"/><rect x="949" y="120" width="285" height="215" rx="16"/></g>
-<g fill="#7ee7d2" font-size="14" font-weight="700" letter-spacing="2"><text x="68" y="156">01 / GEOGRAPHY</text><text x="369" y="156">02 / DISCOVERY</text><text x="670" y="156">03 / FINGERPRINT</text><text x="971" y="156">04 / REVIEW</text></g>
-<g fill="#f1f6fa" font-size="22" font-weight="600"><text x="68" y="198">Draw a region</text><text x="369" y="198">Find public URLs</text><text x="670" y="198">Test the page</text><text x="971" y="198">Approve a finding</text></g>
-<g fill="#b4cbdc" font-size="16"><text x="68" y="240">Saved GeoJSON fence</text><text x="68" y="267">Spatial source query</text><text x="68" y="294">Parcel review queue</text><text x="369" y="240">Query matrix + providers</text><text x="369" y="267">Candidate deduplication</text><text x="369" y="294">Provider provenance</text><text x="670" y="240">Scripts, text, metadata</text><text x="670" y="267">Required + weighted rules</text><text x="670" y="294">Pass and rejection reasons</text><text x="971" y="240">Case artifacts + run log</text><text x="971" y="267">Human assessment</text><text x="971" y="294">Approved export gate</text></g>
-<path d="M331 232h16m285 0h16m285 0h16" stroke="#7ee7d2" stroke-width="3"/><g fill="#7ee7d2"><path d="M344 226l9 6-9 6"/><path d="M645 226l9 6-9 6"/><path d="M946 226l9 6-9 6"/></g>
-<text x="46" y="369" fill="#83a9b9" font-size="14">LOCAL RESEARCH STUDIO  /  OPTIONAL SOURCE ADAPTERS  /  EVIDENCE BEFORE EXPORT</text></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="440" viewBox="0 0 1280 440" role="img" aria-labelledby="title desc">
+<title id="title">Dive Deep research path</title><desc id="desc">Four stages connect geographic research, online discovery, technology rules and human evidence review.</desc>
+<path d="M1 1h1218l60 55v383H35L1 405Z" fill="#090A0B" stroke="#373A3D" stroke-width="2"/>
+<path d="M1 1h434l-7 7H1Z" fill="#D5FF3F"/>
+<path d="M1090 1h129l60 55v105Z" fill="#17191B"/>
+<g font-family="Arial,sans-serif"><text x="36" y="51" font-size="15" font-weight="700" letter-spacing="3" fill="#D5FF3F">RAWPOWERED / RESEARCH SYSTEMS</text>
+<text x="34" y="99" font-size="37" font-weight="700" fill="#F7F8F9">Follow the evidence through four decisions.</text>
+<text x="36" y="132" font-size="18" fill="#B9BEC2">Scope, source, qualification and review stay visible.</text></g><path d="M36 166h263l22 20v188H54l-18-18Z" fill="#121416" stroke="#373A3D" stroke-width="1.5"/>
+<path d="M36 166h106l-5 5H36Z" fill="#D5FF3F"/>
+<g font-family="Arial,sans-serif"><text x="56" y="203" font-size="14" font-weight="700" letter-spacing="1.7" fill="#D5FF3F">01 / GEOGRAPHY</text>
+<text x="56" y="246" font-size="26" font-weight="700" fill="#F7F8F9">Draw a region</text>
+<text x="56" y="290" font-size="17" fill="#B9BEC2">Save a GeoJSON fence</text>
+<text x="56" y="319" font-size="17" fill="#B9BEC2">Query a permitted source</text>
+<text x="56" y="348" font-size="17" fill="#B9BEC2">Queue parcel facts</text></g><path d="M325 270h18m-7-7 7 7-7 7" fill="none" stroke="#D5FF3F" stroke-width="2"/><path d="M343 166h263l22 20v188H361l-18-18Z" fill="#121416" stroke="#373A3D" stroke-width="1.5"/>
+<path d="M343 166h106l-5 5H343Z" fill="#D5FF3F"/>
+<g font-family="Arial,sans-serif"><text x="363" y="203" font-size="14" font-weight="700" letter-spacing="1.7" fill="#D5FF3F">02 / DISCOVERY</text>
+<text x="363" y="246" font-size="26" font-weight="700" fill="#F7F8F9">Find public URLs</text>
+<text x="363" y="290" font-size="17" fill="#B9BEC2">Build a query matrix</text>
+<text x="363" y="319" font-size="17" fill="#B9BEC2">Retain provider context</text>
+<text x="363" y="348" font-size="17" fill="#B9BEC2">Deduplicate candidates</text></g><path d="M632 270h18m-7-7 7 7-7 7" fill="none" stroke="#D5FF3F" stroke-width="2"/><path d="M650 166h263l22 20v188H668l-18-18Z" fill="#121416" stroke="#373A3D" stroke-width="1.5"/>
+<path d="M650 166h106l-5 5H650Z" fill="#D5FF3F"/>
+<g font-family="Arial,sans-serif"><text x="670" y="203" font-size="14" font-weight="700" letter-spacing="1.7" fill="#D5FF3F">03 / FINGERPRINT</text>
+<text x="670" y="246" font-size="26" font-weight="700" fill="#F7F8F9">Test the page</text>
+<text x="670" y="290" font-size="17" fill="#B9BEC2">Inspect text and scripts</text>
+<text x="670" y="319" font-size="17" fill="#B9BEC2">Apply required rules</text>
+<text x="670" y="348" font-size="17" fill="#B9BEC2">Record rejection reasons</text></g><path d="M939 270h18m-7-7 7 7-7 7" fill="none" stroke="#D5FF3F" stroke-width="2"/><path d="M957 166h263l22 20v188H975l-18-18Z" fill="#121416" stroke="#373A3D" stroke-width="1.5"/>
+<path d="M957 166h106l-5 5H957Z" fill="#D5FF3F"/>
+<g font-family="Arial,sans-serif"><text x="977" y="203" font-size="14" font-weight="700" letter-spacing="1.7" fill="#D5FF3F">04 / REVIEW</text>
+<text x="977" y="246" font-size="26" font-weight="700" fill="#F7F8F9">Decide what qualifies</text>
+<text x="977" y="290" font-size="17" fill="#B9BEC2">Keep artifacts and runs</text>
+<text x="977" y="319" font-size="17" fill="#B9BEC2">Assess findings</text>
+<text x="977" y="348" font-size="17" fill="#B9BEC2">Gate approved export</text></g><text x="36" y="414" font-family="Arial,sans-serif" font-size="14" font-weight="700" letter-spacing="1.2" fill="#B9BEC2">LOCAL STUDIO  /  OPTIONAL SOURCE ADAPTERS  /  HUMAN APPROVAL BEFORE EXPORT</text></svg>

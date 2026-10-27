@@ -11,6 +11,25 @@
     "docs/ARCHITECTURE.md",
     "docs/RELEASE.md",
     "docs/SETUP.md",
+    "docs/assets/brand/nav-geography.svg",
+    "docs/assets/brand/nav-discovery.svg",
+    "docs/assets/brand/nav-fingerprints.svg",
+    "docs/assets/brand/nav-quality.svg",
+    "docs/assets/brand/nav-profile.svg",
+    "docs/assets/brand/section-geography.svg",
+    "docs/assets/brand/section-discovery.svg",
+    "docs/assets/brand/section-fingerprints.svg",
+    "docs/assets/brand/section-quality.svg",
+    "docs/assets/brand/section-mark.svg",
+    "docs/assets/screenshots/framed-geo-fence.png",
+    "docs/assets/screenshots/framed-query-matrix.png",
+    "docs/assets/screenshots/framed-rule-builder.png",
+    "docs/assets/screenshots/framed-case-review.png",
+    "docs/assets/brand/stack-diagram.svg",
+    "docs/assets/screenshots/framed-research-hub.png",
+    "docs/assets/screenshots/framed-people-identity.png",
+    "docs/assets/screenshots/framed-property-intelligence.png",
+    "docs/assets/screenshots/framed-tool-arsenal.png",
     "docs/assets/banner.svg",
     "docs/assets/research-board.svg",
     "docs/assets/screenshots/case-review-redacted.png",
@@ -543,6 +562,38 @@
     "docs/assets/screenshots/tool-arsenal.png": {
       "sha256": "09462db4c39c978fbe16cbf9178216d8c6be7151c79c1e663ba86d9cfa4a6d0f",
       "source": "Actual local studio, isolated empty documentation case; no research targets or external searches."
+    },
+    "docs/assets/screenshots/framed-geo-fence.png": {
+      "sha256": "e44bce67f9248c507d2fad32b1488436b83f4bd5f6f1224a8aa2e42dcf829901",
+      "source": "Branded presentation frame around reviewed isolated local Geo Explorer capture; original pixels remain available in docs/assets/screenshots/geo-fence-local-demo.png."
+    },
+    "docs/assets/screenshots/framed-query-matrix.png": {
+      "sha256": "3a7340f3fcaf449be44ddda059a4858ace73dc0abc47d7666b66ab4d7a9da556",
+      "source": "Branded presentation frame around reviewed isolated local query-planner capture; original pixels remain available in docs/assets/screenshots/query-matrix-local-demo.png."
+    },
+    "docs/assets/screenshots/framed-rule-builder.png": {
+      "sha256": "b2ac64b98a0d1967cc2da5948978f7401b7478f17c91641eec4368b97b9123f5",
+      "source": "Branded presentation frame around reviewed directly redacted July 2026 rule-builder capture; original crop remains available in docs/assets/screenshots/visual-rule-builder-redacted.png."
+    },
+    "docs/assets/screenshots/framed-case-review.png": {
+      "sha256": "e1eeb228b99ed477f286d3d720f766d301078c03940e30b6283360b869d2e8b3",
+      "source": "Branded presentation frame around reviewed July 2026 case-count crop; original crop remains available in docs/assets/screenshots/case-review-redacted.png."
+    },
+    "docs/assets/screenshots/framed-research-hub.png": {
+      "sha256": "2c0035d68b8f82d37341e8e37e8a76f0da87b08c2274196c10ddda2d0778a2f3",
+      "source": "Branded presentation frame around the reviewed isolated documentation-case screenshot; original pixels remain available at docs/assets/screenshots/research-hub.png."
+    },
+    "docs/assets/screenshots/framed-people-identity.png": {
+      "sha256": "a0d9630520faa058071097cdde4ae2e99d72606dbb49c470bd8a1f27898b2201",
+      "source": "Branded presentation frame around the reviewed isolated documentation-case screenshot; original pixels remain available at docs/assets/screenshots/people-identity.png."
+    },
+    "docs/assets/screenshots/framed-property-intelligence.png": {
+      "sha256": "e7cd1bad537bd64ae60fb611f40a5afaff024702778602952e3d31e9f2ba3756",
+      "source": "Branded presentation frame around the reviewed isolated documentation-case screenshot; original pixels remain available at docs/assets/screenshots/property-intelligence.png."
+    },
+    "docs/assets/screenshots/framed-tool-arsenal.png": {
+      "sha256": "486fb486706844752c064f8e863cf9a4465312cd175767bfe4e6928c5dbaec81",
+      "source": "Branded presentation frame around the reviewed isolated documentation-case screenshot; original pixels remain available at docs/assets/screenshots/tool-arsenal.png."
     }
   }
 }

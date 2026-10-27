@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="460" viewBox="0 0 1280 460" role="img" aria-labelledby="title desc">
+<title id="title">Dive Deep source architecture</title><desc id="desc">The local Research Studio connects to case evidence and public source adapters. An optional hosted frontend connects to a web API, database, job-scoped worker, and private artifact storage. Hosted operation was not launched as a public service.</desc>
+<path d="M1 1h1218l60 55v403H38L1 422Z" fill="#090A0B" stroke="#373A3D" stroke-width="2"/>
+<path d="M1 1h430l-7 7H1Z" fill="#D5FF3F"/>
+<g font-family="Arial,sans-serif"><text x="38" y="49" font-size="15" font-weight="700" letter-spacing="3" fill="#D5FF3F">RAWPOWERED / SOURCE ARCHITECTURE</text><text x="36" y="94" font-size="34" font-weight="700" fill="#F7F8F9">Local research and optional hosted components</text><text x="38" y="126" font-size="17" fill="#B9BEC2">Diagram of included source. A public hosted service did not launch.</text></g>
+<path d="M36 157h497l25 23v227H57l-21-21Z" fill="#121416" stroke="#373A3D" stroke-width="1.5"/>
+<path d="M577 157h638l28 27v223H600l-23-22Z" fill="#121416" stroke="#373A3D" stroke-width="1.5"/>
+<g font-family="Arial,sans-serif" font-size="13" font-weight="700" letter-spacing="1.7" fill="#D5FF3F"><text x="60" y="188">LOCAL / RESEARCH STUDIO</text><text x="601" y="188">OPTIONAL / HOSTED SOURCE</text></g>
+<g fill="#1B1D1F" stroke="#45494C"><rect x="61" y="218" width="190" height="78" rx="8"/><rect x="310" y="208" width="202" height="73" rx="8"/><rect x="310" y="308" width="202" height="73" rx="8"/><rect x="602" y="220" width="160" height="72" rx="8"/><rect x="802" y="220" width="160" height="72" rx="8"/><rect x="1003" y="220" width="192" height="72" rx="8"/><rect x="802" y="320" width="160" height="66" rx="8"/><rect x="1003" y="320" width="192" height="66" rx="8"/></g>
+<g font-family="Arial,sans-serif" font-size="19" font-weight="700" fill="#F7F8F9"><text x="79" y="257">Research Studio</text><text x="328" y="249">Cases + evidence</text><text x="328" y="349">Public sources</text><text x="620" y="261">Web frontend</text><text x="842" y="261">Web API</text><text x="1060" y="261">MySQL</text><text x="824" y="359">Cloud worker</text><text x="1025" y="359">Artifact storage</text></g>
+<g fill="none" stroke="#D5FF3F" stroke-width="2"><path d="M251 249h58M251 269l58 77M762 257h40M962 257h41M882 292v28M962 353h41"/></g>
+<path d="M151 296v101h731V292" fill="none" stroke="#28BAAA" stroke-width="2" stroke-dasharray="7 6"/>
+<text x="529" y="391" font-family="Arial,sans-serif" font-size="12" font-weight="700" letter-spacing="1" fill="#28BAAA">OPTIONAL API BRIDGE</text>
+<g fill="#D5FF3F"><path d="M303 243l8 6-8 6M303 340l8 6-8 6M795 251l8 6-8 6M996 251l8 6-8 6M876 313l6 8 6-8M996 347l8 6-8 6"/></g>
+<text x="38" y="436" font-family="Arial,sans-serif" font-size="14" font-weight="700" letter-spacing="1.2" fill="#B9BEC2">RESEARCH DATA STAYS OUTSIDE THE PUBLIC REPOSITORY  /  HOSTED OPERATIONS NEED OPERATOR CONFIGURATION</text></svg>
