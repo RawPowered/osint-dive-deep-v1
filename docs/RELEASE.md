@@ -22,7 +22,7 @@ The release gate rejects drift between product metadata, studio engine metadata,
 
 `release-policy.json` lists reviewed public providers and hashes of reviewed non-secret literals. These checks reduce accidental disclosure; they are not a guarantee against every possible secret format. Review changes before updating either policy or allowlist.
 
-Documentation screenshots come from a separate local data directory and an empty case named “Documentation workspace.” No targets, people, properties, external searches, or real customer records were loaded. Only reviewed screenshot hashes may be packaged. The original private source directory and its Git history are not imported.
+The initial documentation screenshots came from a separate local data directory and an empty “Documentation workspace” case. The newer map and query-planner captures use a separate isolated demonstration case with no external search results. Two historical UI captures are cropped or directly redacted; their provenance and approved hashes are recorded in `release-manifest.json`. Only reviewed screenshot hashes may be packaged. The original private source directory and its Git history are not imported.
 
 Run from the repository root:
 

@@ -12,10 +12,15 @@
     "docs/RELEASE.md",
     "docs/SETUP.md",
     "docs/assets/banner.svg",
+    "docs/assets/research-board.svg",
+    "docs/assets/screenshots/case-review-redacted.png",
+    "docs/assets/screenshots/geo-fence-local-demo.png",
     "docs/assets/screenshots/people-identity.png",
     "docs/assets/screenshots/property-intelligence.png",
+    "docs/assets/screenshots/query-matrix-local-demo.png",
     "docs/assets/screenshots/research-hub.png",
     "docs/assets/screenshots/tool-arsenal.png",
+    "docs/assets/screenshots/visual-rule-builder-redacted.png",
     "frontend/css/divedeep.css",
     "frontend/divedeep/app.html",
     "frontend/divedeep/index.html",
@@ -507,6 +512,22 @@
     "web/test/platformCatalogManifest.test.js"
   ],
   "documentationMedia": {
+    "docs/assets/screenshots/case-review-redacted.png": {
+      "sha256": "261ed0274212421286510a86c5e229d9671e4d84f28ac721c5c35d2a274c4d5e",
+      "source": "Historical Dive Deep case screenshot, July 22 2026; cropped to review counts and controls, with subject details excluded."
+    },
+    "docs/assets/screenshots/geo-fence-local-demo.png": {
+      "sha256": "45288224f5202da1a0552448e07e52eb31efb355a89aee1a41ecea7da40ac4f0",
+      "source": "Actual local studio, isolated October 2026 demonstration case; saved Florida GeoJSON fence, no successful live parcel query claimed."
+    },
+    "docs/assets/screenshots/query-matrix-local-demo.png": {
+      "sha256": "a8e6a7b36105a72c1055665e2f9231102524718bb163ab5b9a3de3d84d6c4134",
+      "source": "Actual local studio, isolated October 2026 demonstration case; empty query planner, no external search."
+    },
+    "docs/assets/screenshots/visual-rule-builder-redacted.png": {
+      "sha256": "b6e13d0978e8018e678e50b916cbc9a8466b3ede8eae5d6810ca25f5c13fde15",
+      "source": "Historical Dive Deep rule-builder screenshot, July 19 2026; source values directly redacted."
+    },
     "docs/assets/screenshots/research-hub.png": {
       "sha256": "493f75fcdb5e81fbc9c4d7014ff3421c19c7f6a74fc12df8ffd619fa68ef68be",
       "source": "Actual local studio, isolated empty documentation case; no research targets or external searches."
