@@ -1,6 +1,6 @@
 <div align="center">
 
-![OSINT Dive Deep v1](docs/assets/banner.svg)
+![OSINT Dive Deep v1](docs/assets/brand/hero.svg)
 
 # OSINT Dive Deep v1
 
@@ -16,7 +16,7 @@ A local-first investigation studio for geographic research, web discovery, techn
 
 </div>
 
-![Dive Deep research path from scope to approved evidence](docs/assets/research-board.svg)
+![Dive Deep research path from scope to approved evidence](docs/assets/brand/workflow-board.svg)
 
 Follow one candidate through the build. A map fence or search plan defines the scope. Source adapters collect public material with provenance. Filters and page rules test relevance. A person reviews the case record before an approved export. [Browse the released source](studio/) · [Review the architecture](docs/ARCHITECTURE.md).
 

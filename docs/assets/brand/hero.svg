@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="320" viewBox="0 0 1400 320" role="img" aria-labelledby="title desc">
+<title id="title">OSINT Dive Deep v1</title><desc id="desc">RawPowered research studio. Draw a region, discover public sources, validate page evidence, and review findings.</desc>
+<path d="M1 1h1327l71 66v252H39L1 283Z" fill="#090A0B" stroke="#373A3D" stroke-width="2"/>
+<path d="M1 1h484l-8 7H1Z" fill="#D5FF3F"/>
+<path d="M984 1h114L964 319H850ZM1140 1h101l-134 318h-101ZM1282 1h46l71 66v252h-158Z" fill="#151719"/>
+<path d="M1328 1l71 66" stroke="#73787D" stroke-width="2"/>
+<path d="M47 43h13l-8 17H39Z" fill="#D5FF3F"/>
+<g font-family="Arial,sans-serif"><text x="74" y="57" font-size="16" font-weight="700" letter-spacing="3" fill="#B9BEC2">JOSEPH EDWARDS / RAWPOWERED</text>
+<text x="42" y="142" font-size="72" font-weight="700" letter-spacing="-2" fill="#F7F8F9">OSINT Dive Deep</text>
+<text x="47" y="189" font-size="25" fill="#D5FF3F">Map. Discover. Validate. Review.</text>
+<text x="47" y="232" font-size="20" fill="#B9BEC2">A public-source research studio with visible evidence boundaries.</text>
+<path d="M47 254h824" stroke="#373A3D"/>
+<text x="47" y="290" font-size="15" font-weight="700" letter-spacing="1.5" fill="#F7F8F9">RELEASED SOURCE</text>
+<text x="262" y="290" font-size="15" font-weight="700" letter-spacing="1.5" fill="#F7F8F9">VERSION 1.0.1</text>
+<text x="454" y="290" font-size="15" font-weight="700" letter-spacing="1.5" fill="#F7F8F9">LOCAL RESEARCH WORKSPACE</text></g>
+<g fill="none" stroke="#D5FF3F" stroke-width="2"><path d="M1089 82v164"/><circle cx="1089" cy="88" r="10"/><circle cx="1089" cy="145" r="10"/><circle cx="1089" cy="202" r="10"/><circle cx="1089" cy="259" r="10"/></g>
+<g font-family="Arial,sans-serif" font-size="13" font-weight="700" letter-spacing="2" fill="#F7F8F9"><text x="1113" y="93">SCOPE</text><text x="1113" y="150">SOURCE</text><text x="1113" y="207">RULE</text><text x="1113" y="264">REVIEW</text></g></svg>

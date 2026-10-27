@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="440" viewBox="0 0 1280 440" role="img" aria-labelledby="title desc">
+<title id="title">Dive Deep research path</title><desc id="desc">Four stages connect geographic research, online discovery, technology rules and human evidence review.</desc>
+<path d="M1 1h1218l60 55v383H35L1 405Z" fill="#090A0B" stroke="#373A3D" stroke-width="2"/>
+<path d="M1 1h434l-7 7H1Z" fill="#D5FF3F"/>
+<path d="M1090 1h129l60 55v105Z" fill="#17191B"/>
+<g font-family="Arial,sans-serif"><text x="36" y="51" font-size="15" font-weight="700" letter-spacing="3" fill="#D5FF3F">RAWPOWERED / RESEARCH SYSTEMS</text>
+<text x="34" y="99" font-size="37" font-weight="700" fill="#F7F8F9">Follow the evidence through four decisions.</text>
+<text x="36" y="132" font-size="18" fill="#B9BEC2">Scope, source, qualification and review stay visible.</text></g><path d="M36 166h263l22 20v188H54l-18-18Z" fill="#121416" stroke="#373A3D" stroke-width="1.5"/>
+<path d="M36 166h106l-5 5H36Z" fill="#D5FF3F"/>
+<g font-family="Arial,sans-serif"><text x="56" y="203" font-size="14" font-weight="700" letter-spacing="1.7" fill="#D5FF3F">01 / GEOGRAPHY</text>
+<text x="56" y="246" font-size="26" font-weight="700" fill="#F7F8F9">Draw a region</text>
+<text x="56" y="290" font-size="17" fill="#B9BEC2">Save a GeoJSON fence</text>
+<text x="56" y="319" font-size="17" fill="#B9BEC2">Query a permitted source</text>
+<text x="56" y="348" font-size="17" fill="#B9BEC2">Queue parcel facts</text></g><path d="M325 270h18m-7-7 7 7-7 7" fill="none" stroke="#D5FF3F" stroke-width="2"/><path d="M343 166h263l22 20v188H361l-18-18Z" fill="#121416" stroke="#373A3D" stroke-width="1.5"/>
+<path d="M343 166h106l-5 5H343Z" fill="#D5FF3F"/>
+<g font-family="Arial,sans-serif"><text x="363" y="203" font-size="14" font-weight="700" letter-spacing="1.7" fill="#D5FF3F">02 / DISCOVERY</text>
+<text x="363" y="246" font-size="26" font-weight="700" fill="#F7F8F9">Find public URLs</text>
+<text x="363" y="290" font-size="17" fill="#B9BEC2">Build a query matrix</text>
+<text x="363" y="319" font-size="17" fill="#B9BEC2">Retain provider context</text>
+<text x="363" y="348" font-size="17" fill="#B9BEC2">Deduplicate candidates</text></g><path d="M632 270h18m-7-7 7 7-7 7" fill="none" stroke="#D5FF3F" stroke-width="2"/><path d="M650 166h263l22 20v188H668l-18-18Z" fill="#121416" stroke="#373A3D" stroke-width="1.5"/>
+<path d="M650 166h106l-5 5H650Z" fill="#D5FF3F"/>
+<g font-family="Arial,sans-serif"><text x="670" y="203" font-size="14" font-weight="700" letter-spacing="1.7" fill="#D5FF3F">03 / FINGERPRINT</text>
+<text x="670" y="246" font-size="26" font-weight="700" fill="#F7F8F9">Test the page</text>
+<text x="670" y="290" font-size="17" fill="#B9BEC2">Inspect text and scripts</text>
+<text x="670" y="319" font-size="17" fill="#B9BEC2">Apply required rules</text>
+<text x="670" y="348" font-size="17" fill="#B9BEC2">Record rejection reasons</text></g><path d="M939 270h18m-7-7 7 7-7 7" fill="none" stroke="#D5FF3F" stroke-width="2"/><path d="M957 166h263l22 20v188H975l-18-18Z" fill="#121416" stroke="#373A3D" stroke-width="1.5"/>
+<path d="M957 166h106l-5 5H957Z" fill="#D5FF3F"/>
+<g font-family="Arial,sans-serif"><text x="977" y="203" font-size="14" font-weight="700" letter-spacing="1.7" fill="#D5FF3F">04 / REVIEW</text>
+<text x="977" y="246" font-size="26" font-weight="700" fill="#F7F8F9">Decide what qualifies</text>
+<text x="977" y="290" font-size="17" fill="#B9BEC2">Keep artifacts and runs</text>
+<text x="977" y="319" font-size="17" fill="#B9BEC2">Assess findings</text>
+<text x="977" y="348" font-size="17" fill="#B9BEC2">Gate approved export</text></g><text x="36" y="414" font-family="Arial,sans-serif" font-size="14" font-weight="700" letter-spacing="1.2" fill="#B9BEC2">LOCAL STUDIO  /  OPTIONAL SOURCE ADAPTERS  /  HUMAN APPROVAL BEFORE EXPORT</text></svg>
