@@ -88,7 +88,7 @@ Actual interface screenshots from an isolated, empty documentation case. No real
 
 Install Python 3.12 or 3.13, download or clone this repository, then run:
 
-**Windows — PowerShell**
+**Windows; PowerShell**
 
 ```powershell
 python launch.py
@@ -106,7 +106,7 @@ The studio works independently of the web platform. Primary hands-on testing was
 
 <h2 id="complete-stack"><img src="docs/assets/brand/section-mark.svg" alt="" width="28" height="28"> Complete stack</h2>
 
-![Dive Deep source architecture: local research studio with case evidence and source adapters; optional frontend, API, database, worker and private storage](docs/assets/brand/stack-diagram.svg)
+![Dive Deep source architecture: local research studio with case evidence and source adapters: optional frontend, API, database, worker and private storage](docs/assets/brand/stack-diagram.svg)
 
 | Component | Included source | Runs on |
 | --- | --- | --- |
